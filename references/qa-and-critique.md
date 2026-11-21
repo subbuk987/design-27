@@ -6,7 +6,7 @@ Load and run this module at **Stage 4** of every Design 27 task before declaring
 - **Tier 3 — Finish Checks (Craft Polish):** Optical alignment, nested radius harmony, micro-typography, and pacing cadence. Answer honestly; fix every quick win before delivery.
 
 ### Deterministic Verification & Cold-Review Protocol (Zero Sign-Off Theater)
-1. **Run the Static Checker First:** Whenever Node is available on HTML/CSS/SVG/JS/TS outputs, run `node scripts/d27-check.mjs <target>` and fix every `[FLOOR]` failure until exit code `0`. If no runtime is available, log `UNVERIFIED: no runtime` in the Sign-Off — never fabricate a pass.
+1. **Run the Static & Brief-Contract Checker First:** Run `node scripts/d27-check.mjs <target>` (passing `--brief <brief.json>` when `d27-deal.mjs` was used) and fix every `[FLOOR]` failure until exit code `0`. `UNVERIFIED: no runtime` is permitted ONLY when quoting the exact failed runtime error — never as a convenience skip.
 2. **Visual & Cold Evidence:** Never claim a "3-second squint test" passed purely in your head. Inspect a real rendered screenshot (Playwright/browser/PDF render) or, in code-only environments, cite exact `file:line` tokens and computed dimensions. For high-stakes heroes or launches, run Passes 1–7 in a fresh critic pass without self-justifying prose.
 
 ---
@@ -70,7 +70,7 @@ Inspect desktop (`1440px`), tablet (`768px`), mobile (`390px`), or print trim ma
 - [ ] **Inside Duration Budgets:** Micro-interactions `120–200ms`; UI transitions `250–450ms` (exits `~0.7×` enter); hero choreography `500–900ms`; total list stagger capped at `<= 350ms`.
 - [ ] **60fps GPU-Composited Properties Only:** Animations mutate `transform`, `opacity`, or `clip-path` — zero frame-dropping layout thrash (`width`, `height`, `top`, `left`, `margin`, `padding`), zero scroll-jacking, and zero scroll reveals that leave content permanently stuck at `opacity: 0`.
 - [ ] **Reduced Motion Respected:** `@media (prefers-reduced-motion: reduce)` (or `gsap.matchMedia()`) replaces sweeping motion with instant settles or minimal opacity crossfades.
-- [ ] **Video Storyboard, Determinism, Audio & 5-Frame Contact Sheet:** Stage 2 Beat Sheet locked; duration probed dynamically (never blindly hardcoded over VO); audio mixed to `-14/-16 LUFS` (`-12` to `-18 dB` VO ducking); visuals inside **90% action-safe** and titles inside **80% title-safe** (plus `9:16` social dead zones); zero `Date.now()`, unseeded `Math.random()`, `repeat: -1`, or mixed CSS+GSAP transforms. **5-Frame Contact-Sheet Check:** Inspect rendered frames at `0%`, `20%`, `50%`, `80%`, and `100%` of each critical transition to confirm zero mid-tween overlaps or clipped descenders.
+- [ ] **Video Storyboard, Determinism, Audio & Beat-Boundary Contact Sheet:** Stage 2 Beat Sheet locked; duration probed dynamically with `TransitionSeries` overlap compensation; audio mastered to `-14/-16 LUFS` (`-1 dBTP`, `-12` to `-18 dB` VO ducking) and encoded `yuv420p` (`d27-check.mjs` verifies `.mp4` via `ffprobe`); visuals inside **90% action-safe** and titles inside **80% title-safe** (plus `9:16` social dead zones); zero `Date.now()`, unseeded `Math.random()`, `requestAnimationFrame`, wall-clock CSS transitions, or `repeat: -1`. **Beat-Boundary Contact-Sheet Check:** Inspect **Frame 0** (font/asset readiness — zero FOUT/FOIT) plus **each scene's entrance midpoint, settled hold, and exit transition** (never arbitrary percentage slices).
 
 ---
 

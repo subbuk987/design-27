@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 320" width="1200" height="320" role="img" aria-label="Design 27 CLI deterministic verification output: EXIT 2 on stock slop vs EXIT 0 on Design 27 build">
+  <rect width="1200" height="320" rx="10" fill="#0D0F14"/>
+  <rect width="1200" height="38" rx="10" fill="#161922"/>
+  <rect y="28" width="1200" height="10" fill="#161922"/>
+  <text x="20" y="24" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="700" fill="#A6ACB8">DETERMINISTIC FLOOR CHECKER — node evals/run-eval.mjs</text>
+  <text x="1180" y="24" text-anchor="end" font-family="ui-monospace, monospace" font-size="11" fill="#34D399">ZERO DEPENDENCIES · NODE ESM</text>
+
+  <!-- Left: Stock Slop Output -->
+  <g transform="translate(24, 58)" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12">
+    <text x="0" y="16" fill="#9CA3AF">$ node scripts/d27-check.mjs evals/fixtures/slop-saas.html</text>
+    <text x="0" y="42" font-weight="700" fill="#F87171">Scanned 1 file(s): 5 FLOOR fail(s), 3 REFLEX warning(s)  [EXIT 2]</text>
+    <text x="0" y="70" fill="#FCA5A5">  [FLOOR]  slop-saas.html:7  (no-overflow-x-hidden)</text>
+    <text x="0" y="88" fill="#9CA3AF">           Fix: Replace overflow-x: hidden with overflow-x: clip.</text>
+    <text x="0" y="114" fill="#FCA5A5">  [FLOOR]  slop-saas.html:9  (no-transition-all)</text>
+    <text x="0" y="132" fill="#9CA3AF">           Fix: Name explicit GPU properties (transform, opacity).</text>
+    <text x="0" y="158" fill="#FCD34D">  [REFLEX] slop-saas.html:11 (no-purple-slop-gradient)</text>
+    <text x="0" y="176" fill="#9CA3AF">           Fix: Replace with brief-calibrated 60/30/10 :root tokens.</text>
+    <text x="0" y="202" fill="#FCD34D">  [REFLEX] slop-saas.html:24 (no-emoji-ui-icon · no-hype-copy)</text>
+    <text x="0" y="220" fill="#9CA3AF">           Fix: Remove emoji &amp; rewrite hype copy in plain language.</text>
+  </g>
+
+  <line x1="628" y1="54" x2="628" y2="296" stroke="#272B36" stroke-width="1"/>
+
+  <!-- Right: Design 27 Clean Output -->
+  <g transform="translate(652, 58)" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12">
+    <text x="0" y="16" fill="#9CA3AF">$ node scripts/d27-check.mjs evals/fixtures/design27-saas.html</text>
+    <text x="0" y="42" font-weight="700" fill="#34D399">Scanned 1 file(s): 0 FLOOR fail(s), 0 REFLEX warning(s)  [EXIT 0]</text>
+
+    <text x="0" y="82" fill="#9CA3AF">$ node scripts/d27-deal.mjs --prompt "Audio field recorder" --no-save</text>
+    <text x="0" y="108" fill="#60A5FA">{</text>
+    <text x="0" y="128" fill="#ECEEF2">  "surfaceMode": "persuade",</text>
+    <text x="0" y="148" fill="#ECEEF2">  "primary": { "slug": "luxury-minimal",</text>
+    <text x="0" y="168" fill="#ECEEF2">    "materialRegister": "Editorial Ink / Woodcut" },</text>
+    <text x="0" y="188" fill="#FCD34D">  "bannedCliche": "No 3-column icon-in-a-box SaaS cards"</text>
+    <text x="0" y="208" fill="#60A5FA">}</text>
+  </g>
+</svg>

@@ -2,10 +2,19 @@
 
 **The zero-dependency art director for coding agents — turns generic AI slop into editorial web UI, 16:9 pitch decks, and deterministic launch motion.**
 
-Most design skills either give agents vague vibes (*"be bold"*) with zero enforcement, or lock you into a heavy Rust/Puppeteer framework for websites alone. **Design 27 (`v2.0.0`)** pairs an **8 KB progressive-disclosure router** with **zero-dependency Node checkers** (`scripts/d27-check.mjs`, `scripts/d27-deal.mjs`) so every build clears measurable spatial, typographic, contrast, and motion floors across Claude Code, Codex, Cursor, and OpenCode.
+Most design skills either give agents vague vibes (*"be bold"*) with zero enforcement, or lock you into a heavy Rust/Puppeteer framework for websites alone. **Design 27 (`v2.1.0`)** pairs an **8 KB progressive-disclosure router** with **zero-dependency Node checkers** (`scripts/d27-check.mjs`, `scripts/d27-deal.mjs`) and a **reproducible eval suite** (`evals/`) so every build clears measurable spatial, typographic, contrast, and motion floors across Claude Code, Codex, Cursor, and OpenCode.
+
+## Before & After (Same Prompt, Stock Agent vs. Design 27)
+
+![Before vs After Web UI: Stock AI Agent vs Design 27](assets/before-after-web.svg)
+
+![Before vs After 16:9 Pitch Deck Slide: Stock AI vs Design 27](assets/before-after-deck.svg)
+
+![Design 27 Deterministic CLI Checker Output](assets/d27-cli-proof.svg)
 
 - **Built for what developers ship weekly:** Responsive web UI & dashboards, `16:9` pitch/keynote decks, and deterministic launch motion (CSS, GSAP, Remotion, HyperFrames, Manim).
 - **Also covers:** Print/screen books & reports, A4/US Letter dual-safe cheatsheets, print posters, YouTube/social thumbnails, and animation-ready SVG/AI mascots.
+- **Reproducible Proof:** Run `node evals/run-eval.mjs` or inspect the [5-prompt adversarial eval suite](evals/README.md).
 
 ---
 

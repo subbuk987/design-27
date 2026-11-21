@@ -52,30 +52,17 @@ For editorial pages and narrative marketing sites, define three nested widths in
 
 **Typography scaling law:** Never allow body copy below `16px` (`1rem`) on desktop or mobile reading views, and never drop utility labels/captions below `12px`. Apply `text-wrap: balance` to all headings (`h1–h3`) and `text-wrap: pretty` to body paragraphs.
 
-### Dual-Theme Token Pairing (Light / Dark Parity)
-When supporting both light and dark modes, never blindly invert colors — recalibrate `--accent-focal`, surface elevation steps, and hairline opacity so both themes independently clear `>= 7:1` primary ink, `>= 4.5:1` secondary ink, and zero pure-white-on-pure-black halation. *(Non-default example — always swap hues to match Stage 1's Surface World.)*
+### Dual-Theme Relational Luminance Contract (Light / Dark Parity)
+Never copy a fixed sample palette across projects, and never blindly invert light hexes into dark mode. Derive both modes from Stage 1's **Surface World** using these relational luminance & contrast bands:
 
-```css
-:root {
-  --surface-canvas:   #F8F9FA; /* Neutral alabaster example */
-  --surface-elevated: #FFFFFF; /* +2–4% luminance lift */
-  --ink-primary:      #101214; /* 18.6:1 on alabaster */
-  --ink-secondary:    #444A54; /* 8.4:1 on alabaster */
-  --hairline:         rgba(16, 18, 20, 0.14);
-  --accent-focal:     #0F766E; /* Deep teal: 5.3:1 on alabaster & with white --accent-ink */
-  --accent-ink:       #FFFFFF;
-}
-
-[data-theme="dark"] {
-  --surface-canvas:   #090B10; /* Deep obsidian (avoids #000 halation) */
-  --surface-elevated: #131722; /* +4% tonal step */
-  --ink-primary:      #ECEEF2; /* 17.2:1 on obsidian */
-  --ink-secondary:    #A6ACB8; /* 8.4:1 on obsidian */
-  --hairline:         rgba(236, 238, 242, 0.12);
-  --accent-focal:     #2DD4BF; /* Lifted teal: 10.6:1 on obsidian */
-  --accent-ink:       #090B10; /* Dark ink on bright accent: 10.6:1 */
-}
-```
+| Token Role | Light Mode Contract | Dark Mode Contract | Contrast Requirement |
+| :--- | :--- | :--- | :--- |
+| `--surface-canvas` | Lightness `94–99%` tinted subtly toward Surface World | Lightness `4–8%` calibrated dark ground (never pure `#000000` for reading) | 60% ground dominance |
+| `--surface-elevated` | `+2–4%` luminance lift over canvas (or subtle tonal step) | `+4–6%` luminance lift over canvas (depth via surface step, not glow) | Crisp visual separation |
+| `--ink-primary` | Lightness `6–12%` matched to canvas temperature | Lightness `90–95%` off-white (prevents `#FFF` halation) | **`>= 12:1`** target (`>= 7:1` AAA) |
+| `--ink-secondary` | Lightness `28–36%` | Lightness `66–74%` | **`>= 4.5:1`** hard floor |
+| `--hairline` | Primary ink at `10–16%` opacity | Primary ink at `10–14%` opacity | Quiet structural rule |
+| `--accent-focal` & `--accent-ink` | Deeper chroma shade (`L 34–46%`) paired with light `--accent-ink` | Lifted luminous shade (`L 62–76%`) paired with dark `--accent-ink` | **`>= 4.5:1`** against BOTH canvas and `--accent-ink` |
 
 ---
 
@@ -91,7 +78,7 @@ Choose ONE hero archetype matching the Creative Brief. Ensure the primary messag
 | **4. Utilitarian Product-First** | Compact top band (`25%` height): crisp 1-line title + 1-line value prop + primary CTA left-aligned. Bottom `65%+` height: live interactive app/canvas/code artifact at real fidelity. | Devtools, SaaS apps, design tools, calculators | Don't hide the actual product beneath three paragraphs of marketing fluff. |
 | **5. Swiss Masthead & Index** | Top publication masthead + date/issue rule; `8-col` lead feature with hero image + `4-col` hairline-ruled index column of latest entries/chapters. | Magazines, research hubs, documentation portals, journals | Keep the right rail scannable (titles + timestamps only, zero mini-card borders). |
 
-**Hero restraint rule:** Maximum **1 primary CTA + 1 quiet secondary action** (text link or hairline button). Zero trust-logo carousels or 4-stat boxes jammed inside the hero unless the brief explicitly mandates above-the-fold proof. **Fold floor:** The hero's headline, one-sentence deck, and primary action must all be visible without scrolling at **`1280 × 800`** (as well as `1440 × 900` and `390 × 844`). **Visual Anchor Law:** On *Persuade* and *Experience* surfaces, never hide behind "empty hairline-strip minimalism" as a hero crutch — commit to one unmistakable centerpiece (real product UI, genuine photography, a bespoke diagram/mascot, or monumental display typography-as-image).
+**Hero restraint rule:** Maximum **1 primary CTA + 1 quiet secondary action** (text link or hairline button). Zero trust-logo carousels or 4-stat boxes jammed inside the hero unless the brief explicitly mandates above-the-fold proof. **Fold floor:** The hero's headline, one-sentence deck, and primary action must all be visible without scrolling at **`1280 × 800`** (as well as `1440 × 900` and `390 × 844`). **Visual Anchor Law & Asset-Reality Fallback Ladder:** On *Persuade* and *Experience* surfaces, never hide behind "empty hairline-strip minimalism" as a hero crutch — commit to one unmistakable centerpiece in strict fallback order: **(1)** real user photography or a live interactive slice of the actual product/data, **(2)** bespoke typographic architecture or a sharp generative SVG/editorial diagram, or **(3)** an explicit art-directed asset slot ready for the user's media. **Outright banned:** fake lorem-ipsum dashboard mockups and generic CSS gradient blobs.
 
 ### Non-Negotiable Web CSS Floor & Nested Radius Law
 Enforce these mechanical invariants on every web build:

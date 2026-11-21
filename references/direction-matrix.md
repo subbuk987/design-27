@@ -13,7 +13,11 @@ Never pick a direction by habit or default to warm-paper Swiss minimalism on neu
 3. **Structural Tension:** Where the eye feels energy (e.g., *asymmetric 7/5 split*, *monumental type-as-image*, *single 45° diagonal break*, *wide full-bleed plate over tight ruled index*).
 4. **Banned Category Cliché:** Explicitly name **one overused trope** in the subject's industry that you forbid in this build (e.g., *"No 3-column bento cards"*, *"No warm-beige + vermilion editorial cosplay"*, *"No dark-slate neon SaaS hero"*).
 
-*Optional deterministic anti-convergence:* When Node is available, run `node scripts/d27-deal.mjs --prompt "<brief>"` to deal two non-repeating directions clear of `.design27/history.json`.
+*Optional deterministic anti-convergence:* When Node is available, run `node scripts/d27-deal.mjs --prompt "<brief>" --surface <mode> --out .design27/brief.json` to deal two World-Synced directions clear of recent history, then pass `--brief .design27/brief.json` into `scripts/d27-check.mjs` at Stage 4.
+
+### Loud Craft Mechanics & World-Sync Coherence
+- **How to Execute Loud Design Well (*Persuade / Experience / Posters / Thumbnails / Motion*):** Permission to use `700–900` display weights, saturated color blocking, and grid-breaking is NOT license for Canva soup. Enforce: **(a)** aggressive display-to-body scale contrast (`>= 4:1`), **(b)** tightened display tracking (`-0.03em` to `-0.05em`) and leading (`0.88–1.02`), **(c)** exactly ONE dominant focal screamer per viewport, and **(d)** `>= 30%` calm negative-space counterweight so the loudness hits with tension.
+- **World-Sync Binding:** Keep UI chrome, illustration finish, and motion physics inside one physical world — e.g., *Risograph / Woodcut* pairs with subtle paper grain, crisp ink rules, and snappy/stepped cuts; *Tactile 3D Clay / Vinyl* pairs with soft surface elevation and spring physics; *Technical Axonometric* pairs with `1px` schematic hairlines and fast quart-out easing. Never drop a hand-drawn woodcut onto a sterile glossy dark UI with generic ease-in-out fades.
 
 ---
 

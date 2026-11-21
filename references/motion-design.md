@@ -94,8 +94,16 @@ When rendering programmatic video frame-by-frame in headless browsers or render 
 
 ### Audio Mix, Captions & Camera Pacing Budgets
 - **Loudness & VO Ducking:** Master web/YouTube exports to **`-14 LUFS`** (`-16 LUFS` mobile/social) with **`-1 dBTP`** true-peak ceiling. Duck music beds **`-12` to `-18 dB`** underneath voiceover with `150–300ms` attack/release envelopes on dedicated audio tracks.
+- **Executable FFmpeg Mastering & Export Command (Web/Social-Safe H.264):**
+  ```bash
+  # Duck music under VO (-14dB sidechain), normalize to -14 LUFS / -1 dBTP, encode Safari/iOS-safe yuv420p
+  ffmpeg -i render.mp4 -i vo.wav -i music.wav \
+    -filter_complex "[2:a][1:a]sidechaincompress=threshold=0.03:ratio=6:attack=180:release=280[bed];[1:a][bed]amix=inputs=2:normalize=0,loudnorm=I=-14:TP=-1:LRA=11[aout]" \
+    -map 0:v -map "[aout]" -c:v libx264 -pix_fmt yuv420p -colorspace bt709 -movflags +faststart -c:a aac -b:a 192k master.mp4
+  ```
 - **Caption Timing & `9:16` Vertical Safe Zones:** Cap landscape captions at `<= 42` chars/line (max 2 lines) and `9:16` social captions at `2–4` words per rhythmic chunk (`~2.5–3 words/sec + 400ms` settle buffer). On `1080 × 1920` TikTok/Reels/Shorts, keep titles and captions out of the top `260px`, bottom `360px`, and right `140px` action-rail dead zones.
-- **Shot-Duration Pacing:** Land the visual hook inside **`0–2.0s`**, hold primary launch/social shots for **`1.5–4.0s`**, and stage **at most 1 primary focal motion per beat** so the viewer's eye never fractures.
+- **Shot-Duration Pacing & Transition Overlap Math:** Land the visual hook inside **`0–2.0s`**, hold primary launch/social shots for **`1.5–4.0s`**, and stage **at most 1 primary focal motion per beat**. When using overlapping transitions (e.g., Remotion `TransitionSeries`), compensate total timeline length explicitly: **`totalFrames = sum(sceneFrames) - sum(overlapFrames)`** so crossfades never shorten the video and desync voiceover. Ensure every spring settles (`>= 24–36 frames`) before a hard cut.
+- **Multi-Aspect Reflow Contract (`16:9` ↔ `9:16` ↔ `1:1`):** Drive typography and inset math from `Math.min(width, height)` rather than fixed pixel offsets so a single composition reflows cleanly across landscape, vertical, and square without breaking safe boxes.
 
 ### Modern Web Motion Primitives (CSS & React)
 - **CSS Scroll-Driven Reveals:** Gate native scroll progress with `@supports (animation-timeline: view())` and `@media (prefers-reduced-motion: no-preference)` so unsupported browsers render cleanly at full opacity.
