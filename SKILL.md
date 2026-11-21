@@ -33,6 +33,11 @@ Read this core handbook first. Before entering **Stage 2**, load ONLY the refere
 
 *Multi-medium briefs:* Load every applicable module (e.g., an animated landing page featuring a brand mascot loads `websites.md` + `mascot-and-illustration.md` + `motion-design.md` + `qa-and-critique.md`).
 
+### Surface Modes, Triage & Steerable Verbs
+- **4 Surface Modes (by surface, never by product):** Choose **Persuade** (landing pages, campaigns, pitch decks — bold POV, earn attention), **Operate** (dashboards, apps, tools, cheatsheets — scanability & restraint outrank expression), **Read** (books, docs, articles, reports — comprehension & typography first), or **Experience** (portfolios, posters, showcases, films — artifact leads from frame one). *A dev tool's landing page is Persuade; a fashion house's docs are Read.*
+- **Existing Work Triage & Preservation Law:** Check for an existing `DESIGN.md` or brand token system first — **the user's brief and real brand win** over generic pattern warnings. Classify existing UI honestly: **Heavy Slop** (full redesign preserving content & wiring), **Light Slop / Polish Mode** (keep incumbent palette/type/layout; fix only audited defects), or **No Slop** (say so plainly; never redesign good work just to look different). *Refinement preserves; redesign replaces.*
+- **Steerable Studio Verbs:** Users may steer any artifact with targeted moves — `polish` (final QA pass), `bolder` (push scale/contrast/tension), `quieter` (strip noise & lower visual volume), `distill` (cut sections/copy to essence), `clarify` (rewrite hype/unclear microcopy), `harden` (edge cases, empty/error/focus/RTL states), `redesign` (replace visual world, keep product truth), or `critique` (run `qa-and-critique.md` audit only).
+
 ---
 
 ## Mandatory 4-Stage Creative Workflow
@@ -40,12 +45,13 @@ Read this core handbook first. Before entering **Stage 2**, load ONLY the refere
 Complete Stages 1–3 before writing production markup, CSS, print specs, animation timelines, or image prompts. Violating this sequence produces generic template work.
 
 ### Stage 1 — Creative Brief & Aesthetic Calibration
-Lock a compact 5-line Creative Brief before sketching layout:
-1. **Audience & Stakes:** Who is looking, in what context, and what action or feeling must follow?
+Lock a compact 6-line Creative Brief before sketching layout:
+1. **Audience, Mode & Job:** Who is looking, which **Surface Mode** applies (*Persuade / Operate / Read / Experience*), and what concrete job must the piece accomplish (book, buy, read, operate, attend)?
 2. **Medium & Constraints:** Exact viewport/trim size, reading distance, print vs. screen, light/dark environment.
 3. **Emotional Register:** 3 sharp tonal adjectives (e.g., *clinical, tactile, urgent* — never "clean", "sleek", or "modern").
-4. **Cultural / Visual Anchors:** Concrete design lineage (e.g., *1960s Braun manuals*, *Monocle feature spreads*, *Studio Buck launch films*, *Japanese risograph gig posters*).
-5. **Selected Direction:** Commit to ONE primary aesthetic direction from the **Adaptive Style Matrix** below (or an intentional 80/20 hybrid with one dominant system).
+4. **World & Visual Anchors:** Concrete material world & lineage (e.g., *1960s Braun manuals*, *Monocle spreads*, *Studio Buck films*, *Japanese risograph posters*).
+5. **Material Truth & Signature Moment:** Inventory what is **Real** (actual product UI, photos, verified numbers) vs. **Absent** (never invent metrics, testimonials, or logo walls). Keep chrome quiet and concentrate richness into **1–2 Signature Moments** plus **1 unforgettable Signature Detail** (e.g., live telemetry dot, keycaps, editorial rule). **Mirror Test:** *Would a neighboring prompt in the same category produce this exact layout and palette? If yes, change one major decision. Never converge on the same choices across consecutive builds.*
+6. **Selected Direction:** Commit to ONE primary aesthetic direction from the **Adaptive Style Matrix** below (or an intentional 80/20 hybrid with one dominant system).
 
 *Translating vague prompts:* When a user asks for `"modern"`, `"clean"`, `"sleek"`, or `"AI SaaS"`, treat those as **clarity signals**, never permission for purple-slate bento slop. Map technical/AI tools to **Utilitarian Technical**, calibrated **Atmospheric Dark**, or **Swiss Editorial** unless the brand explicitly owns purple.
 
@@ -134,6 +140,8 @@ Reject and immediately replace any of the following default patterns:
 | Squished/stretched images or cramped charts buried inside narrow sidebars | Enforce explicit `aspect-ratio` + `object-fit: cover` and give data/art generous column width (`>= 65%` desktop). |
 | Robotic `linear` / generic `ease` UI animations or marathon >1s linear staggers | Physics springs or exponential-out curves; micro `120–200ms`, UI transitions `250–450ms`, hero sequences `500–900ms`, total stagger `<= 350ms`. |
 | Gratuitous floating blobs, heavy glassmorphism over busy backgrounds, or decorative sparkle icons | Earn every pixel. Delete any graphic element whose removal makes the message sharper. |
+| Hype microcopy (`supercharge`, `seamless`, `unlock`, `magic`, `!!`, `"Welcome back! 👋"`) or invented metrics/testimonials/logo walls | Plain, product-specific copy; zero exclamation marks in UI; explicit comparison context (`+12% vs last month`); never fabricate facts, quotes, or logos. |
+| Decorative emojis as UI icons, `transition: all`, or random single italic word inside a roman heading | Uniform monoline icon set (`16–18px`, `1.5px` stroke, inheriting text ink); explicit GPU transition properties; cohesive heading treatment. |
 
 ### Rationalization Red Flags — Stop and Re-Direct
 If you catch yourself thinking any of these, STOP and return to the stage you skipped:

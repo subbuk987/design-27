@@ -91,7 +91,15 @@ Choose ONE hero archetype matching the Creative Brief. Ensure the primary messag
 | **4. Utilitarian Product-First** | Compact top band (`25%` height): crisp 1-line title + 1-line value prop + primary CTA left-aligned. Bottom `65%+` height: live interactive app/canvas/code artifact at real fidelity. | Devtools, SaaS apps, design tools, calculators | Don't hide the actual product beneath three paragraphs of marketing fluff. |
 | **5. Swiss Masthead & Index** | Top publication masthead + date/issue rule; `8-col` lead feature with hero image + `4-col` hairline-ruled index column of latest entries/chapters. | Magazines, research hubs, documentation portals, journals | Keep the right rail scannable (titles + timestamps only, zero mini-card borders). |
 
-**Hero restraint rule:** Maximum **1 primary CTA + 1 quiet secondary action** (text link or hairline button). Zero trust-logo carousels or 4-stat boxes jammed inside the hero unless the brief explicitly mandates above-the-fold proof.
+**Hero restraint rule:** Maximum **1 primary CTA + 1 quiet secondary action** (text link or hairline button). Zero trust-logo carousels or 4-stat boxes jammed inside the hero unless the brief explicitly mandates above-the-fold proof. **Fold floor:** The hero's headline, one-sentence deck, and primary action must all be visible without scrolling at **`1280 × 800`** (as well as `1440 × 900` and `390 × 844`).
+
+### Non-Negotiable Web CSS Floor & Nested Radius Law
+Enforce these mechanical invariants on every web build:
+- **Safe Horizontal Clipping:** Apply `overflow-x: clip` on `html, body` — **never `overflow-x: hidden`** (which silently breaks `position: sticky`) and **never `width: 100vw`** (which triggers horizontal scrollbars on Windows).
+- **Grid Blowout Guards:** Every image-bearing or code-bearing grid track uses `minmax(0, 1fr)`; display headings carry `min-width: 0; overflow-wrap: break-word;`. At ultra-wide `1920px+` viewports, cap and center the outer container so gutters grow while prose measure stays fixed.
+- **Nested Radius Formula:** Whenever a rounded element sits inside a rounded container, compute **`inner-radius = max(outer-radius - padding, 4px)`** (e.g., `16px` outer card with `12px` padding → `4px` inner element) so corners stay optically concentric instead of pinching.
+- **Job-First Page Anatomy:** Structure sections around what the visitor came to *do* (book, buy, subscribe, try, inspect docs, attend) rather than an automatic SaaS stack of 3-icon cards + 4 stats + fake testimonials + email banner.
+- **Zero `transition: all`:** Always name explicit GPU-friendly properties (`transition: color, background-color, border-color, opacity, transform`) and style `:focus-visible` cleanly on every interactive control.
 
 ---
 

@@ -77,10 +77,19 @@ Edit product films like a Buck or Apple launch spot — every cut earns its exis
 - **Directional Mask / Rule Wipe:** A clean vertical or horizontal hairline sweeps across the canvas, revealing the inverted dark/light state behind it.
 - **Banned transitions:** Generic cross-dissolves between busy screens (creates muddy ghost frames), 3D cube spins, page curls, or random slide directions.
 
-### Audio & Beat Sync Math
-- Calculate frames per beat: **`framesPerBeat = (60 / BPM) × FPS`** (e.g., `120 BPM` at `30fps` = `15 frames/beat`; at `60fps` = `30 frames/beat`).
+### Audio, Beat Sync & Broadcast Safe Zones (`Frame.md` Discipline)
+- **Frames Per Beat:** **`framesPerBeat = (60 / BPM) × FPS`** (e.g., `120 BPM` at `30fps` = `15 frames/beat`; at `60fps` = `30 frames/beat`).
 - **Pre-Hit Lead Rule:** Land major visual impacts **`1–2 frames` (~16–33ms) BEFORE or exact ON the audio transient**. Visuals slightly leading sound feel razor-tight; visuals lagging `2+ frames` behind sound feel sloppy.
+- **J-Cuts & L-Cuts:** Let audio lead (`J-cut`, `4–10 frames` early) or trail (`L-cut`) across scene cuts on dedicated audio tracks so edits feel cinematic instead of abruptly chopped on visual boundaries.
 - **Breathing Beats:** Insert `0.4–0.7s` of clean visual hold ("visual silence") right before the product hero reveal so the climax hits with contrast.
+- **Broadcast Safe Boxes (`1920 × 1080`):** Web design tokens must adapt for the camera — keep active visuals inside the **90% Action-Safe Box** (`96px` horizontal / `54px` vertical inset) and all kinetic titles/captions inside the **80% Title-Safe Box** (`192px` horizontal / `108px` vertical inset).
+
+### Deterministic Code-Video Render Contract (Remotion / HyperFrames / Manim)
+When rendering programmatic video frame-by-frame in headless browsers or render engines, every frame MUST be a pure, deterministic function of timeline time:
+- **Zero Non-Deterministic State:** Never use `Date.now()`, unseeded `Math.random()`, `setInterval`, `requestAnimationFrame` drift, live network fetches, or infinite CSS/GSAP `repeat: -1` loops.
+- **No Transform Collisions:** Never combine a CSS `transform` rule with GSAP/JS transforms on the same DOM element, and never tween `display` or `visibility` on timed clip wrappers (animate a child element instead).
+- **Pre-Measure Dynamic Text:** Measure dynamic headings and captions against container bounds before rendering (e.g., Remotion text measurement or explicit `max-width` + `text-wrap: balance`) so variable-length copy never overflows safe zones mid-render.
+- **Pre-Production Discipline (>15s Films):** Pitch 2–3 concise structural angles in words first, then lock a frame-accurate Beat Sheet (`SPEC`) where every adjective is translated into a concrete number (BPM, frame count, easing curve, pixel inset).
 
 ---
 
@@ -174,4 +183,25 @@ class EditorialReveal(Scene):
         self.play(FadeIn(title, shift=UP * 0.35), run_time=0.6, rate_func=rate_functions.ease_out_expo)
         self.play(LaggedStart(*[GrowFromCenter(d) for d in items], lag_ratio=0.12), run_time=0.55)
         self.wait(1.9)
+```
+
+**5. HyperFrames Seekable HTML + GSAP Composition (Deterministic Frame-by-Frame Video)**
+```html
+<!-- 1920x1080 @ 30fps | Paused timeline registered on window.__timelines for deterministic seeks -->
+<div id="stage" data-composition-id="launch" data-start="0" data-duration="4" data-width="1920" data-height="1080">
+  <!-- 80% Title-Safe Box: inset 108px 192px -->
+  <div class="clip" id="title-wrap" data-start="0" data-duration="4" data-track-index="0"
+       style="position:absolute; inset:108px 192px; display:flex; align-items:center; overflow:hidden;">
+    <h1 id="title-inner" style="margin:0; font:800 84px/1.02 'Inter Tight', sans-serif; color:#ECEEF2;">
+      DESIGN WITH INTENT.
+    </h1>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    // Animate child (#title-inner), never display/visibility on .clip; zero repeat: -1
+    tl.from("#title-inner", { yPercent: 112, duration: 0.65, ease: "expo.out" }, 0.2);
+    window.__timelines = window.__timelines || {};
+    window.__timelines.launch = tl;
+  </script>
+</div>
 ```

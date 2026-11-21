@@ -1,6 +1,9 @@
 # Post-Build Art Director Critique & Anti-Slop Quality Audit
 
-Load and run this module at **Stage 4** of every Design 27 task before declaring work complete. Treat every item as a **pass/fail sign-off gate** — if a check fails, fix the artifact immediately and re-verify. Do not rationalize defects as "minor polish."
+Load and run this module at **Stage 4** of every Design 27 task before declaring work complete. Gates operate in **3 strict tiers**:
+- **Tier 1 — The Floor (Unwaivable):** Contrast floors, `:focus-visible`, `prefers-reduced-motion`, zero invented facts/testimonials/metrics, zero `transition: all`, zero edge clipping/overflow, and medium safe zones. Never ship with a Floor failure.
+- **Tier 2 — Reflex Gates (Waivable On-Record Only):** Default AI habits (card soup, purple-slate gradients, badge clutter, emoji icons, hype copy, linear motion). Fix by default — or log an explicit brief-driven waiver in the Sign-Off block.
+- **Tier 3 — Finish Checks (Craft Polish):** Optical alignment, nested radius harmony, micro-typography, and pacing cadence. Answer honestly; fix every quick win before delivery.
 
 ---
 
@@ -49,7 +52,7 @@ Verify actual foreground/background luminance pairs — never eyeball low-contra
 
 Inspect desktop (`1440px`), tablet (`768px`), mobile (`390px`), or print trim margins:
 
-- [ ] **Zero Edge Clipping or Overflow:** No horizontal scrollbars on mobile, no clipped descenders inside masked containers, no elements touching container edges (`padding` respected), no overlapping chart axis labels or truncated legends.
+- [ ] **Zero Edge Clipping, Overflow & CSS Floor Intact:** `overflow-x: clip` (never `overflow-x: hidden` or `100vw`); image grid tracks use `minmax(0, 1fr)`; display heads carry `min-width: 0; overflow-wrap: break-word;`; no horizontal scrollbars on mobile, no clipped descenders inside masked containers, and nested radii follow `max(outer - padding, 4px)`.
 - [ ] **Honest Media Proportions:** Every photograph, video, and diagram uses an explicit `aspect-ratio` + clean crop (`object-fit: cover`, focal-aware `object-position`). Zero stretched, squished, or pixelated assets; zero data charts strangled in narrow sidebars.
 - [ ] **Alternating Section Rhythm:** No two consecutive sections share the exact same grid column split, card pattern, or visual density.
 - [ ] **The Deletion Test (Open-Canvas Check):** Inspect every border, card box, background pill, shadow, and divider. If removing a box or shadow makes alignment clearer and calmer, **delete it**.
@@ -59,11 +62,11 @@ Inspect desktop (`1440px`), tablet (`768px`), mobile (`390px`), or print trim ma
 
 ## Pass 5 — Motion & Performance Critique (Skip Only for Static Print/Images)
 
-- [ ] **Zero Robotic Curves & Single Motion Personality:** No `linear` or default browser `ease` on UI/video entrances, exits, or layout morphs (linear reserved exclusively for continuous progress bars/tickers/spinners). One cohesive easing/spring family governs the entire piece.
+- [ ] **Zero Robotic Curves & Single Motion Personality:** No `linear`, default browser `ease`, or `transition: all` on UI/video entrances, exits, or layout morphs (linear reserved exclusively for continuous progress bars/tickers/spinners). One cohesive easing/spring family governs the entire piece.
 - [ ] **Inside Duration Budgets:** Micro-interactions `120–200ms`; UI transitions `250–450ms` (exits `~0.7×` enter); hero choreography `500–900ms`; total list stagger capped at `<= 350ms`.
 - [ ] **60fps GPU-Composited Properties Only:** Animations mutate `transform`, `opacity`, or `clip-path` — zero frame-dropping layout thrash (`width`, `height`, `top`, `left`, `margin`, `padding`), zero scroll-jacking, and zero scroll reveals that leave content permanently stuck at `opacity: 0`.
 - [ ] **Reduced Motion Respected:** `@media (prefers-reduced-motion: reduce)` (or `gsap.matchMedia()`) replaces sweeping motion with instant settles or minimal opacity crossfades.
-- [ ] **Video Storyboard, Cuts & Reading Hold:** Stage 2 Beat Sheet locked; every typographic beat stays legible for `>= 1.2s + 0.35s × wordCount`; major visual cuts land `0–2 frames` ahead of or exact on audio transients; zero banned cross-dissolve mud, 3D spins, or page curls.
+- [ ] **Video Storyboard, Determinism & Broadcast Safe Boxes:** Stage 2 Beat Sheet locked; every typographic beat stays legible for `>= 1.2s + 0.35s × wordCount`; major cuts land `0–2 frames` ahead of or exact on audio transients (with J/L audio cuts where helpful); visuals inside **90% action-safe** and titles inside **80% title-safe**; zero `Date.now()`, unseeded `Math.random()`, `repeat: -1`, or mixed CSS+GSAP transforms.
 
 ---
 
@@ -73,7 +76,7 @@ Confirm every row matching your active medium(s):
 
 | Medium | Mandatory Final Checks |
 | :--- | :--- |
-| **Websites & Landing Pages** | Above-the-fold hero holds focal message + visual + max 1 primary CTA cleanly at `1440×900` and `390×844`; mobile tap targets `>= 44×44px`; nav `<= 5` top links. |
+| **Websites & Landing Pages** | Above-the-fold hero holds focal message + visual + max 1 primary CTA cleanly at `1280×800`, `1440×900`, and `390×844`; mobile tap targets `>= 44×44px`; nav `<= 5` top links; job-first anatomy. |
 | **Web Apps & Dashboards** | Hairline-separated shell rail (`220–248px`) + open horizontal KPI strip (zero bento KPI card soup); primary chart spans `>= 65%` desktop width with muted gridlines & `<= 4` semantic series; tables right-align `tabular-nums`; empty/loading/error/`:focus-visible` states complete. |
 | **Books & Editorial** | Inner binding gutter generous (`>= 18–22mm` for print); facing baselines aligned; running headers suppressed on chapter openers, blank versos & full-bleed plates; hyphenation enabled on justified prose; zero mixed indent + blank-line paragraphs. |
 | **Presentations & Decks** | `16:9` stage (`1920×1080px` / `80px` safe zone); one claim per slide with assertion titles; `<= 45` words live (`<= 65` async); no 3 consecutive identical slide layouts; data charts `>= 65%` width with direct labels; footer suppressed on covers/dividers; native clickable links. |
@@ -86,27 +89,30 @@ Confirm every row matching your active medium(s):
 
 ## Pass 7 — The Anti-AI-Slop Kill Switch
 
-If ANY of these 7 patterns survived into the artifact, **STOP — revise before delivering**:
+If ANY of these 9 patterns survived into the artifact, **STOP — revise before delivering**:
 
 1. Default purple-blue/pink AI gradient (`#6366f1` → `#a855f7` → `#ec4899`) on uncalibrated dark slate.
 2. Repetitive 3-column icon-in-a-tinted-square card soup.
-3. Unprompted sparkle badges (`✨ AI-Powered`, `New`, `Beta`) floating above headlines.
+3. Unprompted sparkle badges (`✨ AI-Powered`, `New`, `Beta`) or decorative emojis used as UI icons.
 4. Fake macOS red/yellow/green dots framing non-terminal content.
 5. Washed-out medium-grey body copy failing `4.5:1` contrast.
-6. Unmotivated floating glass blobs, confetti, or linear hover animations.
+6. Unmotivated floating glass blobs, confetti, `transition: all`, or linear hover animations.
 7. Default uncalibrated Inter + Tailwind blue layout ignoring the subject's cultural soul.
+8. Hype microcopy (`supercharge`, `seamless`, `unlock`, `magic`, `!!`, `"Welcome back! 👋"`) or single italic gimmick words inside roman display headings.
+9. Invented customer metrics, fabricated testimonials, or unverified logo walls.
 
 ---
 
 ## Mandatory Studio Sign-Off Block
 
-Include this compact 5-line **Art Director Sign-Off** at the end of Stage 4 (both when building new artifacts and when reviewing existing work) to confirm every gate was verified:
+Include this compact 6-line **Art Director Sign-Off** at the end of Stage 4 (both when building new artifacts and when reviewing existing work) to confirm every gate was verified:
 
 ```markdown
 ### Art Director Sign-Off — Design 27
-- **Direction & Brief Alignment:** [Pass / Revised] — [1-line rationale]
-- **3-Second Squint & Focal Path:** [Pass / Revised] — [Focal #1 → #2 → #3]
+- **Direction & Surface Mode:** [Pass / Revised] — [Aesthetic Direction · Persuade/Operate/Read/Experience · Mirror Test passed]
+- **3-Second Squint & Focal Path:** [Pass / Revised] — [Focal #1 → #2 → #3 · Signature Moment]
 - **Contrast & Typography Hygiene:** [Pass / Revised] — [Min contrast ratio, measure, scale ratio, orphans checked]
-- **Spatial Rhythm & Medium Gate:** [Pass / Revised] — [Key medium-specific check verified]
-- **Anti-Slop Audit:** [Clean — 0 redlines triggered / Fixed: ...]
+- **Spatial Rhythm & Medium Gate:** [Pass / Revised] — [CSS/print/broadcast floor + key medium gate verified]
+- **Material Honesty & Anti-Slop:** [Clean — 0 Floor fails, 0 invented facts, 0 redlines / Fixed: ...]
+- **Reflex Waivers (if any):** [None / Rule waived + explicit brief rationale]
 ```

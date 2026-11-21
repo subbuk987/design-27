@@ -34,10 +34,10 @@ Left unguided, AI agents converge on the same predictable defaults: purple-blue 
 
 Design 27 replaces vague advice (*"make it clean and modern"*) with **measurable studio craft**:
 
-- **Mandatory 4-Stage Creative Workflow:** Forces agents through Aesthetic Calibration → Spatial Placement Architecture → Visual System Tokens → Post-Build Art Director Critique before signing off.
-- **Open-Canvas Spatial Mastery:** Teaches exact placement rules for full-bleed imagery vs. asymmetric splits (`60/40`, `65/35`), `45–70ch` prose measure, balanced headline wrapping (zero orphans), figure–ground scrims, and hairline/whitespace grouping over card soup.
-- **7 Adaptive Aesthetic Directions:** Calibrates surfaces, typography pairings, grid density, corner radii, illustration grammar, and motion curves across *Swiss Editorial, Brutalist/Poster, Tactile Playful, Atmospheric Dark, Utilitarian Technical, Retro/Zine,* and *Luxury Minimal*.
-- **Tool-Agnostic Craft + Production Patterns:** Principles translate directly into concrete CSS Grid/`clamp()`, Tailwind/React, SVG geometry, CSS Paged Media, Typst, GSAP timelines, Remotion frame math, Manim scenes, Figma specs, and locked AI image prompts.
+- **4 Surface Modes + Steerable Studio Verbs:** Calibrates ambition by surface (*Persuade, Operate, Read, Experience*) and supports surgical steering (`polish`, `bolder`, `quieter`, `distill`, `clarify`, `harden`, `redesign`, `critique`) plus Honest Slop Triage (*Heavy Slop / Polish Mode / No Slop*).
+- **Mandatory 4-Stage Creative Workflow & 3-Tier QA Gates:** Enforces Aesthetic Calibration (with Zero-Fabrication Material Truth & Mirror Test) → Spatial Placement Architecture → Visual System Tokens → 3-Tier Art Director Critique (*Floor / Reflex / Finish*) before signing off.
+- **Open-Canvas Spatial & CSS Floor Mastery:** Teaches full-bleed vs. asymmetric splits (`60/40`, `65/35`), `45–70ch` prose measure, balanced headline wrapping, nested radius math (`max(outer - padding, 4px)`), `overflow-x: clip`, figure–ground scrims, and hairline/whitespace grouping over card soup.
+- **8 Full Creative Mediums in Zero-Dependency Markdown:** Covers websites/dashboards, books/editorial, 16:9 presentations, high-density cheatsheets, deterministic motion/video (CSS, GSAP, Remotion, HyperFrames, Manim), posters, YouTube thumbnails, and SVG/AI mascots — with zero binaries or runtime lock-in.
 
 ---
 
@@ -129,7 +129,7 @@ Design 27 is intentionally **tool-agnostic** and directly actionable across:
 - **Web & UI:** HTML/CSS, Tailwind CSS, React, Next.js, Svelte, Vue, Radix, Figma design specs
 - **Print & Editorial:** CSS Paged Media (WeasyPrint, Prince, Paged.js), Typst, LaTeX, SVG print masters
 - **Presentations & Decks:** Google Slides, Keynote, PowerPoint (`python-pptx`), Slidev, Marp, Reveal.js, HTML-to-PDF
-- **Motion & Video:** CSS Keyframes, GSAP, Framer Motion, Remotion, Manim, After Effects beat sheets
+- **Motion & Video:** CSS Keyframes, GSAP, Framer Motion, Remotion, HyperFrames, Manim, After Effects beat sheets
 - **Illustration & Assets:** Hand-crafted animation-ready SVG, locked prompts for Midjourney / Imagen / Flux / GPT Image
 
 ---
