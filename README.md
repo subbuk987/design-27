@@ -2,7 +2,7 @@
 
 **The zero-dependency art director for coding agents — turns generic AI slop into editorial web UI, 16:9 pitch decks, and deterministic launch motion.**
 
-Most design skills either give agents vague vibes (*"be bold"*) with zero enforcement, or lock you into a heavy Rust/Puppeteer framework for websites alone. **Design 27 (`v3.0.0`)** pairs a **5.5 KB progressive-disclosure router** with a **zero-dependency Node ESM CLI suite** (`d27-cli`, `d27-check` with SARIF 2.1.0 + `--github` + `--doctor` + WCAG `suggestedColor` + `ebur128`/`ffprobe` + optional Playwright `--render`, `d27-deal`, `d27-captions` with `.ass` burn-in, `d27-frames`, and zero-network `d27-hook`), a **5-contract eval suite** (`evals/`), and a **live interactive DOM gallery** ([`docs/index.html`](docs/index.html)).
+Most design skills either give agents vague vibes (*"be bold"*) with zero enforcement, or lock you into a heavy Rust/Puppeteer framework for websites alone. **Design 27 (`v3.0.0`)** pairs a **5.6 KB progressive-disclosure router** with a **zero-dependency Node ESM CLI suite** (`d27-cli`, `d27-check` with SARIF 2.1.0 + `--github` + `--doctor` + WCAG `suggestedColor` + `ebur128`/`ffprobe` + optional Playwright `--render`, `d27-deal`, `d27-captions` with `.ass` burn-in, `d27-frames`, and zero-network `d27-hook`), a **5-contract eval suite** (`evals/`), and a **live interactive DOM gallery** ([`docs/index.html`](docs/index.html)).
 
 ## Before & After (Same Prompt, Stock Agent vs. Design 27)
 
@@ -86,10 +86,10 @@ Audited across four independent rubric chairs (**Compliance & Prompt Architectur
 
 ## Why Design 27?
 
-- **8 KB Core Router + Lazy Progressive Disclosure:** `SKILL.md` stays ultra-lean (Rule Precedence, 12 unwaivable Floor laws, 4 Surface Modes, Triage, and Router) and loads only the active medium module(s) plus `qa-and-critique.md`.
+- **5.6 KB Core Router + Lazy Progressive Disclosure:** `SKILL.md` stays ultra-lean (Rule Precedence, 6-point unwaivable Floor, 4 Surface Modes, Triage, Failure Recovery, and Router) and loads only the active medium module(s) plus `qa-and-critique.md`.
 - **4 Surface Modes + Loud/Quiet Scoping:** Calibrates ambition by *surface*, not product — **Operate / Read** enforce quiet-chrome restraint, while **Persuade / Experience** (plus posters, thumbnails, and motion) unlock bold `700–900` display scale and dramatic color blocking.
 - **8 Steerable Studio Verbs:** Target existing code surgically with `polish`, `bolder`, `quieter`, `distill`, `clarify`, `harden`, `redesign`, or `critique` — honoring existing `DESIGN.md` systems and preserving clean screens.
-- **3-Tier QA Gates + Cold Evidence:** Separates **Tier 1 Floor** (unwaivable, script-verified), **Tier 2 Reflex** (waivable on-record only), and **Tier 3 Finish** checks — plus a **5-Frame Contact-Sheet Protocol** for motion renders.
+- **3-Tier QA Gates + Anti-False-Pass Evidence:** Separates **Tier 1 Floor** (unwaivable, script-verified), **Tier 2 Reflex** (waivable on-record only), and **Tier 3 Finish** checks — plus `renderAudit` honesty envelopes and `d27-frames` beat-boundary QC for motion renders.
 
 ---
 
@@ -97,24 +97,43 @@ Audited across four independent rubric chairs (**Compliance & Prompt Architectur
 
 ```text
 design-27/
-├── README.md                              # Overview, 4-harness install & CLI usage
-├── SKILL.md                               # 8 KB core router (precedence, Tier 1 Floor, modes, triage)
+├── README.md                              # Overview, 4-harness install, CLI usage & benchmark audit
+├── SKILL.md                               # 5.6 KB core router (precedence, Tier 1 Floor, modes, triage, failure table)
 ├── LICENSE                                # MIT License
+├── assets/
+│   ├── before-after-web.svg               # Before/after web UI comparison plate
+│   ├── before-after-deck.svg              # Before/after 16:9 pitch slide comparison plate
+│   └── d27-cli-proof.svg                  # Deterministic CLI output proof plate
+├── docs/
+│   └── index.html                         # Live interactive DOM gallery (d27-check exit 0)
+├── evals/
+│   ├── README.md                          # 5 adversarial slop-trap prompts & pass criteria
+│   ├── run-eval.mjs                       # 5-test deterministic contract suite (Floor, SARIF, --doctor, Hook)
+│   └── fixtures/
+│       ├── slop-saas.html                 # Stock AI baseline fixture (expected exit 2)
+│       └── design27-saas.html             # Design 27 reference fixture (expected exit 0)
 ├── scripts/
-│   ├── d27-check.mjs                      # Zero-dep Floor & anti-slop static linter (JSON + Fix: lines, exit 2)
-│   └── d27-deal.mjs                       # Zero-dep anti-convergence direction & cliché dealer
+│   ├── d27-cli.mjs                        # Unified zero-dep CLI dispatcher (check|deal|captions|frames|hook|doctor|eval)
+│   ├── d27-check.mjs                      # Static/DOM/media linter: SARIF 2.1.0, --github, --doctor, WCAG suggestedColor, ebur128/ffprobe, --render
+│   ├── d27-deal.mjs                       # Deterministic brief-contract dealer (schemaVersion 3, bannedDefaults, assertions[])
+│   ├── d27-captions.mjs                   # Word-timestamp caption chunker (JSON/SRT/ASS burn-in + 17 CPS & hold validator)
+│   ├── d27-frames.mjs                     # Beat-boundary contact-sheet extractor & sweep_static / blank-frame auditor
+│   ├── d27-hook.mjs                       # Zero-network two-tier edit-time agent hook (PostToolUse + Stop)
+│   └── lib/
+│       ├── ignores.mjs                    # Scoped data-d27-allow / d27-ignore parser & unused-waiver detector
+│       └── reporters.mjs                  # SARIF 2.1.0 & GitHub Actions PR annotation formatters
 └── references/
-    ├── direction-matrix.md                # 3-Axis Calibration, 7-row Style Matrix, placement laws & red flags
+    ├── direction-matrix.md                # 3-Axis Calibration, 4 Legal Tension Archetypes, Single-Axis Lock & Mirror Test
     ├── verbs.md                           # 8 steerable studio playbooks (polish, bolder, quieter, distill...)
-    ├── websites.md                        # Fluid grids, dual-theme parity, CSS Floor, Visual Anchor Law & dashboards
+    ├── websites.md                        # Fluid grids, Light/Dark/Mid-Tone OKLCH+APCA math, CSS Floor & Asset Fallback Ladder
     ├── presentations.md                   # 16:9 slide systems, 7 archetypes, spotlight data & progressive builds
-    ├── motion-design.md                   # Easing/springs, LUFS/ducking, captions, 90%/80% safe boxes & 5 engines
+    ├── motion-design.md                   # Deterministic timelines, two-pass loudnorm, CFR/bt709, ASS burn-in & Anti-Slop Banlist
     ├── books-and-editorial.md             # Spreads, margins/gutters, chapter openers, folios & CSS @page / Typst
     ├── cheatsheets.md                     # 5–9 chunks, micro-tables & A4/Letter dual-safe bounds (188×257mm)
     ├── posters.md                         # 3-distance readability, 5:1–12:1 scale contrast, grid-breaking & bleed
     ├── thumbnails.md                      # 3-element ceiling, 160px squint test & YouTube dead-zone blueprint
     ├── mascot-and-illustration.md         # 64px silhouette gate, 5 material finish registers, SVG & prompt locks
-    └── qa-and-critique.md                 # 3-Tier QA audit, d27-check gate, 5-frame motion protocol & Sign-Off
+    └── qa-and-critique.md                 # 3-Tier QA audit, d27-check gate, beat-boundary motion QC & Sign-Off
 ```
 
 ---
