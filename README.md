@@ -2,7 +2,7 @@
 
 **The zero-dependency art director for coding agents — turns generic AI slop into editorial web UI, 16:9 pitch decks, and deterministic launch motion.**
 
-Most design skills either give agents vague vibes (*"be bold"*) with zero enforcement, or lock you into a heavy Rust/Puppeteer framework for websites alone. **Design 27 (`v2.1.0`)** pairs an **8 KB progressive-disclosure router** with **zero-dependency Node checkers** (`scripts/d27-check.mjs`, `scripts/d27-deal.mjs`) and a **reproducible eval suite** (`evals/`) so every build clears measurable spatial, typographic, contrast, and motion floors across Claude Code, Codex, Cursor, and OpenCode.
+Most design skills either give agents vague vibes (*"be bold"*) with zero enforcement, or lock you into a heavy Rust/Puppeteer framework for websites alone. **Design 27 (`v2.2.0`)** pairs a **4.8 KB progressive-disclosure router** with **zero-dependency Node checkers** (`scripts/d27-check.mjs`, `scripts/d27-deal.mjs`, `scripts/d27-captions.mjs`), a **reproducible eval suite** (`evals/`), and a **live interactive DOM gallery** ([`docs/index.html`](docs/index.html)) so every build clears measurable spatial, typographic, contrast, and motion floors across Claude Code, Codex, Cursor, and OpenCode.
 
 ## Before & After (Same Prompt, Stock Agent vs. Design 27)
 

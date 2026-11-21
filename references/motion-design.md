@@ -94,16 +94,23 @@ When rendering programmatic video frame-by-frame in headless browsers or render 
 
 ### Audio Mix, Captions & Camera Pacing Budgets
 - **Loudness & VO Ducking:** Master web/YouTube exports to **`-14 LUFS`** (`-16 LUFS` mobile/social) with **`-1 dBTP`** true-peak ceiling. Duck music beds **`-12` to `-18 dB`** underneath voiceover with `150–300ms` attack/release envelopes on dedicated audio tracks.
-- **Executable FFmpeg Mastering & Export Command (Web/Social-Safe H.264):**
+- **Executable Two-Pass Linear FFmpeg Mastering & Full Rec.709 Export (`1-1-1` Color Tags):**
   ```bash
-  # Duck music under VO (-14dB sidechain), normalize to -14 LUFS / -1 dBTP, encode Safari/iOS-safe yuv420p
+  # Pass 1: Duck music under VO (-14dB sidechain) & measure integrated loudness JSON (no pumping)
   ffmpeg -i render.mp4 -i vo.wav -i music.wav \
-    -filter_complex "[2:a][1:a]sidechaincompress=threshold=0.03:ratio=6:attack=180:release=280[bed];[1:a][bed]amix=inputs=2:normalize=0,loudnorm=I=-14:TP=-1:LRA=11[aout]" \
-    -map 0:v -map "[aout]" -c:v libx264 -pix_fmt yuv420p -colorspace bt709 -movflags +faststart -c:a aac -b:a 192k master.mp4
+    -filter_complex "[2:a][1:a]sidechaincompress=threshold=0.03:ratio=6:attack=180:release=280[bed];[1:a][bed]amix=inputs=2:normalize=0,loudnorm=I=-14:TP=-1:LRA=11:print_format=json" \
+    -f null -
+
+  # Pass 2: Apply measured linear gain + full 1-1-1 Rec.709 tags (zero Safari/QuickTime gamma shift) + CFR
+  ffmpeg -i render.mp4 -i vo.wav -i music.wav \
+    -filter_complex "[2:a][1:a]sidechaincompress=threshold=0.03:ratio=6:attack=180:release=280[bed];[1:a][bed]amix=inputs=2:normalize=0,loudnorm=I=-14:TP=-1:LRA=11:measured_I=<I>:measured_TP=<TP>:measured_LRA=<LRA>:measured_thresh=<TH>:linear=true[aout]" \
+    -map 0:v -map "[aout]" -vsync cfr -c:v libx264 -pix_fmt yuv420p \
+    -colorspace bt709 -color_primaries bt709 -color_trc bt709 -color_range tv -movflags +faststart \
+    -c:a aac -b:a 192k -shortest master.mp4
   ```
-- **Caption Timing & `9:16` Vertical Safe Zones:** Cap landscape captions at `<= 42` chars/line (max 2 lines) and `9:16` social captions at `2–4` words per rhythmic chunk (`~2.5–3 words/sec + 400ms` settle buffer). On `1080 × 1920` TikTok/Reels/Shorts, keep titles and captions out of the top `260px`, bottom `360px`, and right `140px` action-rail dead zones.
-- **Shot-Duration Pacing & Transition Overlap Math:** Land the visual hook inside **`0–2.0s`**, hold primary launch/social shots for **`1.5–4.0s`**, and stage **at most 1 primary focal motion per beat**. When using overlapping transitions (e.g., Remotion `TransitionSeries`), compensate total timeline length explicitly: **`totalFrames = sum(sceneFrames) - sum(overlapFrames)`** so crossfades never shorten the video and desync voiceover. Ensure every spring settles (`>= 24–36 frames`) before a hard cut.
-- **Multi-Aspect Reflow Contract (`16:9` ↔ `9:16` ↔ `1:1`):** Drive typography and inset math from `Math.min(width, height)` rather than fixed pixel offsets so a single composition reflows cleanly across landscape, vertical, and square without breaking safe boxes.
+- **Caption Timing, Chunker Script & `9:16` Vertical Safe Zones:** Run `node scripts/d27-captions.mjs words.json --fps 30 --aspect 9:16` (or `--srt`) to turn Whisper/ElevenLabs word-level JSON into exact frame-locked cues (`<= 42` chars landscape; `2–3` words per chunk on `9:16` vertical). Keep `1080 × 1920` captions clear of top `260px`, bottom `360px`, and right `140px` social action-rail dead zones.
+- **Shot-Duration Pacing, Overlap Math & FPS-Scaled Settle Budgets:** Land the visual hook inside **`0–2.0s`**, hold primary shots **`1.5–4.0s`**, and stage **at most 1 primary focal motion per beat**. Compensate overlapping transitions explicitly: **`totalFrames = sum(sceneFrames) - sum(overlapFrames)`**. Scale spring settle budgets by frame rate — **`>= 0.8–1.1s` (`Math.round(fps * 0.9)` frames)** before any hard cut so 24fps, 30fps, and 60fps never clip mid-overshoot.
+- **Multi-Aspect Reflow Topology (`16:9` ↔ `9:16` ↔ `1:1`):** Never just shrink a `16:9` split-screen with `Math.min(w, h)` — define explicit **topology swaps**: `16:9` horizontal asymmetric split reflows to a `9:16` vertical stack (visual anchored in upper 55%, headline + captions inside central safe zone clear of `260px` top / `360px` bottom / `140px` right social chrome) with focal-point `object-position` cropping.
 
 ### Modern Web Motion Primitives (CSS & React)
 - **CSS Scroll-Driven Reveals:** Gate native scroll progress with `@supports (animation-timeline: view())` and `@media (prefers-reduced-motion: no-preference)` so unsupported browsers render cleanly at full opacity.

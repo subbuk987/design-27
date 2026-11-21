@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Design 27 — Live Interactive Gallery</title>
+  <style>
+    :root {
+      --bg: #F4F1EA;
+      --surface: #FFFFFF;
+      --ink: #141210;
+      --ink-muted: #4A4640;
+      --hairline: rgba(20, 18, 16, 0.16);
+      --accent: #1746D1;
+      --accent-ink: #FFFFFF;
+      --pass: #065F46;
+      --fail: #991B1B;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      overflow-x: clip;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: clamp(1rem, 0.2vw + 0.95rem, 1.0625rem);
+      line-height: 1.55;
+    }
+    header, main { max-width: 80rem; margin-inline: auto; padding-inline: clamp(1.25rem, 4vw, 3rem); }
+    header {
+      padding-block: 2.5rem 1.75rem;
+      border-bottom: 1px solid var(--hairline);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 1.5rem;
+    }
+    .eyebrow {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      margin: 0 0 0.5rem;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 3.25rem);
+      line-height: 1.04;
+      letter-spacing: -0.025em;
+      text-wrap: balance;
+    }
+    .controls { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+    button {
+      font: 600 0.875rem/1 system-ui, sans-serif;
+      padding: 0.65rem 1rem;
+      border: 1px solid var(--hairline);
+      border-radius: 2px;
+      background: var(--surface);
+      color: var(--ink);
+      cursor: pointer;
+      transition: background-color 160ms, color 160ms, border-color 160ms;
+    }
+    button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+    button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .stage-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding-block: 1.25rem;
+      font-family: ui-monospace, monospace;
+      font-size: 0.8125rem;
+    }
+    .badge-pass { color: var(--pass); font-weight: 700; }
+    .badge-fail { color: var(--fail); font-weight: 700; }
+    .viewport-wrap {
+      background: #1B1C20;
+      padding: 1.5rem;
+      border-radius: 4px;
+      display: flex;
+      justify-content: center;
+      overflow-x: auto;
+    }
+    iframe {
+      width: 100%;
+      max-width: 1280px;
+      height: 560px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 2px;
+      background: #fff;
+      transition: max-width 220ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      button, iframe { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <p class="eyebrow">Design 27 v2.2.0 · Live DOM Inspection Gallery</p>
+      <h1>Inspect real output, not static promises.</h1>
+    </div>
+    <div class="controls" role="group" aria-label="Toggle fixture">
+      <button id="btn-d27" aria-pressed="true">Design 27 Output (Exit 0)</button>
+      <button id="btn-slop" aria-pressed="false">Stock AI Baseline (Exit 2)</button>
+    </div>
+  </header>
+  <main>
+    <div class="stage-bar">
+      <div id="status" class="badge-pass">d27-check.mjs: EXIT 0 · 0 FLOOR fails · 0 REFLEX warnings</div>
+      <div class="controls" role="group" aria-label="Viewport width">
+        <button data-width="1280px" aria-pressed="true">Desktop 1280px</button>
+        <button data-width="768px" aria-pressed="false">Tablet 768px</button>
+        <button data-width="390px" aria-pressed="false">Mobile 390px</button>
+      </div>
+    </div>
+    <div class="viewport-wrap">
+      <iframe id="preview" src="../evals/fixtures/design27-saas.html" title="Live rendered fixture"></iframe>
+    </div>
+  </main>
+  <script>
+    const iframe = document.getElementById("preview");
+    const status = document.getElementById("status");
+    const btnD27 = document.getElementById("btn-d27");
+    const btnSlop = document.getElementById("btn-slop");
+
+    btnD27.addEventListener("click", () => {
+      iframe.src = "../evals/fixtures/design27-saas.html";
+      btnD27.setAttribute("aria-pressed", "true");
+      btnSlop.setAttribute("aria-pressed", "false");
+      status.className = "badge-pass";
+      status.textContent = "d27-check.mjs: EXIT 0 · 0 FLOOR fails · 0 REFLEX warnings";
+    });
+    btnSlop.addEventListener("click", () => {
+      iframe.src = "../evals/fixtures/slop-saas.html";
+      btnD27.setAttribute("aria-pressed", "false");
+      btnSlop.setAttribute("aria-pressed", "true");
+      status.className = "badge-fail";
+      status.textContent = "d27-check.mjs: EXIT 2 · 6 FLOOR fails · 5 REFLEX warnings";
+    });
+    document.querySelectorAll("[data-width]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        iframe.style.maxWidth = btn.dataset.width;
+        document.querySelectorAll("[data-width]").forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
+      });
+    });
+  </script>
+</body>
+</html>

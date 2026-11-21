@@ -52,17 +52,17 @@ For editorial pages and narrative marketing sites, define three nested widths in
 
 **Typography scaling law:** Never allow body copy below `16px` (`1rem`) on desktop or mobile reading views, and never drop utility labels/captions below `12px`. Apply `text-wrap: balance` to all headings (`h1–h3`) and `text-wrap: pretty` to body paragraphs.
 
-### Dual-Theme Relational Luminance Contract (Light / Dark Parity)
-Never copy a fixed sample palette across projects, and never blindly invert light hexes into dark mode. Derive both modes from Stage 1's **Surface World** using these relational luminance & contrast bands:
+### Relational Luminance & Surface Polarity Contract (Light / Dark / Mid-Tone)
+Never copy a fixed sample palette across projects, and never blindly invert light hexes into dark mode. Derive tokens from Stage 1's **Surface World** — supporting light UI, dark UI, AND mid-tone/saturated editorial or poster grounds:
 
-| Token Role | Light Mode Contract | Dark Mode Contract | Contrast Requirement |
-| :--- | :--- | :--- | :--- |
-| `--surface-canvas` | Lightness `94–99%` tinted subtly toward Surface World | Lightness `4–8%` calibrated dark ground (never pure `#000000` for reading) | 60% ground dominance |
-| `--surface-elevated` | `+2–4%` luminance lift over canvas (or subtle tonal step) | `+4–6%` luminance lift over canvas (depth via surface step, not glow) | Crisp visual separation |
-| `--ink-primary` | Lightness `6–12%` matched to canvas temperature | Lightness `90–95%` off-white (prevents `#FFF` halation) | **`>= 12:1`** target (`>= 7:1` AAA) |
-| `--ink-secondary` | Lightness `28–36%` | Lightness `66–74%` | **`>= 4.5:1`** hard floor |
-| `--hairline` | Primary ink at `10–16%` opacity | Primary ink at `10–14%` opacity | Quiet structural rule |
-| `--accent-focal` & `--accent-ink` | Deeper chroma shade (`L 34–46%`) paired with light `--accent-ink` | Lifted luminous shade (`L 62–76%`) paired with dark `--accent-ink` | **`>= 4.5:1`** against BOTH canvas and `--accent-ink` |
+| Token Role | Light UI (`Operate / Read`) | Dark UI (`Operate / Atmospheric`) | Mid-Tone / Saturated Ground (`Persuade / Experience / Posters`) | Contrast Floor |
+| :--- | :--- | :--- | :--- | :--- |
+| `--surface-canvas` | Lightness `94–99%` | Lightness `4–8%` (no `#000` reading) | Uncoated newsprint, `18%` charcoal, deep cobalt, terracotta, or forest ground | 60% dominance |
+| `--surface-elevated` | `+2–4%` lift | `+4–6%` lift (surface step, no glow) | Clean ink or paper plate (`>= 10%` tonal separation) | Crisp figure–ground |
+| `--ink-primary` | Lightness `6–12%` | Lightness `90–95%` off-white | Pure paper white or deep carbon chosen strictly for contrast polarity | **`>= 7:1`** reading (`>= 4.5:1` AA) |
+| `--ink-secondary` | Lightness `28–36%` | Lightness `66–74%` | Tinted primary ink maintaining full AA legibility | **`>= 4.5:1`** hard floor |
+| `--hairline` | Primary ink `10–16%` | Primary ink `10–14%` | Solid `1–2px` ink rule (`20–40%` opacity or `100%` Brutalist) | Quiet structural rule |
+| `--accent-focal` | Deeper shade (`L 34–46%`) | Lifted shade (`L 62–76%`) | High-contrast complementary spot ink (acid chartreuse, bone, or signal ink) | **`>= 4.5:1`** vs canvas & `--accent-ink` |
 
 ---
 
@@ -78,7 +78,7 @@ Choose ONE hero archetype matching the Creative Brief. Ensure the primary messag
 | **4. Utilitarian Product-First** | Compact top band (`25%` height): crisp 1-line title + 1-line value prop + primary CTA left-aligned. Bottom `65%+` height: live interactive app/canvas/code artifact at real fidelity. | Devtools, SaaS apps, design tools, calculators | Don't hide the actual product beneath three paragraphs of marketing fluff. |
 | **5. Swiss Masthead & Index** | Top publication masthead + date/issue rule; `8-col` lead feature with hero image + `4-col` hairline-ruled index column of latest entries/chapters. | Magazines, research hubs, documentation portals, journals | Keep the right rail scannable (titles + timestamps only, zero mini-card borders). |
 
-**Hero restraint rule:** Maximum **1 primary CTA + 1 quiet secondary action** (text link or hairline button). Zero trust-logo carousels or 4-stat boxes jammed inside the hero unless the brief explicitly mandates above-the-fold proof. **Fold floor:** The hero's headline, one-sentence deck, and primary action must all be visible without scrolling at **`1280 × 800`** (as well as `1440 × 900` and `390 × 844`). **Visual Anchor Law & Asset-Reality Fallback Ladder:** On *Persuade* and *Experience* surfaces, never hide behind "empty hairline-strip minimalism" as a hero crutch — commit to one unmistakable centerpiece in strict fallback order: **(1)** real user photography or a live interactive slice of the actual product/data, **(2)** bespoke typographic architecture or a sharp generative SVG/editorial diagram, or **(3)** an explicit art-directed asset slot ready for the user's media. **Outright banned:** fake lorem-ipsum dashboard mockups and generic CSS gradient blobs.
+**Hero restraint rule:** Maximum **1 primary CTA + 1 quiet secondary action** (text link or hairline button). Zero trust-logo carousels or 4-stat boxes jammed inside the hero unless the brief explicitly mandates above-the-fold proof. **Fold floor:** The hero's headline, one-sentence deck, and primary action must all be visible without scrolling at **`1280 × 800`** (as well as `1440 × 900` and `390 × 844`). **Visual Anchor Law & Asset-Reality Fallback Ladder:** On *Persuade* and *Experience* surfaces, never hide behind "empty hairline-strip minimalism" as a hero crutch — commit to one unmistakable centerpiece in strict fallback order: **(1)** real user photography or a live interactive slice of the actual product/data, **(2)** monumental typographic architecture, a real data visualization, or strict grid/schematic SVG primitives (never freehand LLM clip-art), or **(3)** an explicit art-directed asset slot ready for the user's media. **Outright banned:** fake lorem-ipsum dashboard mockups, generic CSS gradient blobs, and crooked freehand SVG clip-art.
 
 ### Non-Negotiable Web CSS Floor & Nested Radius Law
 Enforce these mechanical invariants on every web build:
