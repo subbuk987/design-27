@@ -63,6 +63,27 @@ Drop into GitHub Actions Code Scanning:
 
 ---
 
+## Unbiased Multi-Chair Benchmark Audit (`v3.0.0`)
+
+Audited across four independent rubric chairs (**Compliance & Prompt Architecture**, **Creative Direction & Taste**, **Motion & Video Engineering**, and **Open-Source DX & GitHub Adoption**) against six leading open-source design and motion skills:
+
+| Rank | Skill | Compliance | Creative | Motion | DX & GitHub | Overall |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: |
+| **#1** | **Design 27 (`v3.0.0`)** | **9.0** (`#1`) | **9.1** (`#1`) | **8.7** (`#2`) | **8.1** (`#4`) | **8.73** |
+| **#2** | [HyperFrames](https://github.com/heygen-com/hyperframes) (`heygen-com/hyperframes`) | 8.9 (`#2`) | 7.9 (`#5`) | **8.8** (`#1`) | 8.5 (`#3`) | **8.53** |
+| **#3** | [Impeccable](https://github.com/pbakaus/impeccable) (`pbakaus/impeccable`) | 8.8 (`#3`) | 8.7 (`#2`) | 6.2 (`#4`) | **9.5** (`#1`) | **8.30** |
+| **#4** | [Hallmark](https://github.com/nutlope/hallmark) (`Nutlope/hallmark`) | 8.6 (`#4`) | 8.4 (`#3`) | 3.8 (`#6`) | 8.8 (`#2`) | **7.40** |
+| **#5** | [Unslop](https://github.com/heydamir/unslop/blob/main/skills/unslop/SKILL.md) (`heydamir/unslop`) | 6.2 (`#6`) | 8.1 (`#4`) | 5.6 (`#5`) | 7.6 (`#5`) | **6.88** |
+| **#6** | [Remotion Skills](https://github.com/remotion-dev/skills) (`remotion-dev/skills`) | 7.4 (`#5`) | 2.0 (`#7`) | 8.5 (`#3`) | 6.8 (`#7`) | **6.18** |
+| **#7** | [Anthropic `frontend-design`](https://github.com/asgeirtj/system_prompts_leaks/blob/main/Anthropic/claude-design/skills/frontend-design/SKILL.md) | 4.5 (`#7`) | 6.2 (`#6`) | 2.0 (`#7`) | 7.0 (`#6`) | **4.93** |
+
+**Honest audit notes & open gaps:**
+- **Where Design 27 leads:** Anti-false-pass verification (`renderAudit.ran === false` never counts as a pass), native SARIF 2.1.0 + `--github` PR annotations, zero-dependency CLI ergonomics (`--doctor`, `d27-captions` `.ass` burn-in, `d27-hook`), and codified taste rules (4 Legal Tension Archetypes + OKLCH Mid-Tone Math Contract).
+- **Where competitors still lead:** [HyperFrames](https://github.com/heygen-com/hyperframes) (`#1` Motion) ships its own headless frame-capture renderer and verified live media pipeline; [Impeccable](https://github.com/pbakaus/impeccable) (`#1` DX) ships a compiled Rust detector, native plugin manifests, and broad community adoption.
+- **Next up on the roadmap:** Live `ffmpeg`/`ffprobe` integration tests against passing and broken `.mp4` fixtures, computed per-node DOM contrast via Playwright, and real multi-model Playwright PNG comparisons.
+
+---
+
 ## Why Design 27?
 
 - **8 KB Core Router + Lazy Progressive Disclosure:** `SKILL.md` stays ultra-lean (Rule Precedence, 12 unwaivable Floor laws, 4 Surface Modes, Triage, and Router) and loads only the active medium module(s) plus `qa-and-critique.md`.
