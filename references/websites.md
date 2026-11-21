@@ -64,6 +64,13 @@ Never copy a fixed sample palette across projects, and never blindly invert ligh
 | `--hairline` | Primary ink `10–16%` | Primary ink `10–14%` | Solid `1–2px` ink rule (`20–40%` opacity or `100%` Brutalist) | Quiet structural rule |
 | `--accent-focal` | Deeper shade (`L 34–46%`) | Lifted shade (`L 62–76%`) | High-contrast complementary spot ink (acid chartreuse, bone, or signal ink) | **`>= 4.5:1`** vs canvas & `--accent-ink` |
 
+### Mid-Tone Contrast Math Contract (Hard Floor)
+Whenever a surface enters the **Mid-Tone Danger Band (`OKLCH L ∈ [0.48, 0.74]` / sRGB `Y ∈ [0.14, 0.45]`)**:
+1. **Dual-Metric Gate:** Body/UI copy (`< 18px`) requires **`APCA |Lc| >= 75` AND `WCAG 2.1 >= 4.5:1`**; large display (`>= 32px, >= 600`) requires **`APCA |Lc| >= 60` AND `WCAG >= 3.0:1`**; borders/focus rings require `WCAG >= 3.0:1` AND `|ΔOKLCH_L| >= 0.20`.
+2. **Achromatic Ink Lock:** Lock foreground text on Danger-Band grounds to near-achromatic extremes — either **Deep Ink (`L <= 0.16, C <= 0.02`)** or **Pure Paper (`L >= 0.96, C <= 0.015`)**. Tinted mid-dark inks on mid-tones are banned.
+3. **Zero Alpha-Opacity Text on Mid-Tones:** Never use `opacity < 1` or translucent `rgba()` for secondary text on mid-tone surfaces (collapses contrast to `2:1`). Keep `100%` opacity with `|ΔL| >= 0.48`, or place metadata inside a stepped ink-safe plate (`|ΔL| >= 0.24`).
+4. **Chroma-Vibration Clamp:** If `surface C >= 0.05` inside the Danger Band, clamp text chroma to `C <= 0.025` — never put saturated accent text directly over a saturated mid-tone ground.
+
 ---
 
 ## 2. Hero Composition Archetypes

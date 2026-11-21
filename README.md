@@ -2,7 +2,7 @@
 
 **The zero-dependency art director for coding agents — turns generic AI slop into editorial web UI, 16:9 pitch decks, and deterministic launch motion.**
 
-Most design skills either give agents vague vibes (*"be bold"*) with zero enforcement, or lock you into a heavy Rust/Puppeteer framework for websites alone. **Design 27 (`v2.2.0`)** pairs a **4.8 KB progressive-disclosure router** with **zero-dependency Node checkers** (`scripts/d27-check.mjs`, `scripts/d27-deal.mjs`, `scripts/d27-captions.mjs`), a **reproducible eval suite** (`evals/`), and a **live interactive DOM gallery** ([`docs/index.html`](docs/index.html)) so every build clears measurable spatial, typographic, contrast, and motion floors across Claude Code, Codex, Cursor, and OpenCode.
+Most design skills either give agents vague vibes (*"be bold"*) with zero enforcement, or lock you into a heavy Rust/Puppeteer framework for websites alone. **Design 27 (`v3.0.0`)** pairs a **5.5 KB progressive-disclosure router** with a **zero-dependency Node ESM CLI suite** (`d27-cli`, `d27-check` with SARIF 2.1.0 + `--github` + `--doctor` + WCAG `suggestedColor` + `ebur128`/`ffprobe` + optional Playwright `--render`, `d27-deal`, `d27-captions` with `.ass` burn-in, `d27-frames`, and zero-network `d27-hook`), a **5-contract eval suite** (`evals/`), and a **live interactive DOM gallery** ([`docs/index.html`](docs/index.html)).
 
 ## Before & After (Same Prompt, Stock Agent vs. Design 27)
 
@@ -12,6 +12,7 @@ Most design skills either give agents vague vibes (*"be bold"*) with zero enforc
 
 ![Design 27 Deterministic CLI Checker Output](assets/d27-cli-proof.svg)
 
+- **Zero-Dependency Security & Speed:** `0` runtime npm deps · `0` binary downloads · `0` network calls in edit-time hooks · SARIF 2.1.0 native for GitHub Code Scanning.
 - **Built for what developers ship weekly:** Responsive web UI & dashboards, `16:9` pitch/keynote decks, and deterministic launch motion (CSS, GSAP, Remotion, HyperFrames, Manim).
 - **Also covers:** Print/screen books & reports, A4/US Letter dual-safe cheatsheets, print posters, YouTube/social thumbnails, and animation-ready SVG/AI mascots.
 - **Reproducible Proof:** Run `node evals/run-eval.mjs` or inspect the [5-prompt adversarial eval suite](evals/README.md).
@@ -39,28 +40,25 @@ npx skills add Subbuk987/design-27 -g
 
 ## Deterministic Tooling (Zero Dependencies)
 
-Design 27 refuses pure-Markdown "sign-off theater." Two lightweight, zero-dependency Node ESM scripts enforce the floor mechanically:
-
-### 1. Static Floor & Anti-Slop Checker (`scripts/d27-check.mjs`)
-Catches `transition: all`, `overflow-x: hidden`, `100vw` overflow, missing `prefers-reduced-motion` / `:focus-visible`, `<16px` body copy, default purple-pink slop gradients, emoji UI icons, hype copy, and non-deterministic video calls (`Date.now()`, unseeded `Math.random()`, `repeat: -1`) with actionable `Fix:` lines and CI exit code `2`:
+Design 27 refuses pure-Markdown "sign-off theater." Run any tool through the unified CLI (`node scripts/d27-cli.mjs <command>`):
 
 ```bash
-node scripts/d27-check.mjs ./src
-node scripts/d27-check.mjs ./src --json
+node scripts/d27-cli.mjs doctor                                       # Verify Node, ffprobe, ffmpeg, Playwright
+node scripts/d27-cli.mjs deal --prompt "Audio recorder" --out brief.json
+node scripts/d27-cli.mjs check ./src --brief brief.json --sarif       # SARIF 2.1.0 for GitHub Code Scanning
+node scripts/d27-cli.mjs check ./src --github --report-unused-ignores # PR annotations + stale waiver check
+node scripts/d27-cli.mjs captions words.json --aspect 9:16 --format ass --validate
+node scripts/d27-cli.mjs frames audit master.mp4 --max-static 3.0     # Beat-boundary QC & sweep_static gate
 ```
 
-Drop into GitHub Actions in 3 lines:
+Drop into GitHub Actions Code Scanning:
 
 ```yaml
-- name: Design 27 Floor Check
-  run: node scripts/d27-check.mjs ./src
-```
-
-### 2. Anti-Convergence Direction Dealer (`scripts/d27-deal.mjs`)
-Prevents consecutive builds from collapsing into the same palette or Swiss-beige house style by tracking recent runs in `.design27/history.json` and dealing two non-repeating directions plus a banned category cliché:
-
-```bash
-node scripts/d27-deal.mjs --prompt "Offline-first audio recorder launch page"
+- name: Design 27 SARIF Audit
+  run: node scripts/d27-check.mjs --sarif --report-unused-ignores src/ > design27.sarif || test $? -eq 2
+- uses: github/codeql-action/upload-sarif@v3
+  if: always()
+  with: { sarif_file: design27.sarif, category: design27 }
 ```
 
 ---

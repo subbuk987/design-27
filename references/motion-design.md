@@ -101,14 +101,20 @@ When rendering programmatic video frame-by-frame in headless browsers or render 
     -filter_complex "[2:a][1:a]sidechaincompress=threshold=0.03:ratio=6:attack=180:release=280[bed];[1:a][bed]amix=inputs=2:normalize=0,loudnorm=I=-14:TP=-1:LRA=11:print_format=json" \
     -f null -
 
-  # Pass 2: Apply measured linear gain + full 1-1-1 Rec.709 tags (zero Safari/QuickTime gamma shift) + CFR
-  ffmpeg -i render.mp4 -i vo.wav -i music.wav \
-    -filter_complex "[2:a][1:a]sidechaincompress=threshold=0.03:ratio=6:attack=180:release=280[bed];[1:a][bed]amix=inputs=2:normalize=0,loudnorm=I=-14:TP=-1:LRA=11:measured_I=<I>:measured_TP=<TP>:measured_LRA=<LRA>:measured_thresh=<TH>:linear=true[aout]" \
-    -map 0:v -map "[aout]" -vsync cfr -c:v libx264 -pix_fmt yuv420p \
+  # Pass 2: Apply measured linear gain + full 1-1-1 Rec.709 tags + GOP/VBV + CFR (-fps_mode cfr)
+  ffmpeg -y -i render.mp4 -i vo.wav -i music.wav \
+    -filter_complex "[2:a][1:a]sidechaincompress=threshold=0.03:ratio=6:attack=40:release=350[bed];[1:a][bed]amix=inputs=2:normalize=0,loudnorm=I=-14:TP=-1:LRA=9:measured_I=<I>:measured_TP=<TP>:measured_LRA=<LRA>:measured_thresh=<TH>:linear=true[aout]" \
+    -map 0:v -map "[aout]" -fps_mode cfr -r 30 -c:v libx264 -profile:v high -level 4.1 -crf 16 \
+    -g 60 -keyint_min 60 -sc_threshold 0 -maxrate 10M -bufsize 20M -pix_fmt yuv420p \
     -colorspace bt709 -color_primaries bt709 -color_trc bt709 -color_range tv -movflags +faststart \
-    -c:a aac -b:a 192k -shortest master.mp4
+    -c:a aac -b:a 192k -ar 48000 -shortest master.mp4
+
+  # Transparent editing intermediate (ProRes 4444 alpha)
+  ffmpeg -y -framerate 30 -i frames/%05d.png -c:v prores_ks -profile:v 4444 -pix_fmt yuva444p10le -vendor apl0 overlay.mov
   ```
-- **Caption Timing, Chunker Script & `9:16` Vertical Safe Zones:** Run `node scripts/d27-captions.mjs words.json --fps 30 --aspect 9:16` (or `--srt`) to turn Whisper/ElevenLabs word-level JSON into exact frame-locked cues (`<= 42` chars landscape; `2–3` words per chunk on `9:16` vertical). Keep `1080 × 1920` captions clear of top `260px`, bottom `360px`, and right `140px` social action-rail dead zones.
+- **Caption Timing, Styled ASS Burn-In & `9:16` Vertical Safe Zones:** Run `node scripts/d27-captions.mjs words.json --fps 30 --aspect 9:16 --format ass --validate` (or `--format srt` / `json`) to turn Whisper/ElevenLabs word-level JSON into frame-locked cues with active-word accent highlights, CPS (`<= 17`) & reading-hold (`0.5s + 0.3s * words`, final line `>= 2.0s`) validation, and burn in via `ffmpeg -i in.mp4 -vf "ass=captions.ass" -c:v libx264 -crf 16 -pix_fmt yuv420p -c:a copy out.mp4`.
+- **Beat-Boundary Contact Sheets & `sweep_static` QC:** Run `node scripts/d27-frames.mjs sheet master.mp4 --beats 0,1.5,3.0 --out sheet.png` and `node scripts/d27-frames.mjs audit master.mp4 --max-static 3.0` to mechanically fail frozen 3s+ holds and blank frames.
+- **Anti-Slop Motion Banlist & Seam-Ease Contract:** Ban idle breathing/floating/pulsing loops on titles/UI, post-land title creep, elastic bounce on UI cards, synthetic click rings, and uniform fade-up-on-every-scene. Mirror eases across matched cuts (`power3.in` exit → `power3.out` entry) and always use `gsap.fromTo()` inside seekable scenes so backward scrubbing never drifts.
 - **Shot-Duration Pacing, Overlap Math & FPS-Scaled Settle Budgets:** Land the visual hook inside **`0–2.0s`**, hold primary shots **`1.5–4.0s`**, and stage **at most 1 primary focal motion per beat**. Compensate overlapping transitions explicitly: **`totalFrames = sum(sceneFrames) - sum(overlapFrames)`**. Scale spring settle budgets by frame rate — **`>= 0.8–1.1s` (`Math.round(fps * 0.9)` frames)** before any hard cut so 24fps, 30fps, and 60fps never clip mid-overshoot.
 - **Multi-Aspect Reflow Topology (`16:9` ↔ `9:16` ↔ `1:1`):** Never just shrink a `16:9` split-screen with `Math.min(w, h)` — define explicit **topology swaps**: `16:9` horizontal asymmetric split reflows to a `9:16` vertical stack (visual anchored in upper 55%, headline + captions inside central safe zone clear of `260px` top / `360px` bottom / `140px` right social chrome) with focal-point `object-position` cropping.
 
