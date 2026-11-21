@@ -78,6 +78,7 @@ Slides are where cluttered charts kill credibility fastest:
 - **Mandatory Suppression:** Suppress the footer rail and slide number on **Cover**, **Thesis Pause / Section Dividers**, and **full-bleed visual plates**.
 - **Clickable Citations:** In Google Slides, Keynote, PowerPoint (`python-pptx`), and HTML decks, attach **native clickable hyperlinks** to source labels or entity names rather than dumping raw unclickable `https://...` URL strings across the slide.
 - **Transition Discipline:** Use **hard cuts** for 80%+ of slide advances. Where continuity helps (e.g., expanding a chart or shifting a diagram state), use a restrained `240–320 ms` `--ease-out-expo` morph or subtle opacity crossfade. **Banned:** 3D cube spins, blinds, swoosh flying bullets, and click-by-click bullet reveals that drag pacing.
+- **Progressive Slide-Build Choreography:** For complex data slides or architecture diagrams, reveal *meaning* progressively rather than dumping all layers at once — spotlight one chart series or diagram node per click (`<= 250ms` ease-out opacity/clip reveal), use Slidev `v-click` or CSS View Transitions (`view-transition-name`) to morph a focal anchor across consecutive slides, and load `references/motion-design.md` whenever a deck includes kinetic title sequences, animated charts, or embedded video.
 
 ---
 

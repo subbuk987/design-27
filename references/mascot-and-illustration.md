@@ -70,14 +70,15 @@ Never invent character proportions fresh on every screen. Lock a compact **Model
 
 ## 5. Consistent Rendering, Stroke & Lighting Grammar
 
-Select **ONE visual rendering grammar** matching Stage 1's Aesthetic Direction and hold it ruthlessly across all mascots, spot illustrations, and custom icons. Never mix flat vector icons, glossy 3D renders, and hand-drawn sketches on one surface.
+Select **ONE visual rendering grammar** matching Stage 1's Aesthetic Direction and hold it ruthlessly across all mascots, spot illustrations, and custom icons. Never default to polite flat-SVG "Corporate Memphis" startup mascots when the brand's Surface World calls for richer materiality, and never mix conflicting grammars on one surface.
 
-| Rendering System | Line & Fill Specification | Lighting & Depth | Best Style Matrix Fit |
+| Material Finish Register | Line & Fill Specification | Texture, Lighting & Depth | Best Style Matrix Fit |
 | :--- | :--- | :--- | :--- |
-| **Flat Geometric Vector** | Clean filled shapes (`0px` stroke) OR uniform monoline stroke (`2.5px–3.5px` on `240px` viewBox, `stroke-linecap: round; stroke-linejoin: round`) | Zero gradients; depth via overlapping flat tonal planes (1 subtle shadow tint max) | Swiss Editorial, Utilitarian Technical, Tactile Playful |
-| **Editorial Ink & Grain** | Expressive tapered ink outline (`1.5–4px`), 2–3 flat spot fills slightly offset inside linework | Subtle risograph/paper grain overlay (`5–8%` opacity); zero smooth airbrush | Retro / Zine, Editorial Publications |
-| **Matte Tactile 3D / Clay** | Soft beveled geometry, high roughness (`0.75–0.88` matte ceramic/felt/clay), zero mirror plastic | Single soft key light top-left (`45°`), warm fill, crisp subtle contact ambient occlusion | Tactile Playful, Product Launch Videos |
-| **Technical Axonometric** | Strict `30°` isometric projection, uniform `1.5px` structural strokes, crisp geometric primitives | Flat directional top/left/right 3-step value shading (`100% / 88% / 74%`) | Utilitarian Technical, Atmospheric Dark |
+| **1. Crisp Geometric Vector** | Clean filled shapes (`0px` stroke) OR uniform monoline stroke (`2.5–3.5px` on `240px` viewBox, `round` caps/joins) | Zero gradients; depth via 1–2 overlapping flat tonal planes | Swiss Editorial, Utilitarian Technical |
+| **2. Risograph / Halftone Print** | Bold offset ink silhouettes (`1–2px` misregistration), 2–3 spot inks with `multiply` overprint | Fine paper grain (`5–8%`) and directional halftone dot shading | Retro / Zine, Posters, Indie Brands |
+| **3. Tactile 3D Clay / Vinyl** | Soft beveled geometry, high roughness (`0.75–0.88` matte ceramic/felt/vinyl), zero mirror plastic | Single soft key light top-left (`45°`), warm bounce fill, crisp contact AO | Tactile Playful, Product Launch Videos |
+| **4. Editorial Ink / Woodcut** | Expressive tapered ink linework (`1.5–4.5px` weight variance), bold hatched shadows | High-contrast monochrome or 1 spot ink wash; zero airbrush | Books, Editorial, Luxury / Cultural |
+| **5. Technical Axonometric** | Strict `30°` isometric projection, uniform `1.5px` structural strokes, crisp geometric primitives | Flat directional top/left/right 3-step value shading (`100% / 88% / 74%`) | Utilitarian Technical, Atmospheric Dark |
 
 ### Custom Iconography Alignment
 When authoring companion UI icons alongside a mascot/illustration system:

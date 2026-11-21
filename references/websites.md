@@ -53,27 +53,27 @@ For editorial pages and narrative marketing sites, define three nested widths in
 **Typography scaling law:** Never allow body copy below `16px` (`1rem`) on desktop or mobile reading views, and never drop utility labels/captions below `12px`. Apply `text-wrap: balance` to all headings (`h1–h3`) and `text-wrap: pretty` to body paragraphs.
 
 ### Dual-Theme Token Pairing (Light / Dark Parity)
-When supporting both light and dark modes, never blindly invert colors — recalibrate `--accent-focal`, surface elevation steps, and hairline opacity so both themes independently clear `>= 7:1` primary ink, `>= 4.5:1` secondary ink, and zero pure-white-on-pure-black halation:
+When supporting both light and dark modes, never blindly invert colors — recalibrate `--accent-focal`, surface elevation steps, and hairline opacity so both themes independently clear `>= 7:1` primary ink, `>= 4.5:1` secondary ink, and zero pure-white-on-pure-black halation. *(Non-default example — always swap hues to match Stage 1's Surface World.)*
 
 ```css
 :root {
-  --surface-canvas:   #F7F6F2; /* Warm paper ground */
-  --surface-elevated: #FFFFFF; /* +3–4% luminance lift */
-  --ink-primary:      #111214; /* 17.5:1 on canvas */
-  --ink-secondary:    #4A4D55; /* 7.7:1 on canvas */
-  --hairline:         rgba(17, 18, 20, 0.14);
-  --accent-focal:     #C9350D; /* 5.1:1 on paper & with white --accent-ink */
+  --surface-canvas:   #F8F9FA; /* Neutral alabaster example */
+  --surface-elevated: #FFFFFF; /* +2–4% luminance lift */
+  --ink-primary:      #101214; /* 18.6:1 on alabaster */
+  --ink-secondary:    #444A54; /* 8.4:1 on alabaster */
+  --hairline:         rgba(16, 18, 20, 0.14);
+  --accent-focal:     #0F766E; /* Deep teal: 5.3:1 on alabaster & with white --accent-ink */
   --accent-ink:       #FFFFFF;
 }
 
 [data-theme="dark"] {
-  --surface-canvas:   #0B0C10; /* Deep obsidian (avoids #000 halation) */
-  --surface-elevated: #14161D; /* +4% tonal step */
-  --ink-primary:      #ECEEF2; /* 16.9:1 on obsidian */
-  --ink-secondary:    #A6ACB8; /* 8.2:1 on obsidian */
+  --surface-canvas:   #090B10; /* Deep obsidian (avoids #000 halation) */
+  --surface-elevated: #131722; /* +4% tonal step */
+  --ink-primary:      #ECEEF2; /* 17.2:1 on obsidian */
+  --ink-secondary:    #A6ACB8; /* 8.4:1 on obsidian */
   --hairline:         rgba(236, 238, 242, 0.12);
-  --accent-focal:     #FF7A45; /* Lifted luminance: 7.4:1 on obsidian */
-  --accent-ink:       #0B0C10; /* Dark ink on bright accent: 7.4:1 */
+  --accent-focal:     #2DD4BF; /* Lifted teal: 10.6:1 on obsidian */
+  --accent-ink:       #090B10; /* Dark ink on bright accent: 10.6:1 */
 }
 ```
 
@@ -91,7 +91,7 @@ Choose ONE hero archetype matching the Creative Brief. Ensure the primary messag
 | **4. Utilitarian Product-First** | Compact top band (`25%` height): crisp 1-line title + 1-line value prop + primary CTA left-aligned. Bottom `65%+` height: live interactive app/canvas/code artifact at real fidelity. | Devtools, SaaS apps, design tools, calculators | Don't hide the actual product beneath three paragraphs of marketing fluff. |
 | **5. Swiss Masthead & Index** | Top publication masthead + date/issue rule; `8-col` lead feature with hero image + `4-col` hairline-ruled index column of latest entries/chapters. | Magazines, research hubs, documentation portals, journals | Keep the right rail scannable (titles + timestamps only, zero mini-card borders). |
 
-**Hero restraint rule:** Maximum **1 primary CTA + 1 quiet secondary action** (text link or hairline button). Zero trust-logo carousels or 4-stat boxes jammed inside the hero unless the brief explicitly mandates above-the-fold proof. **Fold floor:** The hero's headline, one-sentence deck, and primary action must all be visible without scrolling at **`1280 × 800`** (as well as `1440 × 900` and `390 × 844`).
+**Hero restraint rule:** Maximum **1 primary CTA + 1 quiet secondary action** (text link or hairline button). Zero trust-logo carousels or 4-stat boxes jammed inside the hero unless the brief explicitly mandates above-the-fold proof. **Fold floor:** The hero's headline, one-sentence deck, and primary action must all be visible without scrolling at **`1280 × 800`** (as well as `1440 × 900` and `390 × 844`). **Visual Anchor Law:** On *Persuade* and *Experience* surfaces, never hide behind "empty hairline-strip minimalism" as a hero crutch — commit to one unmistakable centerpiece (real product UI, genuine photography, a bespoke diagram/mascot, or monumental display typography-as-image).
 
 ### Non-Negotiable Web CSS Floor & Nested Radius Law
 Enforce these mechanical invariants on every web build:

@@ -5,11 +5,15 @@ Load and run this module at **Stage 4** of every Design 27 task before declaring
 - **Tier 2 — Reflex Gates (Waivable On-Record Only):** Default AI habits (card soup, purple-slate gradients, badge clutter, emoji icons, hype copy, linear motion). Fix by default — or log an explicit brief-driven waiver in the Sign-Off block.
 - **Tier 3 — Finish Checks (Craft Polish):** Optical alignment, nested radius harmony, micro-typography, and pacing cadence. Answer honestly; fix every quick win before delivery.
 
+### Deterministic Verification & Cold-Review Protocol (Zero Sign-Off Theater)
+1. **Run the Static Checker First:** Whenever Node is available on HTML/CSS/SVG/JS/TS outputs, run `node scripts/d27-check.mjs <target>` and fix every `[FLOOR]` failure until exit code `0`. If no runtime is available, log `UNVERIFIED: no runtime` in the Sign-Off — never fabricate a pass.
+2. **Visual & Cold Evidence:** Never claim a "3-second squint test" passed purely in your head. Inspect a real rendered screenshot (Playwright/browser/PDF render) or, in code-only environments, cite exact `file:line` tokens and computed dimensions. For high-stakes heroes or launches, run Passes 1–7 in a fresh critic pass without self-justifying prose.
+
 ---
 
-## Pass 1 — The 3-Second Squint Test (Hierarchy & Focal Point)
+## Pass 1 — Visual Hierarchy & Focal Point (Screenshot or `file:line` Evidence)
 
-Zoom out to `25%` (or view the rendered image/page through squinted eyes / mobile thumbnail scale) for 3 seconds:
+Inspect the rendered view at `25%` / mobile scale (or verify exact heading/visual sizing and placement in source):
 
 - [ ] **Unmistakable #1 Focal Anchor:** Exactly ONE primary headline, visual artifact, or hero figure dominates instantly. If two elements fight equally for attention, demote the weaker element by `>= 35%` in scale, contrast, or chromatic saturation.
 - [ ] **Clear 1 → 2 → 3 Eye Path:** The eye travels smoothly from Focal Anchor (#1) → Supporting Context (#2) → Action / Metadata (#3) without bouncing randomly across boxes.
@@ -66,7 +70,7 @@ Inspect desktop (`1440px`), tablet (`768px`), mobile (`390px`), or print trim ma
 - [ ] **Inside Duration Budgets:** Micro-interactions `120–200ms`; UI transitions `250–450ms` (exits `~0.7×` enter); hero choreography `500–900ms`; total list stagger capped at `<= 350ms`.
 - [ ] **60fps GPU-Composited Properties Only:** Animations mutate `transform`, `opacity`, or `clip-path` — zero frame-dropping layout thrash (`width`, `height`, `top`, `left`, `margin`, `padding`), zero scroll-jacking, and zero scroll reveals that leave content permanently stuck at `opacity: 0`.
 - [ ] **Reduced Motion Respected:** `@media (prefers-reduced-motion: reduce)` (or `gsap.matchMedia()`) replaces sweeping motion with instant settles or minimal opacity crossfades.
-- [ ] **Video Storyboard, Determinism & Broadcast Safe Boxes:** Stage 2 Beat Sheet locked; every typographic beat stays legible for `>= 1.2s + 0.35s × wordCount`; major cuts land `0–2 frames` ahead of or exact on audio transients (with J/L audio cuts where helpful); visuals inside **90% action-safe** and titles inside **80% title-safe**; zero `Date.now()`, unseeded `Math.random()`, `repeat: -1`, or mixed CSS+GSAP transforms.
+- [ ] **Video Storyboard, Determinism, Audio & 5-Frame Contact Sheet:** Stage 2 Beat Sheet locked; duration probed dynamically (never blindly hardcoded over VO); audio mixed to `-14/-16 LUFS` (`-12` to `-18 dB` VO ducking); visuals inside **90% action-safe** and titles inside **80% title-safe** (plus `9:16` social dead zones); zero `Date.now()`, unseeded `Math.random()`, `repeat: -1`, or mixed CSS+GSAP transforms. **5-Frame Contact-Sheet Check:** Inspect rendered frames at `0%`, `20%`, `50%`, `80%`, and `100%` of each critical transition to confirm zero mid-tween overlaps or clipped descenders.
 
 ---
 
@@ -109,10 +113,10 @@ Include this compact 6-line **Art Director Sign-Off** at the end of Stage 4 (bot
 
 ```markdown
 ### Art Director Sign-Off — Design 27
-- **Direction & Surface Mode:** [Pass / Revised] — [Aesthetic Direction · Persuade/Operate/Read/Experience · Mirror Test passed]
-- **3-Second Squint & Focal Path:** [Pass / Revised] — [Focal #1 → #2 → #3 · Signature Moment]
+- **Checker & Evidence:** [d27-check exit 0 · screenshot / file:line verified | UNVERIFIED: no runtime]
+- **Direction & Surface Mode:** [Pass / Revised] — [Surface World · Direction · Mode · Banned Cliché]
+- **Focal Path & Visual Anchor:** [Pass / Revised] — [Focal #1 → #2 → #3 · Signature Moment]
 - **Contrast & Typography Hygiene:** [Pass / Revised] — [Min contrast ratio, measure, scale ratio, orphans checked]
-- **Spatial Rhythm & Medium Gate:** [Pass / Revised] — [CSS/print/broadcast floor + key medium gate verified]
-- **Material Honesty & Anti-Slop:** [Clean — 0 Floor fails, 0 invented facts, 0 redlines / Fixed: ...]
-- **Reflex Waivers (if any):** [None / Rule waived + explicit brief rationale]
+- **Spatial Rhythm & Medium Gate:** [Pass / Revised] — [CSS/print/broadcast floor + 5-frame/medium gate verified]
+- **Material Honesty & Waivers:** [0 Floor fails · 0 invented facts · Waivers: None / Rule + rationale]
 ```

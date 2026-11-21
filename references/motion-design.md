@@ -90,6 +90,16 @@ When rendering programmatic video frame-by-frame in headless browsers or render 
 - **No Transform Collisions:** Never combine a CSS `transform` rule with GSAP/JS transforms on the same DOM element, and never tween `display` or `visibility` on timed clip wrappers (animate a child element instead).
 - **Pre-Measure Dynamic Text:** Measure dynamic headings and captions against container bounds before rendering (e.g., Remotion text measurement or explicit `max-width` + `text-wrap: balance`) so variable-length copy never overflows safe zones mid-render.
 - **Pre-Production Discipline (>15s Films):** Pitch 2–3 concise structural angles in words first, then lock a frame-accurate Beat Sheet (`SPEC`) where every adjective is translated into a concrete number (BPM, frame count, easing curve, pixel inset).
+- **Dynamic Duration Probing:** Never blindly hardcode `durationInFrames` or `data-duration` when driving off voiceover or video clips — compute timeline duration dynamically from probed media metadata (e.g., Remotion `calculateMetadata` + audio duration) so narration never clips mid-word or hangs on dead frames.
+
+### Audio Mix, Captions & Camera Pacing Budgets
+- **Loudness & VO Ducking:** Master web/YouTube exports to **`-14 LUFS`** (`-16 LUFS` mobile/social) with **`-1 dBTP`** true-peak ceiling. Duck music beds **`-12` to `-18 dB`** underneath voiceover with `150–300ms` attack/release envelopes on dedicated audio tracks.
+- **Caption Timing & `9:16` Vertical Safe Zones:** Cap landscape captions at `<= 42` chars/line (max 2 lines) and `9:16` social captions at `2–4` words per rhythmic chunk (`~2.5–3 words/sec + 400ms` settle buffer). On `1080 × 1920` TikTok/Reels/Shorts, keep titles and captions out of the top `260px`, bottom `360px`, and right `140px` action-rail dead zones.
+- **Shot-Duration Pacing:** Land the visual hook inside **`0–2.0s`**, hold primary launch/social shots for **`1.5–4.0s`**, and stage **at most 1 primary focal motion per beat** so the viewer's eye never fractures.
+
+### Modern Web Motion Primitives (CSS & React)
+- **CSS Scroll-Driven Reveals:** Gate native scroll progress with `@supports (animation-timeline: view())` and `@media (prefers-reduced-motion: no-preference)` so unsupported browsers render cleanly at full opacity.
+- **View Transitions & Interruptible Physics:** Use `document.startViewTransition()` for crisp route/state morphs and Framer Motion (`AnimatePresence` + `layoutId`) for interruptible UI transitions. Never scatter permanent `will-change: transform` across static containers (wastes GPU memory).
 
 ---
 
