@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Slop UI Animation Fixture</title>
+  <style>
+    body { font-size: 16px; background: #111; color: #f5f5f5; }
+    .popover {
+      transform: scale(0);
+      transition: all 420ms ease-in;
+      animation: popIn 450ms ease-in forwards;
+    }
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0); }
+      to { opacity: 1; transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+  <button class="trigger">Open Settings</button>
+  <div class="popover">Settings panel</div>
+</body>
+</html>

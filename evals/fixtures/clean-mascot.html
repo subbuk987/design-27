@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pulsebit CLI Mascot — Design 27 v4.0 Cutout Model Sheet</title>
+  <style>
+    :root {
+      --surface-canvas: #F5F2EB;
+      --surface-elevated: #FFFFFF;
+      --ink-primary: #141413;
+      --ink-secondary: #4B4A45;
+      --accent-focal: #0F4C81;
+      --accent-ink: #FFFFFF;
+      --hairline: rgba(20, 20, 19, 0.16);
+      --m-fill: #141413;
+      --m-cut: #F5F2EB;
+      --m-accent: #0F4C81;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      overflow-x: clip;
+      background: var(--surface-canvas);
+      color: var(--ink-primary);
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: clamp(1rem, 0.2vw + 0.95rem, 1.0625rem);
+      line-height: 1.55;
+    }
+    main {
+      max-width: 68rem;
+      margin-inline: auto;
+      padding: clamp(1.5rem, 4vw, 3rem);
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 2rem;
+      align-items: start;
+    }
+    @media (max-width: 780px) {
+      main { grid-template-columns: minmax(0, 1fr); }
+    }
+    h1 {
+      font-size: clamp(2rem, 3.5vw, 2.75rem);
+      line-height: 1.06;
+      letter-spacing: -0.025em;
+      margin: 0 0 0.75rem;
+    }
+    .sub { color: var(--ink-secondary); margin: 0 0 1.25rem; }
+    .stage {
+      background: var(--surface-elevated);
+      border: 1px solid var(--hairline);
+      border-radius: 4px;
+      padding: 1.5rem;
+      display: flex;
+      justify-content: center;
+    }
+    .mascot-svg {
+      width: 100%;
+      max-width: 340px;
+      height: auto;
+      display: block;
+    }
+    .mascot-svg g {
+      transition: opacity 160ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .mascot-svg[data-focus] g { opacity: 0.16; }
+    .mascot-svg[data-focus="pins"] #pins-left,
+    .mascot-svg[data-focus="pins"] #pins-right,
+    .mascot-svg[data-focus="chassis"] #chassis,
+    .mascot-svg[data-focus="visor"] #visor,
+    .mascot-svg[data-focus="prompt-eyes"] #prompt-eyes,
+    .mascot-svg[data-focus="ecg-mouth"] #ecg-mouth { opacity: 1; }
+    .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; }
+    button {
+      font: 600 0.875rem/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+      padding: 0.55rem 0.85rem;
+      border: 1px solid var(--hairline);
+      border-radius: 3px;
+      background: var(--surface-elevated);
+      color: var(--ink-primary);
+      cursor: pointer;
+      transition: background-color 140ms, color 140ms;
+    }
+    button[aria-pressed="true"] {
+      background: var(--accent-focal);
+      color: var(--accent-ink);
+      border-color: var(--accent-focal);
+    }
+    button:focus-visible { outline: 2px solid var(--accent-focal); outline-offset: 2px; }
+    .ladder {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      padding: 1rem;
+      border: 1px solid var(--hairline);
+      border-radius: 4px;
+      background: var(--surface-elevated);
+    }
+    .sil-light { --m-fill: #141413; --m-cut: #FFFFFF; --m-accent: #141413; }
+    .sil-dark {
+      background: #141413;
+      padding: 0.5rem;
+      border-radius: 3px;
+      --m-fill: #F5F2EB;
+      --m-cut: #141413;
+      --m-accent: #F5F2EB;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .mascot-svg g, button { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="stage">
+      <svg id="hero-mascot" class="mascot-svg" data-mascot="pulsebit" viewBox="0 0 400 400" width="400" height="400" role="img" aria-label="Pulsebit CPU Benchmark CLI Mascot">
+        <defs>
+          <g id="pulsebit-mark">
+            <g id="pins-left" fill="var(--m-fill)">
+              <rect x="44" y="122" width="32" height="22" rx="4"/>
+              <rect x="44" y="166" width="32" height="22" rx="4"/>
+              <rect x="44" y="210" width="32" height="22" rx="4"/>
+              <rect x="44" y="254" width="32" height="22" rx="4"/>
+            </g>
+            <g id="pins-right" fill="var(--m-fill)">
+              <rect x="324" y="122" width="32" height="22" rx="4"/>
+              <rect x="324" y="166" width="32" height="22" rx="4"/>
+              <rect x="324" y="210" width="32" height="22" rx="4"/>
+              <rect x="324" y="254" width="32" height="22" rx="4"/>
+            </g>
+            <g id="chassis">
+              <rect x="76" y="76" width="248" height="248" rx="34" fill="var(--m-fill)"/>
+            </g>
+            <g id="visor">
+              <rect x="108" y="112" width="184" height="176" rx="18" fill="none" stroke="var(--m-cut)" stroke-width="6"/>
+            </g>
+            <g id="prompt-eyes">
+              <polyline points="142,158 176,178 142,198" fill="none" stroke="var(--m-cut)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="204" y1="198" x2="256" y2="198" stroke="var(--m-cut)" stroke-width="14" stroke-linecap="round"/>
+            </g>
+            <g id="ecg-mouth">
+              <polyline points="136,246 172,246 188,218 206,268 224,246 264,246" fill="none" stroke="var(--m-cut)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+            </g>
+          </g>
+        </defs>
+        <use href="#pulsebit-mark"/>
+      </svg>
+    </section>
+
+    <section>
+      <h1>Pulsebit CLI</h1>
+      <p class="sub">Silicon die + terminal prompt anatomy. Every interior glyph punches cleanly through <code>--m-cut</code> negative space at 64px and 32px.</p>
+      <div class="chips" role="group" aria-label="Isolate SVG anatomy group">
+        <button data-part="" aria-pressed="true">all</button>
+        <button data-part="pins" aria-pressed="false">#pins</button>
+        <button data-part="chassis" aria-pressed="false">#chassis</button>
+        <button data-part="visor" aria-pressed="false">#visor</button>
+        <button data-part="prompt-eyes" aria-pressed="false">#prompt-eyes</button>
+        <button data-part="ecg-mouth" aria-pressed="false">#ecg-mouth</button>
+      </div>
+      <div class="ladder" aria-label="Negative-space cutout silhouette ladder">
+        <svg class="sil-light" viewBox="0 0 400 400" width="64" height="64" aria-label="64px light cutout">
+          <use href="#pulsebit-mark"/>
+        </svg>
+        <svg class="sil-light" viewBox="0 0 400 400" width="32" height="32" aria-label="32px light cutout">
+          <use href="#pulsebit-mark"/>
+        </svg>
+        <div class="sil-dark">
+          <svg viewBox="0 0 400 400" width="64" height="64" aria-label="64px dark cutout">
+            <use href="#pulsebit-mark"/>
+          </svg>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const hero = document.getElementById("hero-mascot");
+    document.querySelectorAll("[data-part]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const part = btn.dataset.part;
+        if (part) hero.setAttribute("data-focus", part);
+        else hero.removeAttribute("data-focus");
+        document.querySelectorAll("[data-part]").forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Slop Non-Deterministic Motion Fixture</title>
+  <style>
+    body { margin: 0; font-size: 16px; background: #0B0D10; color: #F5F5F5; }
+    .title {
+      transition: transform 600ms ease;
+      animation: drift 2s infinite;
+    }
+    @keyframes drift {
+      from { transform: translateY(20px); }
+      to { transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <h1 class="title">Launch Film</h1>
+  <video id="clip"></video>
+  <script>
+    window.__d27Seek = (t) => {
+      const jitter = Math.random() * 12;
+      const now = Date.now();
+      document.getElementById("clip").currentTime = t;
+      document.getElementById("clip").play();
+      requestAnimationFrame(() => console.log(jitter, now));
+    };
+  </script>
+</body>
+</html>
