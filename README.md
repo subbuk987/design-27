@@ -1,8 +1,8 @@
 # Design 27 (`v4.0.0`)
 
-**The zero-dependency creative director, motion choreographer & anti-slop linter for coding agents — engineered for websites, UI animations, launch motion, book writing, mascots, and thumbnails.**
+**A design skill for coding agents that starts from an idea, deals a colour-and-type world to fit it, and fails the build when the agent ships purple gradients, `scale(0)` pops, 1.6:1 grey text or "delve".**
 
-Most design skills either give agents vague vibes (*"be bold"*) with zero enforcement, or lock you into heavy external runtimes for one narrow medium. **Design 27 (`v4.0.0`)** pairs a **lean progressive-disclosure router** (`SKILL.md`) and **9 focused craft modules** with a **zero-npm-dependency Node ESM CLI suite** (`d27-cli`, `d27-deal` v4, `d27-check` with SARIF 2.1.0 + `--github` + `--doctor` + WCAG `suggestedColor` + `ebur128`/`ffprobe` + **zero-dep headless Chrome CDP `--render`**, `d27-frames` with HTML `window.__d27Seek` capture, `d27-captions`, and `d27-hook`), a **26-assertion research-backed, security & 6-pillar contract suite** (`evals/`), and a **live interactive DOM gallery** ([`docs/index.html`](docs/index.html)).
+Covers websites, UI animation, launch motion, books, mascots and thumbnails. `SKILL.md` routes the agent to 11 short craft modules. A zero-dependency Node CLI (`scripts/`) checks the output: contrast (WCAG + APCA), accessibility, motion determinism, prose tells and thumbnail safe zones, as JSON, SARIF or GitHub annotations. `node evals/run-eval.mjs` runs the 35 contract tests.
 
 ## Before & After (Same Prompt, Stock Agent vs. Design 27 `v4.0.0`)
 
@@ -12,7 +12,7 @@ Most design skills either give agents vague vibes (*"be bold"*) with zero enforc
 
 ![Design 27 Deterministic CLI Checker Output](assets/d27-cli-proof.svg)
 
-- **Zero-Dependency Security & Speed:** `0` runtime npm deps · `0` binary downloads · `0` network calls or TCP sockets · zero-socket `--remote-debugging-pipe` headless Chrome CDP `--render` fallback · SARIF 2.1.0 native for GitHub Code Scanning.
+- **Zero-Dependency & Hardened:** `0` runtime npm deps · `0` binary downloads · `0` outbound network. `--render` drives system Chrome over `--remote-debugging-pipe`; pages load from a one-port `127.0.0.1` server jailed to the page's folder (no `file://`, no dotfiles, no other loopback ports). Writes refuse to follow symlinks. Hostile 500 KB inputs check in under 0.1 s.
 - **6 Focused Pillars:** **Websites** (apps, dashboards & dense `188×257mm` one-pagers), **UI Animations**, **Launch Motion Design**, **Book Writing & Editorial Publishing**, **Mascot Creation**, and **YouTube / Social Thumbnails**.
 - **Reproducible Proof:** Run `node evals/run-eval.mjs` or inspect the [6 adversarial trap prompts](evals/README.md).
 
@@ -22,13 +22,13 @@ Most design skills either give agents vague vibes (*"be bold"*) with zero enforc
 
 | Pillar / Subsystem | `v3.0.0` Blind Gap | `v4.0.0` Architecture Upgrade |
 | :--- | :--- | :--- |
-| **Direction Engine (`d27-deal` v4)** | 7 font-only directions led to dark-charcoal + orange convergence and repeated `.ruled-row` layouts. | **16 OKLCH Material Worlds** (contrast-verified `>= 4.5:1`), dealt **Macrostructures**, and **Diegetic Metaphor + Interactive Proof** contracts (`/* D27-Lock: ... */`). |
+| **Direction Engine (`d27-deal` v4)** | 7 font-only directions led to dark-charcoal + orange convergence and repeated `.ruled-row` layouts. | **19 OKLCH Material Worlds** (contrast-verified `>= 4.5:1`), dealt **Macrostructures**, and **Diegetic Metaphor + Interactive Proof** contracts (`/* D27-Lock: ... */`). |
 | **UI Animations (`animations.md`)** | UI choreography was buried inside video docs, so web builds shipped static pages or janky `scale(0)` bounces. | Dedicated `animations.md`: **Frequency Test** (`0–100ms` keyboard, `<300ms` overlays), trigger-anchored `transform-origin`, auto-play-once demos, springs, View Transitions, and `no-scale-zero-entrance` / `no-ease-in-ui-entrance` lint rules. |
 | **Launch Motion (`motion-design.md`)** | Standalone HTML motion builds lacked a deterministic scrubber hook; `--render` required Playwright. | Standardized **`window.__d27Seek(t)`** seekable contract, 2.5D camera rigs, seeded PRNG, `>= 1.2s` lockup hold, and **HTML motion frame capture** via `d27-frames` + zero-dep `chrome-cdp.mjs`. |
 | **Book Writing (`book-writing.md`)** | Focused on layout without prose quality gates, allowing AI cliché vocabulary and throat-clearing transitions. | **Book Charter + Chapter Beat Cards**, sentence burstiness, Tufte HTML web-books, Typst / `@page` spreads, and prose slop rules (`no-ai-slop-vocabulary`, `no-negative-parallelism-tic`, `no-throat-clearing-opener`, `no-double-signaled-paragraphs`). |
 | **Mascot Creation (`mascot-creation.md`)** | Cloned reference SVGs and `filter: brightness(0)` silhouettes crushed interior details at `64px`/`16px`. | **2-Noun Domain Metaphor Matrix**, **`--m-fill` / `--m-cut` negative-space cutout silhouettes**, interactive `<g id>` anatomy sheets, and `no-blind-silhouette-filter` / `require-svg-named-groups` checks. |
 | **Thumbnails (`thumbnails.md`)** | No live feed squint check or dead-zone geometry enforcement. | **Title+Thumbnail Curiosity-Gap Pairing**, `0–4` word hook ceiling, **`160×90` live feed context preview** with `14:28` overlay, and `thumbnail-word-ceiling` + `--render` `thumbnail-deadzone-collision` (`x: 1000–1280, y: 590–720`). |
-| **Zero-Dep `--render` (`chrome-cdp.mjs`)** | `--render` failed whenever `playwright` wasn't installed. | Automatic **system Chrome/Chromium `--remote-debugging-pipe` CDP** fallback (`renderAudit.engine: "chrome-cdp"`, Node 18+, zero sockets, works inside air-gapped sandboxes) for multi-viewport DOM, contrast, and thumbnail dead-zone verification. |
+| **Zero-Dep `--render` (`chrome-cdp.mjs`)** | `--render` failed whenever `playwright` wasn't installed. | Automatic **system Chrome/Chromium `--remote-debugging-pipe` CDP** fallback (`renderAudit.engine: "chrome-cdp"`, Node 18+, pipe transport, works offline) for multi-viewport DOM, contrast, and thumbnail dead-zone verification. |
 
 ---
 
@@ -57,11 +57,11 @@ Design 27 refuses pure-Markdown "sign-off theater." Run any tool through the uni
 
 ```bash
 node scripts/d27-cli.mjs doctor                                                    # Verify Node, Chrome CDP, Playwright, ffprobe, ffmpeg
-node scripts/d27-cli.mjs deal --prompt "Audio field recorder" --medium web --out brief.json
+node scripts/d27-cli.mjs deal --prompt "Audio field recorder" --medium web --emotion inviting --out brief.json
 node scripts/d27-cli.mjs check ./index.html --brief brief.json --render --strict   # Zero-dep Chrome CDP DOM + static floor audit
 node scripts/d27-cli.mjs check ./chapter-4.md --medium=book --json                 # Anti-AI-prose & book typesetting lint
 node scripts/d27-cli.mjs check ./mascot.html --medium=mascot --json                # Negative-space cutout & named <g id> verification
-node scripts/d27-cli.mjs check ./thumb.html --medium=thumbnail --render --json     # <= 5 word hook & 14:28 dead-zone collision check
+node scripts/d27-cli.mjs check ./thumb.html --medium=thumbnail --render --json     # 0–4 word hook & 14:28 dead-zone collision check
 node scripts/d27-cli.mjs check ./src --sarif                                       # SARIF 2.1.0 for GitHub Code Scanning
 node scripts/d27-cli.mjs frames sheet motion/index.html --beats 0,1.2,2.5,4.2      # Step window.__d27Seek(t) in headless Chrome
 node scripts/d27-cli.mjs frames verify motion/index.html --beats 0,0.6,1.2,2.4     # Reverse-seek bitwise determinism gate
@@ -108,7 +108,7 @@ design-27/
 │   └── v4-research-and-action-plan.md     # Competitive benchmark autopsy & action plan
 ├── evals/
 │   ├── README.md                          # 6 adversarial slop-trap prompts & pass criteria
-│   ├── run-eval.mjs                       # 26-assertion research-backed security, 10x-leap & 6-pillar suite
+│   ├── run-eval.mjs                       # 35 contract tests: security, speed bounds, worlds, prose, a11y, 6 pillars
 │   ├── fixtures/
 │   │   ├── slop-saas.html                 # Stock AI web baseline (expected exit 2)
 │   │   ├── design27-saas.html             # Design 27 v4.0 web reference + live gain scrubber (exit 0)
@@ -122,17 +122,19 @@ design-27/
 │   │   ├── clean-anim.html                # Trigger-anchored scale(0.95->1) + reduced-motion UI animation (exit 0)
 │   │   ├── slop-motion.html               # Math.random/Date.now/wall-clock CSS motion slop (expected exit 2)
 │   │   └── clean-motion.html              # Deterministic window.__d27Seek(t) + seeded PRNG motion scene (exit 0)
-│   └── showcase/                          # Multi-contender isolated benchmark harness & blind gallery
+│   └── showcase/                          # Benchmark harness: PROMPTS.md protocol + usage.mjs cost script (no stored results)
 ├── scripts/
 │   ├── d27-cli.mjs                        # Unified zero-dep CLI dispatcher (check|deal|captions|frames|hook|doctor|eval)
 │   ├── d27-check.mjs                      # Orchestrator for static, brief, DOM & zero-dep CDP --render linting
-│   ├── d27-deal.mjs                       # Deterministic v4 brief dealer (16 OKLCH worlds, macrostructures, D27-Lock)
+│   ├── d27-deal.mjs                       # Brief dealer: 19 worlds matched to the subject, --emotion tuning, --campaign reuse
 │   ├── d27-captions.mjs                   # Word-timestamp caption chunker (JSON/SRT/ASS burn-in + 17 CPS validator)
 │   ├── d27-frames.mjs                     # Beat-boundary contact-sheet extractor, HTML __d27Seek stepper & sweep_static audit
 │   ├── d27-hook.mjs                       # Zero-network two-tier edit-time agent hook (PostToolUse + Stop)
 │   └── lib/
 │       ├── cache.mjs                      # Symlink-safe private 0o700 XDG per-repo incremental cache
-│       ├── chrome-cdp.mjs                 # Zero-npm-dep, zero-socket Chrome CDP driver, reverse-seek & 16x16 pixel audit
+│       ├── chrome-cdp.mjs                 # Zero-npm-dep pipe CDP driver, a11y/target-size audit, reverse-seek & 16x16 pixel audit
+│       ├── safe-io.mjs                    # Symlink-safe writes + jailed 127.0.0.1 page server for --render
+│       ├── version.mjs                    # Single VERSION constant
 │       ├── color-math.mjs                 # Pure-JS WCAG 2.1 contrast ratio & suggestedColor solver
 │       ├── ignores.mjs                    # Linear comment-only waiver parser blocking FLOOR wildcards
 │       ├── media-audit.mjs                # ISO BMFF faststart, ffprobe yuv420p/CFR/bt709 & ffmpeg ebur128 audit
@@ -141,7 +143,9 @@ design-27/
 │       ├── reporters.mjs                  # SARIF 2.1.0 (with partialFingerprints) & GitHub Actions formatters
 │       └── rules-catalog.mjs              # Canonical LINE_RULES, EXTRA_RULES & ALL_RULES registry
 └── references/
-    ├── direction-matrix.md                # 3-Axis Calibration, Diegetic Metaphor & Assertion Laws, 16 OKLCH Worlds, M·I·H·C·R
+    ├── emotion-science.md                 # Emotional Target bands (relative chroma, motion), lever summary, do-not-claim list
+    ├── emotion-evidence.md                # Graded (A/B/C) studies behind each lever; loaded only to justify a choice
+    ├── direction-matrix.md                # Idea-first direction, campaigns, Headline Law, one scale table, 19 worlds, M·I·H·C·R
     ├── verbs.md                           # 8 steerable studio playbooks (polish, bolder, quieter, distill...)
     ├── websites.md                        # 6 section grammars, tactile surfaces, interactive proof & dense 188×257mm one-pagers
     ├── animations.md                      # UI choreography: Frequency Test, <300ms physics, trigger transform-origin, springs
@@ -149,7 +153,7 @@ design-27/
     ├── book-writing.md                    # Book Charter, Chapter Beat Cards, anti-AI-prose rules, Tufte HTML & Typst/@page
     ├── mascot-creation.md                 # 2-Noun Metaphor Matrix, --m-fill/--m-cut cutout silhouettes, named <g id> anatomy
     ├── thumbnails.md                      # Title+Thumbnail curiosity gap, 0–4 word ceiling, 160×90 feed & dead-zone math
-    └── qa-and-critique.md                 # 3-Tier, 7-Pass post-build audit & 6-line Art Director Sign-Off
+    └── qa-and-critique.md                 # 3-Tier, 7-Pass post-build audit & 8-line Art Director Sign-Off
 ```
 
 ---

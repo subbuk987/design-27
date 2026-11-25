@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Design 27 v4.0.0 — 26-Assertion Research-Backed Security, 10x-Leap, 6-Pillar & Scope-Hygiene Eval Suite
+ * Design 27 v4.0.0 — Research-Backed Research-Backed Security, 10x-Leap, 6-Pillar & Scope-Hygiene Eval Suite
  */
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -11,7 +11,9 @@ import { runCheck } from "../scripts/d27-check.mjs";
 import { evaluateDeterminismHashes } from "../scripts/lib/chrome-cdp.mjs";
 import { parseVerifyArgs } from "../scripts/d27-frames.mjs";
 import { analyzeCutoutBitmap } from "../scripts/lib/pixel-audit.mjs";
-import { computeApcaLc } from "../scripts/lib/color-math.mjs";
+import { computeApcaLc, rgbToOklch, parseHex, contrastRatio as wcagRatio } from "../scripts/lib/color-math.mjs";
+import { writeFileSafe, serveDirectory } from "../scripts/lib/safe-io.mjs";
+import { escapeGhData, escapeGhProp } from "../scripts/lib/reporters.mjs";
 import { computeBurstiness } from "../scripts/lib/prose-audit.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -37,10 +39,12 @@ const fixtures = {
   cleanMotion: path.join(__dirname, "fixtures", "clean-motion.html"),
 };
 
-console.log("Design 27 v4.0.0 — Reproducible 26-Assertion Research-Backed Security, 10x-Leap & 6-Pillar Eval Suite\n");
+console.log("Design 27 v4.0.0 — Reproducible Research-Backed Security, 10x-Leap & 6-Pillar Eval Suite\n");
 let failed = 0;
 
+let total = 0;
 function assert(name, ok, detail) {
+  total += 1;
   console.log(`${ok ? "PASS" : "FAIL"} | ${name}`);
   if (detail) console.log(`     ${detail}`);
   if (!ok) failed += 1;
@@ -54,30 +58,19 @@ function safeJson(raw) {
   }
 }
 
-function parseHex(hex) {
-  if (typeof hex !== "string") return null;
-  const clean = hex.replace("#", "").trim();
-  const full = clean.length === 3 ? clean.split("").map((c) => c + c).join("") : clean;
-  if (!/^[0-9a-f]{6}$/i.test(full)) return null;
-  return [parseInt(full.slice(0, 2), 16), parseInt(full.slice(2, 4), 16), parseInt(full.slice(4, 6), 16)];
-}
-
-function relLuminance([r, g, b]) {
-  const lin = [r, g, b].map((v) => {
-    const s = v / 255;
-    return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
-  });
-  return 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2];
-}
-
+// Hex-string wrapper over the shipped colour math (bad hex -> 0, never a crash).
 function contrastRatio(hex1, hex2) {
   const c1 = parseHex(hex1);
   const c2 = parseHex(hex2);
-  if (!c1 || !c2) return 0;
-  const l1 = relLuminance(c1);
-  const l2 = relLuminance(c2);
-  return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+  return c1 && c2 ? wcagRatio(c1, c2) : 0;
 }
+
+async function checkJson(args) {
+  let out = "";
+  const code = await runCheck([...args, "--json", "--no-cache"], { stdout: { write: (x) => { out += x; } }, stderr: { write: () => {} } });
+  return { code, json: safeJson(out) };
+}
+const ruleSet = (j) => new Set((j?.findings || []).map((f) => f.rule));
 
 // 1. Web slop fails exit 2
 const r1 = spawnSync(process.execPath, [checker, fixtures.slopSaas, "--json"], { encoding: "utf8" });
@@ -600,5 +593,189 @@ assert(
   `Netflix warns=${d26Cap?.warnings?.length} (833ms=${hasMinDurWarn},2fGap=${hasGapWarn}) | Blurry(partialAlpha=${bmBlurry.partialAlphaRatio},collapsed=${bmBlurry.collapsed})`
 );
 
-console.log(`\nSummary: ${26 - failed}/26 passed`);
+// 27. Emotion target: dealer picks a world inside the arousal chroma band; checker flags an off-band palette
+const tmpEmoDir = fs.mkdtempSync(path.join(os.tmpdir(), "d27-eval-emotion-"));
+let r27Deal, r27Bad, d27Deal = null, d27Check = null;
+try {
+  const calmBrief = path.join(tmpEmoDir, "calm.json");
+  r27Deal = spawnSync(process.execPath, [dealer, "--prompt", "Latency telemetry", "--emotion", "calm", "--out", calmBrief, "--no-save"], { encoding: "utf8" });
+  d27Deal = safeJson(r27Deal.stdout);
+  r27Bad = spawnSync(process.execPath, [dealer, "--emotion", "sad", "--no-save"], { encoding: "utf8" });
+  d27Check = safeJson(spawnSync(process.execPath, [checker, fixtures.cleanSaas, "--brief", calmBrief, "--json"], { encoding: "utf8" }).stdout);
+} finally {
+  fs.rmSync(tmpEmoDir, { recursive: true, force: true });
+}
+const band27 = d27Deal?.emotion?.accentChroma || [];
+const accentC27 = d27Deal ? rgbToOklch(parseHex(d27Deal.primary.tokens.accentFocal)).C : -1;
+const cobaltC = rgbToOklch([0x17, 0x46, 0xd1]).C;
+const emoWarn = (d27Check?.findings || []).some((f) => f.rule === "brief-emotion-chroma-mismatch" && f.tier === "REFLEX");
+assert(
+  "27. Emotion Target Arousal Band (Wilms & Oberfeld 2018) Deal + Check Contract",
+  r27Deal?.status === 0 && d27Deal?.emotion?.target === "calm" &&
+    accentC27 >= band27[0] && accentC27 <= band27[1] &&
+    r27Bad?.status === 3 &&
+    emoWarn && d27Check?.floorFails === 0 &&
+    rgbToOklch([255, 255, 255]).C < 0.001 && Math.abs(cobaltC - 0.219) < 0.002,
+  `world=${d27Deal?.primary?.slug} C=${accentC27.toFixed(3)} band=${band27.join("-")} | badExit=${r27Bad?.status} | offBandWarn=${emoWarn} | cobalt C=${cobaltC.toFixed(3)}`
+);
+
+// 28. Render jail: loopback server serves only its own directory, never dotfiles or escapes (no file:// for pages)
+const jailRoot = fs.mkdtempSync(path.join(os.tmpdir(), "d27-eval-jail-"));
+let jailCodes = {};
+try {
+  const site = path.join(jailRoot, "site");
+  fs.mkdirSync(site);
+  fs.writeFileSync(path.join(site, "index.html"), "<h1>ok</h1>");
+  fs.writeFileSync(path.join(site, ".env"), "SECRET=1");
+  fs.writeFileSync(path.join(jailRoot, "outside.txt"), "nope");
+  fs.symlinkSync(path.join(jailRoot, "outside.txt"), path.join(site, "link.txt"));
+  const srv = await serveDirectory(site);
+  try {
+    for (const [k, u] of Object.entries({ page: "/index.html", dot: "/.env", up: "/../outside.txt", enc: "/%2e%2e/outside.txt", link: "/link.txt" })) {
+      jailCodes[k] = (await fetch(srv.origin + u)).status;
+    }
+  } finally {
+    await srv.close();
+  }
+} finally {
+  fs.rmSync(jailRoot, { recursive: true, force: true });
+}
+assert(
+  "28. Render Jail: Loopback Server Blocks Dotfiles, Traversal & Symlink Escapes",
+  jailCodes.page === 200 && jailCodes.dot === 403 && jailCodes.up !== 200 && jailCodes.enc !== 200 && jailCodes.link === 403,
+  `codes=${JSON.stringify(jailCodes)}`
+);
+
+// 29. Symlink-safe writes: a planted brief.json -> victim link is replaced, the victim is untouched
+const symRoot = fs.mkdtempSync(path.join(os.tmpdir(), "d27-eval-sym-"));
+let victimAfter = "", linkIsFile = false;
+try {
+  const victim = path.join(symRoot, "victim.txt");
+  fs.writeFileSync(victim, "original");
+  fs.symlinkSync(victim, path.join(symRoot, "brief.json"));
+  spawnSync(process.execPath, [dealer, "--prompt", "x", "--out", path.join(symRoot, "brief.json"), "--no-save"], { encoding: "utf8" });
+  writeFileSafe(path.join(symRoot, "brief.json"), "{}");
+  victimAfter = fs.readFileSync(victim, "utf8");
+  linkIsFile = fs.lstatSync(path.join(symRoot, "brief.json")).isFile();
+} finally {
+  fs.rmSync(symRoot, { recursive: true, force: true });
+}
+assert("29. Symlink-Safe Writes (--out, snapshots, history)", victimAfter === "original" && linkIsFile, `victim=${victimAfter} linkReplacedByFile=${linkIsFile}`);
+
+// 30. Hostile-input time bound: 480KB pathological files must not go quadratic (was 55s-7min)
+const redosRoot = fs.mkdtempSync(path.join(os.tmpdir(), "d27-eval-redos-"));
+const redosMs = {};
+try {
+  const inputs = {
+    "blocks.css": "a{b}".repeat(120000),
+    "svg.html": "<svg ".repeat(90000),
+    "span.html": "<span ".repeat(80000),
+    "groups.html": `<svg data-mascot viewBox="0 0 1 1">${'<g id="a"><path/>'.repeat(28000)}</svg>`,
+  };
+  for (const [name, body] of Object.entries(inputs)) {
+    const f = path.join(redosRoot, name);
+    fs.writeFileSync(f, body);
+    const t0 = performance.now();
+    await checkJson([f]);
+    redosMs[name] = Math.round(performance.now() - t0);
+  }
+} finally {
+  fs.rmSync(redosRoot, { recursive: true, force: true });
+}
+assert("30. Hostile-Input Time Bound (< 2s per 480KB file)", Object.values(redosMs).every((ms) => ms < 2000), JSON.stringify(redosMs));
+
+// 31. GitHub workflow-command escaping blocks forged ::error lines
+const ghData = escapeGhData("x\n::error file=README.md,line=1::PWNED");
+const ghProp = escapeGhProp("a,line=99,title=FAKE:");
+assert("31. GitHub Annotation Escaping", !ghData.includes("\n") && ghData.includes("%0A") && !/[,:]/.test(ghProp), `${ghData} | ${ghProp}`);
+
+// 32. Every Material World passes WCAG + APCA, has 1 display + 1 body + 1 mono, notes match hex, fonts diverse
+const dealSrc = fs.readFileSync(dealer, "utf8");
+const worldRe = /slug: "([^"]+)"[\s\S]*?tokens: \{([\s\S]*?)\}[\s\S]*?oklchNote: "[^"]*?oklch\(([\d.]+)% ([\d.]+) ([\d.]+)\)[^"]*"[\s\S]*?fonts: (\{[^}]*\})/g;
+const worldIssues = [];
+const bodyCount = {}, monoCount = {};
+let worldCount = 0;
+for (const w of dealSrc.matchAll(worldRe)) {
+  worldCount += 1;
+  const t = Object.fromEntries([...w[2].matchAll(/(\w+): "(#\w+)"/g)].map((x) => [x[1], parseHex(x[2])]));
+  const lc = (a, b) => Math.abs(computeApcaLc(t[a], t[b]));
+  if (wcagRatio(t.inkPrimary, t.surfaceCanvas) < 7 || lc("inkPrimary", "surfaceCanvas") < 75) worldIssues.push(`${w[1]}:ink`);
+  if (wcagRatio(t.inkSecondary, t.surfaceCanvas) < 4.5 || lc("inkSecondary", "surfaceCanvas") < 75) worldIssues.push(`${w[1]}:secondary`);
+  if (wcagRatio(t.accentInk, t.accentFocal) < 4.5 || lc("accentInk", "accentFocal") < 60) worldIssues.push(`${w[1]}:accent-text`);
+  if (wcagRatio(t.accentFocal, t.surfaceCanvas) < 3) worldIssues.push(`${w[1]}:accent-non-text`);
+  const o = rgbToOklch(t.surfaceCanvas);
+  if (Math.abs(o.L * 100 - Number(w[3])) > 1 || Math.abs(o.C - Number(w[4])) > 0.003) worldIssues.push(`${w[1]}:note`);
+  const fonts = Object.fromEntries([...w[6].matchAll(/(\w+): "([^"]+)"/g)].map((x) => [x[1], x[2]]));
+  if (Object.keys(fonts).sort().join() !== "body,display,mono") worldIssues.push(`${w[1]}:font-keys`);
+  bodyCount[fonts.body] = (bodyCount[fonts.body] || 0) + 1;
+  monoCount[fonts.mono] = (monoCount[fonts.mono] || 0) + 1;
+}
+const overBody = Object.entries(bodyCount).filter(([, n]) => n > 3).map(([f]) => f);
+const overMono = Object.entries(monoCount).filter(([, n]) => n > 4).map(([f]) => f);
+assert(
+  "32. All Material Worlds: WCAG+APCA Floors, True OKLCH Notes, <= 2+1 Fonts, No Font House Style",
+  worldCount >= 19 && worldIssues.length === 0 && overBody.length === 0 && overMono.length === 0,
+  `worlds=${worldCount} issues=${worldIssues.join(",") || "none"} overBody=${overBody.join(",") || "none"} overMono=${overMono.join(",") || "none"}`
+);
+
+// 33. Subject-aware dealing + one-campaign-one-world
+const dealJson = (args) => safeJson(spawnSync(process.execPath, [dealer, ...args, "--no-save"], { encoding: "utf8" }).stdout);
+const campRoot = fs.mkdtempSync(path.join(os.tmpdir(), "d27-eval-camp-"));
+let bakery, campWeb, campFilm, campThumb;
+try {
+  bakery = dealJson(["--prompt", "Artisan sourdough bakery"]);
+  const cb = path.join(campRoot, "brief.json");
+  campWeb = dealJson(["--prompt", "Kova field recorder", "--emotion", "calm", "--out", cb]);
+  campFilm = dealJson(["--prompt", "Kova launch film", "--medium", "motion", "--campaign", cb]);
+  campThumb = dealJson(["--prompt", "Kova thumbnail", "--medium", "thumbnail", "--campaign", cb]);
+} finally {
+  fs.rmSync(campRoot, { recursive: true, force: true });
+}
+assert(
+  "33. Domain-Matched Dealing & --campaign World Reuse Across Mediums",
+  bakery?.domainMatch?.includes(bakery?.primary?.slug) &&
+    campFilm?.primary?.slug === campWeb?.primary?.slug && campThumb?.primary?.slug === campWeb?.primary?.slug &&
+    campFilm?.emotion?.target === "calm" && campFilm?.signatureContract?.requireInteractiveProof === false,
+  `bakery=${bakery?.primary?.slug} (match ${bakery?.domainMatch}) | campaign web/film/thumb=${campWeb?.primary?.slug}/${campFilm?.primary?.slug}/${campThumb?.primary?.slug}`
+);
+
+// 34. Prose: synonym-dodging AI tells caught; quotes, literal terms and dense memoir treated fairly; landing copy audited
+const proseRoot = fs.mkdtempSync(path.join(os.tmpdir(), "d27-eval-prose-"));
+let sneaky, fair, landing;
+try {
+  const w = (n, body) => { const f = path.join(proseRoot, n); fs.writeFileSync(f, body); return f; };
+  sneaky = await checkJson([w("sneaky.md", "# Ch 1\n\nUltimately, growth is a journey, not a destination.\n\nThis isn't about adding more dashboards. It's about clarity for every team.\n\nThe result? Happier users.\n"), "--medium=book"]);
+  fair = await checkJson([w("fair.md", "# Ch 2\n\nHe said, \"Let us delve into the tapestry of it.\" Then he laughed.\n\nThe leverage of a long breaker bar does the work. In Python, a leading underscore marks a private name.\n"), "--medium=book"]);
+  landing = await checkJson([w("landing.html", "<!doctype html><html lang=\"en\"><body><h1>Elevate your workflow</h1><p>It's not just a tool — it's a movement.</p><a href=\"#\">Get Started</a></body></html>")]);
+} finally {
+  fs.rmSync(proseRoot, { recursive: true, force: true });
+}
+const sR = ruleSet(sneaky.json), lR = ruleSet(landing.json);
+assert(
+  "34. Prose Audit: Synonym-Dodging Tells, Fair Tiers for Quotes/Literal Terms, Landing Copy",
+  sR.has("no-negative-parallelism-tic") && sR.has("no-throat-clearing-opener") && sR.has("no-self-answered-question") &&
+    fair.json?.floorFails === 0 && !(fair.json?.findings || []).some((f) => /leverage|underscore/.test(f.message)) &&
+    lR.has("no-hype-copy") && lR.has("no-generic-microcopy") && lR.has("no-negative-parallelism-tic"),
+  `sneaky=[${[...sR].join(",")}] | fair floor=${fair.json?.floorFails} | landing=[${[...lR].join(",")}]`
+);
+
+// 35. Accessibility: OKLCH contrast, removed focus, alt, lang, comment-only reduced motion caught; prose/print/exit FPs gone
+const a11yRoot = fs.mkdtempSync(path.join(os.tmpdir(), "d27-eval-a11y-"));
+let bad, fp;
+try {
+  const w = (n, body) => { const f = path.join(a11yRoot, n); fs.writeFileSync(f, body); return f; };
+  bad = await checkJson([w("bad.html", "<!doctype html><html><head><style>:root{--surface-canvas:oklch(98% 0 0);--ink-primary:oklch(80% 0 0)}\n*:focus{outline:none}\n.s{animation:spin 1s infinite}@keyframes spin{to{transform:rotate(1turn)}}/* TODO prefers-reduced-motion */</style></head><body><button>Go</button><img src=\"a.png\"></body></html>")]);
+  fp = await checkJson([w("fp.html", "<!doctype html><html lang=\"en\"><head><style>:root{--surface-canvas:#FFFFFF;--ink-primary:#111111}\n:focus-visible{outline:2px solid #111}\n@media print { body { font-size: 12px } }\n.toast.is-leaving { transform: scale(0); transition: transform 150ms; }\n</style></head><body><p>Never write transition: all or overflow-x: hidden in CSS.</p><button>Save draft</button></body></html>")]);
+} finally {
+  fs.rmSync(a11yRoot, { recursive: true, force: true });
+}
+const bR = ruleSet(bad.json), fR = ruleSet(fp.json);
+assert(
+  "35. Accessibility False Negatives Caught & False Positives Cleared",
+  ["wcag-contrast-fail", "require-focus-visible", "require-img-alt", "require-html-lang", "require-reduced-motion"].every((r) => bR.has(r)) &&
+    !["no-transition-all", "no-overflow-x-hidden", "no-tiny-body-font", "no-scale-zero-entrance"].some((r) => fR.has(r)),
+  `bad=[${[...bR].join(",")}] | fp=[${[...fR].join(",") || "none"}]`
+);
+
+console.log(`\nSummary: ${total - failed}/${total} passed`);
 process.exit(failed === 0 ? 0 : 1);

@@ -5,7 +5,7 @@ import crypto from "node:crypto";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 
-export function toSarifUri(absPath, workspaceRoot = process.cwd()) {
+function toSarifUri(absPath, workspaceRoot = process.cwd()) {
   const rel = path.relative(workspaceRoot, absPath);
   if (rel && !rel.startsWith("..") && !path.isAbsolute(rel)) {
     return rel.split(path.sep).join("/");
@@ -13,7 +13,11 @@ export function toSarifUri(absPath, workspaceRoot = process.cwd()) {
   return pathToFileURL(absPath).href;
 }
 
-export function buildSarif({ version = "4.0.0", rules = [], findings = [], executionSuccessful = true, workspaceRoot }) {
+/** GitHub workflow-command escaping: data escapes % CR LF; properties also escape : and , (forged ::error lines). */
+export const escapeGhData = (v) => String(v ?? "").replace(/%/g, "%25").replace(/\r/g, "%0D").replace(/\n/g, "%0A");
+export const escapeGhProp = (v) => escapeGhData(v).replace(/:/g, "%3A").replace(/,/g, "%2C");
+
+export function buildSarif({ version, rules = [], findings = [], executionSuccessful = true, workspaceRoot }) {
   const ruleMap = new Map();
   for (const r of rules) {
     ruleMap.set(r.id, {

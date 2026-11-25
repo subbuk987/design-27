@@ -2,6 +2,8 @@
 
 Load this module alongside `SKILL.md` and `references/animations.md` whenever designing or building landing pages, marketing sites, editorial web articles, portfolios, documentation, web apps, dashboards, or dense dual-safe reference one-pagers.
 
+> **Emotion levers ([`emotion-science.md`](emotion-science.md) §0; study codes in [`emotion-evidence.md`](emotion-evidence.md)):** Lock the Emotional Target first. Arousal = accent chroma + lightness (C1); first viewport = one gist, category-typical structure (D1); one designed peak and end (S3).
+
 ---
 
 ## 1. Whole-Page Macrostructure Catalog (Anti-Template Architecture)
@@ -80,48 +82,60 @@ Derive surface and ink tokens from the brief's **Material World** (never copy a 
 | :--- | :--- | :--- | :--- | :--- |
 | `--surface-canvas` | Lightness `94–99%` | Lightness `4–8%` (no `#000` reading) | Uncoated newsprint, `18%` concrete, film grey, cobalt, terracotta, or forest ground | 60% dominance |
 | `--surface-elevated` | `+2–4%` lift | `+4–6%` lift (surface step, no glow) | Clean ink or paper plate (`>= 10%` tonal separation) | Crisp figure–ground |
-| `--ink-primary` | Lightness `6–12%` | Lightness `90–95%` off-white | Pure paper white or deep carbon chosen strictly for polarity | **`>= 7:1`** reading (`>= 4.5:1` AA) |
-| `--ink-secondary` | Lightness `28–36%` | Lightness `66–74%` | Tinted primary ink maintaining full AA legibility | **`>= 4.5:1`** hard floor |
+| `--ink-primary` | OKLCH `L 14–22%` | OKLCH `L 90–95%` off-white | Pure paper white or deep carbon chosen strictly for polarity | **`>= 7:1`** reading (`>= 4.5:1` AA) + APCA `Lc >= 75` |
+| `--ink-secondary` | OKLCH `L 28–38%` | OKLCH `L 78–86%` | Tinted primary ink maintaining full AA legibility | **`>= 4.5:1`** + APCA `Lc >= 75` (it carries 14–16px meta) |
 | `--hairline` | Primary ink `10–16%` | Primary ink `10–14%` | Solid `1–2px` ink rule (`20–40%` opacity or `100%` Brutalist) | Quiet structural rule |
-| `--accent-focal` | Deeper shade (`L 34–46%`) | Lifted shade (`L 62–76%`) | High-contrast complementary spot ink (acid chartreuse, bone, or signal ink) | **`>= 4.5:1`** vs canvas & `--accent-ink` |
+| `--accent-focal` | Deeper shade (`L 35–55%`) | Lifted shade (`L 62–85%`) | High-contrast complementary spot ink (acid chartreuse, bone, or signal ink) | **`>= 3:1`** vs canvas (WCAG 1.4.11 non-text; `>= 4.5:1` if used as text) & `--accent-ink` `>= 4.5:1` + `Lc >= 60` |
 
-**Mid-Tone Danger Band Contract (`OKLCH L ∈ [0.48, 0.74]` / sRGB `Y ∈ [0.14, 0.45]`):**
-1. **Dual-Metric Gate:** Body/UI copy (`< 18px`) requires **`APCA |Lc| >= 75` AND `WCAG 2.1 >= 4.5:1`**; large display (`>= 32px, >= 600`) requires **`APCA |Lc| >= 60` AND `WCAG >= 3.0:1`**; borders/focus rings require `WCAG >= 3.0:1` AND `|ΔOKLCH_L| >= 0.20`.
-2. **Achromatic Ink Lock:** Lock foreground text on Danger-Band grounds to near-achromatic extremes — **Deep Ink (`L <= 0.16, C <= 0.02`)** or **Pure Paper (`L >= 0.96, C <= 0.015`)**. Tinted mid-dark inks on mid-tones are banned.
+**Mid-Tone Danger Band Contract (`OKLCH L ∈ [0.48, 0.74]` / sRGB `Y ≈ [0.11, 0.41]` for neutrals):**
+1. **Dual-Metric Gate:** WCAG 2.x is the legal measure (WCAG 2.2; APCA was removed from WCAG 3 drafts in 2023), APCA is the perceptual cross-check. Body/UI copy requires **`WCAG >= 4.5:1` AND `APCA |Lc| >= 75`** (`Lc 90` preferred for 12–14px). Large text (**WCAG definition: `>= 24px`, or `>= 18.66px` bold**) requires **`WCAG >= 3.0:1` AND `APCA |Lc| >= 60`**. Borders/focus rings require `WCAG >= 3.0:1` AND `|ΔOKLCH_L| >= 0.20`.
+2. **Achromatic Ink Lock:** Lock foreground text on Danger-Band grounds to near-achromatic extremes — **Deep Ink (`L <= 0.20, C <= 0.02`)** or **Pure Paper (`L >= 0.96, C <= 0.015`)**. Tinted mid-dark inks on mid-tones are banned.
 3. **Zero Alpha-Opacity Text on Mid-Tones:** Never use `opacity < 1` or translucent `rgba()` for secondary text on mid-tone grounds (collapses contrast to `~2:1`). Keep `100%` opacity with `|ΔL| >= 0.48`, or place metadata inside a stepped ink-safe plate (`|ΔL| >= 0.24`).
 4. **Chroma-Vibration Clamp:** If `surface C >= 0.05` inside the Danger Band, clamp text chroma to `C <= 0.025` — never set saturated accent text directly over a saturated mid-tone ground.
 
+### Colour System Beyond the Five Tokens
+- **Tonal ramp:** derive `50–950` steps by OKLCH lightness only (`L` 0.97 → 0.18, hue fixed, chroma eased toward the ends); never lerp in sRGB (it greys out mid-steps).
+- **State colours:** success / warning / error / info each get a fill (`>= 3:1` vs canvas) and a text-safe ink (`>= 4.5:1`, `Lc >= 75`); state colours never reuse `--accent-focal`.
+- **Dark-mode mapping:** remap by role, not inversion: canvas `L 0.14–0.20`, elevated `+0.04–0.06`, ink `L 0.90–0.95`, accent lifted to `L 0.62–0.85` at the same hue; re-run the checker on the dark block.
+- **Colour-blind safety:** never encode meaning by hue alone (add icon, label or pattern); data-viz series must differ in OKLCH `L` by `>= 0.10`; avoid red/green-only pairs (deuteranopia/protanopia).
+- **Wide gamut:** author in `oklch()`; add P3 accents inside `@media (color-gamut: p3)` with an sRGB fallback first. `color-mix(in oklab, ...)` can still leave sRGB gamut — check the result.
+
 ---
 
-## 3. Mandatory Diegetic World + Zero-Dep Interactive Proof (`Persuade / Experience`)
+## 3. Diegetic World + Interactive Proof (`Persuade / Experience` default, Tier 2)
 
-Static screenshots and lifeless inline SVGs lose blind comparisons in two seconds. On every **Persuade** or **Experience** page:
+The proof is the Single-Minded Proposition made tangible. When the claim can be shown by interaction (most products), build it. When the concept is emotional or brand-led (fashion, charity, humour), the proof is a story, demo film or real evidence; log the waiver in the D27-Lock. On **Persuade** or **Experience** pages:
 1. **Commit to a Diegetic World:** Ground the page's chrome, rules, dividers, and numerals in the subject's physical craft (e.g., 16mm countdown leader + sprocket ticks for cinema, milled decibel scale + VU bar for audio, vernier caliper ticks for industrial hardware, terminal session buffer for devtools, specimen label + archival stamp for publishing).
 2. **Ship 1 Genuine Zero-Dependency Interactive Proof Widget (`< 35` lines of JS/CSS):** Prove the product's core claim in the user's hands instead of drawing a static box — e.g., a **draggable gain/clipping comparator**, **live latency/cost scrubber**, **interactive before/after split lens**, **tactile spec/tier switcher**, or **accessible validated preorder/waitlist form** with `aria-live="polite"` feedback.
-3. **Auto-Play Once, Hand Off Immediately:** Pair the interactive proof with a single `1.2–2.2s` opening demonstration that cancels on first `pointerdown` / `keydown` / `input` (exact pattern in `references/animations.md`).
+3. **Auto-Play Once, Hand Off Immediately:** Pair the interactive proof with a single `1.2–2.4s` opening demonstration that cancels on the first `pointerdown`, `keydown`, `wheel` or `touchstart` **anywhere on the window** (exact pattern in `references/animations.md`).
+4. **WCAG 2.2 for every proof widget:** it works by keyboard (arrow keys, Home/End) and with a single pointer *without dragging* (2.5.7: native `<input type="range">` or step buttons); pointer targets `>= 24×24px` (2.5.8; `44×44` for primary touch); sticky bars set `scroll-padding-top` so focus is never hidden (2.4.11); `aria-valuetext` speaks the meaning, not the number; the `aria-live` region announces only settled user changes, never every demo frame; under `@media (forced-colors: active)` draw canvas/SVG strokes in `CanvasText` / `Highlight`. The checker enforces names and target size at render time (`render-unnamed-control`, `render-target-size`).
 
 ### Copy-Ready Interactive Proof Pattern: Draggable Claim Scrubber (`< 30` Lines JS)
 ```html
 <section class="proof-stage" aria-label="Dynamic range recovery proof">
   <div class="proof-readout">
     <label for="gain-scrub">Input Gain: <output id="gain-out">1.0x</output></label>
-    <span id="clip-status" class="mono" aria-live="polite">0.0 dBFS — Headroom Intact</span>
+    <span id="clip-status" class="mono" aria-live="polite"></span>
   </div>
-  <input id="gain-scrub" type="range" min="1" max="8" step="0.1" value="1">
+  <input id="gain-scrub" type="range" min="1" max="8" step="0.1" value="1" aria-valuetext="1.0x, clean">
   <canvas id="scope" width="640" height="160" aria-hidden="true"></canvas>
 </section>
+<style>
+  #gain-scrub { inline-size: 100%; min-block-size: 44px; }
+  #scope { max-inline-size: 100%; block-size: auto; }
+</style>
 <script>
 (() => {
   const input = document.getElementById("gain-scrub");
   const out = document.getElementById("gain-out");
   const status = document.getElementById("clip-status");
   const ctx = document.getElementById("scope").getContext("2d");
-  const render = (g) => {
+  const render = (g, announce = false) => {
     out.textContent = `${g.toFixed(1)}x`;
     const db = (20 * Math.log10(g)).toFixed(1);
-    status.textContent = g > 3.2
-      ? `+${db} dB — 16-bit Clipped / 32-bit Float Recovered`
-      : `+${db} dB — Clean Transient Capture`;
+    const text = g > 3.2 ? `+${db} dB, 16-bit clips, 32-bit float recovers` : `+${db} dB, clean capture`;
+    input.setAttribute("aria-valuetext", `${g.toFixed(1)}x, ${g > 3.2 ? "clipping" : "clean"}`);
+    if (announce) status.textContent = text; // live region speaks user changes only, never demo frames
     ctx.clearRect(0, 0, 640, 160);
     ctx.beginPath();
     for (let x = 0; x < 640; x++) {
@@ -133,6 +147,7 @@ Static screenshots and lifeless inline SVGs lose blind comparisons in two second
     ctx.lineWidth = 2;
     ctx.stroke();
   };
+  input.addEventListener("change", () => render(parseFloat(input.value), true));
   input.addEventListener("input", () => render(parseFloat(input.value)));
   render(1.0);
 })();
@@ -170,7 +185,7 @@ document.getElementById("preorder-form").addEventListener("submit", (e) => {
 
 ## 4. Hero Composition Archetypes, Eyebrow Ban & Web CSS Floor
 
-Ensure the primary headline, one-sentence deck, focal visual/interactive proof, and primary action sit inside the initial viewport at **`1280 × 800`**, **`1440 × 900`**, and **`390 × 844`** without scrolling.
+Ensure the primary headline, one-sentence deck, focal visual/interactive proof, and primary action sit inside the initial viewport at **`1440 × 900`** and **`390 × 844`** (the two `--render` viewports) without scrolling. On `390px`, budget: nav `<= 56px` + headline/deck `<= 45%` + CTA visible; the focal artifact may start above the fold and continue below it.
 
 | Archetype | Spatial Split & Placement | Best Fit | Pitfall to Avoid |
 | :--- | :--- | :--- | :--- |
@@ -274,7 +289,16 @@ Real physical presence comes from crisp micro-surfaces and mechanical feedback �
 
 ---
 
-## 6. Responsive Image Aspect, Navigation & Scroll Pacing
+## 6. Picture Plan, Responsive Image Aspect, Navigation & Scroll Pacing
+
+**6.0 Picture Plan (write it before any `<img>`):** For every image slot, state:
+- **Subject and shot type:** macro, in-situ, hands-at-work, environmental portrait, product-on-surface.
+- **Light:** key direction and hard or soft.
+- **Lens:** 35mm context, 50mm natural, or 100mm macro.
+- **Grade:** two adjectives plus a white point, for example "dry, warm, 4800K".
+- **Crop:** the crop language, plus `object-position`.
+
+Choose image-led or type-led per section, never both at full volume. Without real photography, use an honest placeholder: a neutral plate captioned *"Stand-in — product photography replaces this"* with the planned shot list. Do not draw fake product renders in SVG unless the world's finish register is illustrative. Photography-first briefs deal well into the Gallery Wall world.
 
 1. **Lock Aspect Ratios Explicitly:** Every media container declares `aspect-ratio` (`16/9`, `3/2`, `4/5`, `1/1`) plus `width: 100%; height: 100%; object-fit: cover;`. Switch container aspect across breakpoints (e.g., `21/9` desktop → `4/3` or `4/5` mobile) and set `object-position` (`50% 22%` for portraits, `left top` for UI).
 2. **Scrim Pattern for Text Over Media (Explicit Stacking Context):**
@@ -300,6 +324,14 @@ Operational apps and analytics dashboards collapse quickly into bloated bento ca
 - **Primary Chart Dominance (`>= 65%` Width):** Give the primary diagnostic chart generous horizontal span (`8–12 cols` desktop, full width mobile) and `280–380px` height. Use subtle `8–12%` horizontal-only gridlines, direct series labels, `<= 4` distinct non-rainbow semantic hues, and crisp hover crosshairs.
 - **Dense Operational Tables:** Sticky headers (`position: sticky; top: 0`), `1px` bottom row hairlines, left-aligned text, right-aligned `tabular-nums` numbers, subtle `3–4%` row hover tint, and `6px` status dots + plain text instead of heavy pill tags on every cell.
 - **Complete Interactive States:** Design explicit **empty states** (1-line explanation + 1 clear next action), **loading skeletons** matching exact row geometry, **inline error states**, and unmistakable **`:focus-visible`** rings (`2px solid var(--accent-focal); outline-offset: 2px`).
+- **Forms & Tables (a11y):** Put an error summary at the top of a failed form, linked to each field. Use the right `autocomplete` token on every personal-data field (`name`, `email`, `tel`, `street-address`, `postal-code`, `cc-number`). Give table headers `<th scope="col|row">`. Make sortable headers into `<button>`s with `aria-sort`, and let users reach row actions by keyboard.
+
+### Copy, Microcopy & Voice
+- **Voice chart:** Write 3 traits, each with an *is / is not* pair (for example, "precise, not clinical"). Add 1 line of "we never say". Keep the chart in the D27-Lock notes.
+- **Buttons:** verb + object (`Reserve unit`, `Export CSV`), never `Get Started`, `Learn More` or `Submit` (`no-generic-microcopy`).
+- **Errors:** say what happened, why, and the fix ("Card declined by your bank. Try another card or call the number on the back."), never `Oops!`.
+- **Empty states:** say what will appear here, then give the first action.
+- **Tagline:** `<= 6` words, and it must fail the Mirror Test for all 3 named competitors.
 
 ---
 
@@ -363,7 +395,13 @@ kbd {
 
 ## 9. Empirical Research & Perception Grounding
 
-- **Polarity-Aware APCA (`Lc`) Over Legacy WCAG 2.x on Dark/Mid-Tones:** Target `|Lc| >= 90` preferred (`>= 75` min) for body text, `>= 60` for UI copy, and `>= 45` (`<= 90` halation cap) for display headlines; avoid `-webkit-font-smoothing: antialiased` on `<= 18px` body text outside high-DPI queries ([Smashing Magazine / Andrew Somers](https://www.smashingmagazine.com/2022/09/realities-myths-contrast-color/), [APCA in a Nutshell](https://git.apcacontrast.com/documentation/APCA_in_a_Nutshell.html)).
-- **Oklab/OKLCH Mixing:** Author palettes in Oklab (`L RMS = 0.20` vs. CIELAB `1.70`) and derive state tints with `color-mix(in oklab, ...)` so mixes stay in-gamut without blue-to-purple shifts ([Björn Ottosson — Oklab](https://bottosson.github.io/posts/oklab/), [Gamut Clipping](https://bottosson.github.io/posts/gamutclipping/)).
-- **Fold Attention & Layer-Cake Scanning:** Users spend **57%** of viewing time above the fold and **74%** within the first two screenfuls; front-loaded subheadings induce layer-cake scanning instead of F-pattern skipping ([NN/g Scrolling & Attention](https://www.nngroup.com/articles/scrolling-and-attention/), [NN/g Layer-Cake Pattern](https://www.nngroup.com/articles/layer-cake-pattern-scanning/)).
-- **Measure, Forms & Wrapping:** Keep body prose within **50–70 ch** (`64ch` target, `75ch` hard ceiling) with `line-height >= 1.5`, default to single-column forms with inline validation ([Baymard](https://baymard.com/research-articles/line-length-readability)), apply `text-wrap: balance` only on short `<= 4–6` line headings ([Chrome](https://developer.chrome.com/docs/css-ui/css-text-wrap-balance)), and `text-wrap: pretty` on prose ([WebKit](https://webkit.org/blog/16547/better-typography-with-text-wrap-pretty/)).
+- **APCA (`Lc`) as a Perceptual Cross-Check Beside WCAG 2.2:** WCAG 2.x remains the conformance measure (APCA left the WCAG 3 drafts in 2023). Target `|Lc| >= 90` preferred (`>= 75` min) for body text, `>= 60` only for `>= 24px/400` or `>= 16px/700` text, and `>= 45` (`<= 90` halation cap) for display headlines; avoid `-webkit-font-smoothing: antialiased` on `<= 18px` body text outside high-DPI queries ([Smashing Magazine / Andrew Somers](https://www.smashingmagazine.com/2022/09/realities-myths-contrast-color/), [APCA in a Nutshell](https://git.apcacontrast.com/documentation/APCA_in_a_Nutshell.html)).
+- **Oklab/OKLCH Mixing:** Author palettes in Oklab: it predicts lightness far better than CIELAB (`L RMS 0.20` vs `1.70`) and avoids blue-to-purple hue shifts. `color-mix(in oklab, ...)` can still leave sRGB gamut, so gamut-map or clamp the result ([Björn Ottosson — Oklab](https://bottosson.github.io/posts/oklab/), [Gamut Clipping](https://bottosson.github.io/posts/gamutclipping/)).
+- **Fold Attention & Layer-Cake Scanning:** In NN/g's 2018 desktop eye-tracking study, users spent **57%** of viewing time above the fold and **74%** within the first two screenfuls; front-loaded subheadings induce layer-cake scanning instead of F-pattern skipping ([NN/g Scrolling & Attention](https://www.nngroup.com/articles/scrolling-and-attention/), [NN/g Layer-Cake Pattern](https://www.nngroup.com/articles/layer-cake-pattern-scanning/)).
+- **Measure & Wrapping:** Keep body prose within **50–75 ch** (`64ch` target, `75ch` hard ceiling; [Baymard](https://baymard.com/research-articles/line-length-readability)) with `line-height >= 1.5`. Readers read longer lines faster but *prefer* about 55 cpl (Dyson & Kipping 1998), so comfort wins on Read surfaces; apply `text-wrap: balance` only on short `<= 4–6` line headings ([Chrome](https://developer.chrome.com/docs/css-ui/css-text-wrap-balance)), and `text-wrap: pretty` on prose ([WebKit](https://webkit.org/blog/16547/better-typography-with-text-wrap-pretty/)).
+
+---
+
+## Final Medium Gate (Stage 4, with `qa-and-critique.md`)
+
+Above-the-fold hero holds focal message + Diegetic Artifact + max 1 primary CTA cleanly at `1440×900` and `390×844`; *Persuade/Experience* pages include **1 genuine Interactive Proof widget**; mobile tap targets `>= 44×44px`; nav `<= 5` top links. Dashboards use hairline shell rail (`220–248px`) + open KPI strip, `>= 65%` primary chart width, right-aligned `tabular-nums`, empty/loading/error/`:focus-visible` states. Dual-safe one-pagers fit `188×257mm` on light ink-saving print ground with `<= 10%` masthead.

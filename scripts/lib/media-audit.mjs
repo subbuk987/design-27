@@ -69,7 +69,8 @@ export function auditVideoFile({ file, rel, ext, targetLufs, findings, mediaAudi
   }
 
   try {
-    const out = execFileSync("ffprobe", ["-v", "error", "-show_streams", "-of", "json", file], { encoding: "utf8" });
+    // file-only protocols + timeout: a hostile .mp4 that is really an HLS playlist must not fetch or hang.
+    const out = execFileSync("ffprobe", ["-v", "error", "-protocol_whitelist", "file", "-show_streams", "-of", "json", file], { encoding: "utf8", timeout: 30000 });
     const info = JSON.parse(out);
     const streams = info.streams || [];
     const vStream = streams.find((s) => s.codec_type === "video");
@@ -115,7 +116,7 @@ export function auditVideoFile({ file, rel, ext, targetLufs, findings, mediaAudi
         }
       }
       if (aStream) {
-        const eb = spawnSync("ffmpeg", ["-nostats", "-i", file, "-filter_complex", "ebur128=peak=true", "-f", "null", "-"], { encoding: "utf8" });
+        const eb = spawnSync("ffmpeg", ["-nostats", "-protocol_whitelist", "file", "-i", file, "-filter_complex", "ebur128=peak=true", "-f", "null", "-"], { encoding: "utf8", timeout: 120000 });
         if (!eb.error && eb.stderr) {
           mediaAudit.ffmpegCraftRan = true;
           const iMatch = eb.stderr.match(/Integrated loudness:[\s\S]*?I:\s*(-?\d+(?:\.\d+)?)\s*LUFS/);

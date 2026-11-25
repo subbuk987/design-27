@@ -2,6 +2,8 @@
 
 Load this module alongside `SKILL.md` whenever directing product launch videos, building standalone HTML scrubbable motion pieces, authoring kinetic typography, or rendering deterministic code video in Remotion, HyperFrames, GSAP, or Manim.
 
+> **Emotion levers ([`emotion-science.md`](emotion-science.md) §0; study codes in [`emotion-evidence.md`](emotion-evidence.md)):** Lock the Emotional Target first. Kinematics carry the emotion (M1); one peak per scene, and the lockup hold is the designed end (S3, M2).
+
 > **Scope Boundary — Live App UI vs. Launch Motion:** For live web/app UI micro-interactions, `<300ms` popover physics, trigger-anchored `transform-origin`, Frequency Test budgets, and `document.startViewTransition()` state morphs, load [`references/animations.md`](references/animations.md). This module is dedicated 100% to **programmatic launch films, kinetic typography, 2.5D camera choreography, and deterministic frame-accurate rendering**.
 
 ---
@@ -367,6 +369,11 @@ Never build launch pieces as flat static boxes fading in and out on a `z = 0` pa
 - **Breathing Beats:** Insert `0.4–0.7s` of clean visual silence before the product climax so contrast hits hard.
 - **Broadcast Safe Boxes (`1920 × 1080`):** Keep active visuals inside the **90% Action-Safe Box** (`96px` horizontal / `54px` vertical inset) and all kinetic titles inside the **80% Title-Safe Box** (`192px` horizontal / `108px` vertical inset).
 
+### Story Spine & Script (before any keyframe)
+- **Four-beat spine:** Beat 1 shows the viewer's broken status quo, the hook. Beat 2 is the turn, where the product enters. Beat 3 is the proof: the SMP shown, not said. Beat 4 is the new world, with a one-verb CTA on the lockup. Surprise lives *inside* a beat (an anomaly, a reveal). The order itself stays predictable, so viewers can anticipate (`emotion-evidence.md` S1).
+- **VO and super budget:** at most `2.5` spoken words per second, and one claim per beat. On-screen supers must not repeat the VO word for word.
+- **Campaign line:** the lockup line is the web hero line. The thumbnail hook is Beat 1 (`d27-deal --campaign`).
+
 ### Shot Pacing, Overlap Math & Anti-Slop Banlist
 - **Hook & Hold Floors:** Land the visual hook inside **`0–2.0s`**, hold primary shots **`1.5–4.0s`**, and stage **at most 1 primary focal motion per beat**.
 - **Overlap Compensation:** Always compute timeline length from scene overlaps:
@@ -516,3 +523,9 @@ node scripts/d27-frames.mjs audit master.mp4 --max-static 3.0
 - **Broadcast Safe Areas & Loudness:** Enforce **93% Action Safe** (3.5% inset) and **90% Title Safe** (`96×54px` at 1080p, `192×108px` at 4K; [SMPTE ST 2046-1 / EBU R95](https://postproduction.studio/en/tools/safe-areas)), plus [ITU-R BS.1770-4 / EBU R128](https://audio.js.org/modules/loudness/) (`-14 LUFS` web / `-23 LUFS` broadcast, `-1.0 dBTP` ceiling).
 - **Netflix Timed Text Pacing:** Enforce **`833ms` (`5/6s`) min** and **`7.0s` max** cue duration, **`<= 20 CPS`** adult (`<= 17` kids), **`>= 2 frames`** inter-cue gap (chaining `< 0.5s` gaps to 2 frames), and `0.5s` shot-change snaps ([Netflix Timing Guidelines](https://partnerhelp.netflixstudios.com/hc/en-us/articles/360051554394-Timed-Text-Style-Guide-Subtitle-Timing-Guidelines), [Szarkowska & Gerber-Morón, PLOS ONE 2018](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0199331)).
 - **Subpixel Anti-Jitter & Rec.709 `1-1-1`:** Apply `transform: perspective(100px)` during slow Chromium text pans to eliminate integer pixel snapping ([Remotion Subpixel Rendering](https://www.remotion.dev/docs/troubleshooting/subpixel-rendering)), and keep strict NCLC `1-1-1` Rec.709 tags ([CineD](https://www.cined.com/quicktime-gamma-shift-bug-what-is-it-and-how-to-combat-it/)).
+
+---
+
+## Final Medium Gate (Stage 4, with `qa-and-critique.md`)
+
+Deterministic timeline (`window.__d27Seek(t)` or Remotion/HyperFrames/Manim frame math); 2.5D camera rig + depth planes; seeded waveforms/particles; `d27-frames.mjs sheet` contact sheet verified at Frame 0 and beat boundaries; `d27-check.mjs` verifies `.mp4` `ffprobe` / `-14..-16 LUFS` / `yuv420p`; final `>= 1.2s` lockup hold intact.

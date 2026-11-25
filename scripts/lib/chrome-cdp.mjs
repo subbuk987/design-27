@@ -1,14 +1,15 @@
 /**
- * Design 27 v4.0.0 — Zero-NPM-Dependency, Zero-Socket Headless Chrome CDP Client
- * Uses Chrome's native `--remote-debugging-pipe` (stdio fd 3/4) with strict zero-network
- * enforcement (`--host-resolver-rules` + CDP `Fetch.enable`), no `--allow-file-access-from-files`,
+ * Design 27 — Zero-NPM-Dependency Headless Chrome CDP Client
+ * Uses Chrome's native `--remote-debugging-pipe` (stdio fd 3/4). Pages load from a jailed one-port
+ * 127.0.0.1 server (safe-io.mjs), never file://; every other request is blocked (`--host-resolver-rules`
+ * + CDP `Fetch.enable`), no `--allow-file-access-from-files`,
  * fail-closed sandboxing, reverse-seek motion determinism verification, and 16x16 pixel cutout audits.
  */
 import crypto from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { pathToFileURL } from "node:url";
+import { writeFileSafe, serveDirectory, commonDir } from "./safe-io.mjs";
 import { spawn, spawnSync } from "node:child_process";
 import { analyzeCutoutBitmap } from "./pixel-audit.mjs";
 
@@ -67,7 +68,7 @@ async function terminateChrome(proc, tmpUserDataDir) {
   }
 }
 
-async function spawnPipeSessionOnce(binaryPath, extraFlags, timeoutMs = DEFAULT_TIMEOUT_MS) {
+async function spawnPipeSessionOnce(binaryPath, extraFlags, timeoutMs = DEFAULT_TIMEOUT_MS, allowedOrigin = null) {
   const safeExtraFlags = (extraFlags || []).filter((f) => typeof f === "string" && ALLOWED_EXTRA_FLAG_RE.test(f));
   const tmpUserDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "d27-chrome-"));
   const chromeArgs = [
@@ -214,8 +215,8 @@ async function spawnPipeSessionOnce(binaryPath, extraFlags, timeoutMs = DEFAULT_
       await send("Fetch.enable", { patterns: [{ urlPattern: "http://*" }, { urlPattern: "https://*" }] }, timeoutMs);
       on("Fetch.requestPaused", (params) => {
         const url = params?.request?.url || "";
-        const isLoopback = /^https?:\/\/(?:127\.0\.0\.1|localhost)(?::\d+)?\//i.test(url);
-        if (isLoopback) {
+        // Only the jailed page server may answer; other loopback ports (dev servers, Jupyter, admin APIs) stay unreachable.
+        if (allowedOrigin && url.startsWith(`${allowedOrigin}/`)) {
           send("Fetch.continueRequest", { requestId: params.requestId }, 2000).catch(() => {});
         } else {
           send("Fetch.failRequest", { requestId: params.requestId, errorReason: "BlockedByClient" }, 2000).catch(() => {});
@@ -230,18 +231,21 @@ async function spawnPipeSessionOnce(binaryPath, extraFlags, timeoutMs = DEFAULT_
   }
 }
 
-async function withCdpSession(fn, timeoutMs = DEFAULT_TIMEOUT_MS, { unsafeNoSandbox = false } = {}) {
+async function withCdpSession(fn, timeoutMs = DEFAULT_TIMEOUT_MS, { unsafeNoSandbox = false, serveFiles = [] } = {}) {
   const binary = findChromeBinary();
   if (!binary) {
     throw new Error("Chrome/Chromium binary not found on PATH or standard macOS/Linux paths.");
   }
   const extraFlags = unsafeNoSandbox || process.env.D27_UNSAFE_NO_SANDBOX === "1" ? ["--no-sandbox"] : [];
-  const session = await spawnPipeSessionOnce(binary, extraFlags, timeoutMs);
-
+  // Pages load over a jailed http://127.0.0.1 server, never file://: a file:// page can iframe ~/.ssh into a snapshot.
+  const server = await serveDirectory(commonDir(serveFiles.map((f) => path.resolve(f))));
+  let session;
   try {
-    return await fn(session);
+    session = await spawnPipeSessionOnce(binary, extraFlags, timeoutMs, server.origin);
+    return await fn({ ...session, urlFor: server.urlFor });
   } finally {
-    await terminateChrome(session.proc, session.tmpUserDataDir);
+    if (session) await terminateChrome(session.proc, session.tmpUserDataDir);
+    await server.close();
   }
 }
 
@@ -290,6 +294,21 @@ export function buildDomAuditFnSource() {
       ? false
       : document.documentElement.scrollWidth > document.documentElement.clientWidth;
     const bodyFontPx = parseFloat(getComputedStyle(document.body).fontSize || "16");
+    const targetTooSmall = [];
+    const unnamedControls = [];
+    const describe = (el) => (el.tagName.toLowerCase() + (el.id ? "#" + el.id : "") + (el.className && typeof el.className === "string" ? "." + el.className.trim().split(/\s+/)[0] : "")).slice(0, 60);
+    for (const el of document.querySelectorAll('a[href], button, input:not([type="hidden"]), select, textarea, [role="button"], [role="slider"], [role="link"], [role="tab"]')) {
+      const r = el.getBoundingClientRect();
+      const cs = getComputedStyle(el);
+      if (r.width === 0 || r.height === 0 || cs.visibility === "hidden" || el.closest("[aria-hidden='true'], [inert]")) continue;
+      // WCAG 2.5.8 exempts links inside running text.
+      const inlineLink = el.tagName === "A" && cs.display === "inline";
+      if (!inlineLink && (r.width < 24 || r.height < 24) && targetTooSmall.length < 10) targetTooSmall.push(describe(el) + " " + Math.round(r.width) + "x" + Math.round(r.height));
+      const labelledBy = (el.getAttribute("aria-labelledby") || "").split(/\s+/).map((id) => document.getElementById(id)?.textContent || "").join(" ");
+      const name = [el.getAttribute("aria-label"), labelledBy, el.labels && el.labels.length ? el.labels[0].textContent : "", el.tagName === "INPUT" && /^(submit|button|reset)$/i.test(el.type) ? el.value : "", el.innerText, el.title, el.querySelector("img[alt]")?.alt, el.querySelector("svg title")?.textContent]
+        .filter(Boolean).join(" ").trim();
+      if (!name && unnamedControls.length < 10) unnamedControls.push(describe(el));
+    }
     const visibleText = (document.body.innerText || "").trim().length > 0;
     const assertionFails = [];
 
@@ -436,7 +455,9 @@ export function buildDomAuditFnSource() {
       }
     }
 
-    return { overflowX, bodyFontPx, visibleText, assertionFails, thumbnailDeadzoneCollisions, thumbnailHookScale, mascotCutout };
+    return {
+      targetTooSmall,
+      unnamedControls, overflowX, bodyFontPx, visibleText, assertionFails, thumbnailDeadzoneCollisions, thumbnailHookScale, mascotCutout };
   }`;
 }
 
@@ -452,10 +473,10 @@ export async function auditHtmlWithCdp({
   if (snapshotsDir) fs.mkdirSync(path.resolve(snapshotsDir), { recursive: true });
   const evalFnSrc = buildDomAuditFnSource();
 
-  return withCdpSession(async ({ send, on, onceEvent }) => {
+  return withCdpSession(async ({ send, on, onceEvent, urlFor }) => {
     const results = [];
     for (const htmlFile of htmlFiles) {
-      const fileUrl = pathToFileURL(htmlFile).href;
+      const fileUrl = urlFor(htmlFile);
       for (const vp of viewports) {
         const runtimeErrors = [];
         const offEx = on("Runtime.exceptionThrown", (params) => {
@@ -489,7 +510,7 @@ export async function auditHtmlWithCdp({
             const shot = await send("Page.captureScreenshot", { format: "png" }, timeoutMs);
             const snapName = `${path.basename(htmlFile, path.extname(htmlFile))}-${vp.width}x${vp.height}.png`;
             snapshotPath = path.join(path.resolve(snapshotsDir), snapName);
-            fs.writeFileSync(snapshotPath, Buffer.from(shot.data, "base64"));
+            writeFileSafe(snapshotPath, Buffer.from(shot.data, "base64"));
           }
 
           const expression = `(${evalFnSrc})(${JSON.stringify(assertions || [])}, ${JSON.stringify(medium)})`;
@@ -524,7 +545,7 @@ export async function auditHtmlWithCdp({
       }
     }
     return results;
-  }, timeoutMs, { unsafeNoSandbox });
+  }, timeoutMs, { unsafeNoSandbox, serveFiles: htmlFiles });
 }
 
 export async function captureHtmlFramesWithCdp({
@@ -538,9 +559,8 @@ export async function captureHtmlFramesWithCdp({
 }) {
   const resolvedOut = path.resolve(outDir);
   fs.mkdirSync(resolvedOut, { recursive: true });
-  const fileUrl = pathToFileURL(path.resolve(htmlFile)).href;
-
-  return withCdpSession(async ({ send, onceEvent }) => {
+  return withCdpSession(async ({ send, onceEvent, urlFor }) => {
+    const fileUrl = urlFor(path.resolve(htmlFile));
     await send("Emulation.setDeviceMetricsOverride", {
       width,
       height,
@@ -591,12 +611,12 @@ export async function captureHtmlFramesWithCdp({
       const shot = await send("Page.captureScreenshot", { format: "png" }, timeoutMs);
       const fileName = `frame-${String(i).padStart(3, "0")}.png`;
       const outFile = path.join(resolvedOut, fileName);
-      fs.writeFileSync(outFile, Buffer.from(shot.data, "base64"));
+      writeFileSafe(outFile, Buffer.from(shot.data, "base64"));
       frames.push({ index: i, timestamp: t, path: outFile });
     }
 
     return { outDir: resolvedOut, frames };
-  }, timeoutMs, { unsafeNoSandbox });
+  }, timeoutMs, { unsafeNoSandbox, serveFiles: [htmlFile] });
 }
 
 export async function verifyHtmlDeterminismWithCdp({
@@ -611,9 +631,8 @@ export async function verifyHtmlDeterminismWithCdp({
   if (beats.length === 0 || beats.some((n) => !Number.isFinite(n) || n < 0)) {
     throw new Error("timestamps must be non-negative finite numbers.");
   }
-  const fileUrl = pathToFileURL(path.resolve(htmlFile)).href;
-
-  return withCdpSession(async ({ send, onceEvent }) => {
+  return withCdpSession(async ({ send, onceEvent, urlFor }) => {
+    const fileUrl = urlFor(path.resolve(htmlFile));
     await send("Emulation.setDeviceMetricsOverride", {
       width,
       height,
@@ -671,5 +690,5 @@ export async function verifyHtmlDeterminismWithCdp({
       engine: "chrome-cdp",
       ...evaluateDeterminismHashes({ beats, forwardHashes, reverseHashes }),
     };
-  }, timeoutMs, { unsafeNoSandbox });
+  }, timeoutMs, { unsafeNoSandbox, serveFiles: [htmlFile] });
 }

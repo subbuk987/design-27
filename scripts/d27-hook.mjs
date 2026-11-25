@@ -10,9 +10,11 @@ import os from "node:os";
 import path from "node:path";
 import crypto from "node:crypto";
 import { pathToFileURL } from "node:url";
-import { runCheck } from "./d27-check.mjs";
 
-const VERSION = "4.0.0";
+import { VERSION } from "./lib/version.mjs";
+// Findings quote page text (selectors, error messages) into the agent's context: one line each, clipped.
+const clip = (v, n) => String(v ?? "").replace(/[\r\n\u2028\u2029]+/g, " ").slice(0, n);
+const formatFinding = (f) => `[${clip(f.tier, 8)}] ${clip(f.file, 160)}:${Number(f.line) || 1} (${clip(f.rule, 48)}): ${clip(f.message, 240)} Fix: ${clip(f.fix, 240)}`;
 const WATCH_EXTS = new Set([".html", ".htm", ".css", ".scss", ".jsx", ".tsx", ".vue", ".svelte", ".svg", ".js", ".ts", ".typ", ".md"]);
 
 function resolvePrivateLedgerPath() {
@@ -48,6 +50,7 @@ async function runCheckInProcess(args) {
     stdout: { write: (s) => { stdout += String(s); } },
     stderr: { write: () => {} },
   };
+  const { runCheck } = await import("./d27-check.mjs");
   await runCheck(args, io);
   try {
     return stdout ? JSON.parse(stdout) : { findings: [] };
@@ -110,7 +113,7 @@ export async function runHook(argv = []) {
     }
     if (!WATCH_EXTS.has(path.extname(abs).toLowerCase())) return 0;
 
-    const parsed = await runCheckInProcess(["--tier=fast", "--json", "--", abs]);
+    const parsed = await runCheckInProcess(["--tier=fast", "--json", "--no-cache", "--", abs]);
     const ledger = loadLedger();
     if (!ledger.files.includes(abs)) ledger.files.push(abs);
     for (const f of parsed.findings || []) {
@@ -120,7 +123,7 @@ export async function runHook(argv = []) {
     saveLedger(ledger);
 
     if ((parsed.findings || []).length > 0) {
-      const lines = parsed.findings.map((f) => `[${f.tier}] ${f.file}:${f.line} (${f.rule}): ${f.message} Fix: ${f.fix}`);
+      const lines = parsed.findings.slice(0, 40).map(formatFinding);
       console.log(JSON.stringify({
         hookSpecificOutput: {
           hookEventName: "PostToolUse",
@@ -146,7 +149,7 @@ export async function runHook(argv = []) {
     saveLedger({ files: [], seen: [] });
 
     if (freshFindings.length > 0) {
-      const lines = freshFindings.map((f) => `[${f.tier}] ${f.file}:${f.line} (${f.rule}): ${f.message} Fix: ${f.fix}`);
+      const lines = freshFindings.slice(0, 40).map(formatFinding);
       console.log(JSON.stringify({
         hookSpecificOutput: {
           hookEventName: "Stop",

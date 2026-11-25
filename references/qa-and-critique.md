@@ -11,6 +11,15 @@ Load and run this module at **Stage 4** of every Design 27 task before declaring
 
 ---
 
+## Pass 0 — The Idea (before any craft check)
+
+- [ ] **Say it in one sentence:** State the idea (SMP + concept) in one sentence with no colour, font or widget in it. If you cannot, the build has no idea. Return to SKILL.md Stage 0.
+- [ ] **Kill your darlings:** Name the best-loved element that does not serve the SMP, and delete it.
+- [ ] **Mirror Test:** Swap in each of the 3 named competitors. The headline and artifact must stop fitting.
+- [ ] **Campaign coherence:** Every medium of the campaign uses the same `brief.json` world, the same emotion and the same line.
+
+---
+
 ## Pass 1 — Visual Hierarchy, Diegetic Metaphor & Focal Point
 
 Inspect the rendered view at `25%` / mobile scale (or verify exact heading/visual sizing and placement in source):
@@ -40,12 +49,12 @@ Verify actual foreground/background luminance pairs — never eyeball low-contra
 - [ ] **Typeface Cap:** Strictly `<= 2` primary font families + `1` optional monospace utility face (explicitly loaded via `@font-face` or web fonts — zero Arial/Times fallbacks).
 - [ ] **Scale Tension:** Headline-to-body ratio meets medium target: `4:1–10:1` at `0.86–0.96` leading on *Experience*, *Thumbnails*, and *Motion*; `>= 2.5×` on *Persuade* websites (`>= 2.2×` mobile); `1.8×–2.5×` on *Operate/Read* and dense one-pagers. *(Thumbnails have no body copy; enforce `16–24%` canvas height per hook line.)*
 - [ ] **Eyebrow Discipline:** Tracked-uppercase eyebrows capped at **`<= 2` structural landmarks** per page — never mechanically stamped above every `<h2>` (`no-eyebrow-spam`).
-- [ ] **Body Measure, Orphans & Widows:** Continuous prose stays within **`45–70ch`** (ideal `58–65ch`; `36–48ch` multi-column). Display headings balance cleanly (`text-wrap: balance` or manual breaks) with zero single-word orphans. Print/PDF books enforce `widows: 3`, `orphans: 3`, and `break-after: avoid` on headings.
+- [ ] **Body Measure, Orphans & Widows:** Continuous prose stays within **`50–75ch`** (ideal `58–65ch`; `36–48ch` multi-column). Display headings balance cleanly (`text-wrap: balance` or manual breaks) with zero single-word orphans. Print/PDF books enforce `widows: 3`, `orphans: 3`, and `break-after: avoid` on headings.
 - [ ] **Minimum Legibility Floors Enforced:**
   - Websites & Dashboards: Body `>= 16px`, utility labels/captions `>= 12px`.
   - Dense Dual-Safe One-Pagers: Print `>= 7.5pt`, screen `>= 11px`.
   - Books & Editorial: Print body `9.5–11pt` (screen PDF `10.5–11.5pt`), footnotes/captions `>= 7.5pt`.
-  - Thumbnails: Display hook `>= 16–24%` of canvas height (`0–4` words max).
+  - Thumbnails: Display hook `16–24%` of canvas height target, `14%` checker floor (`0–4` words max).
 - [ ] **Tabular Numerals & Proper Punctuation:** `font-variant-numeric: tabular-nums` applied to tables, KPIs, prices, timecodes, and folios. True em-dashes (`—`), en-dashes (`–`), curly quotes (`“ ” ‘ ’`), and proper `×` multiplication signs replace ASCII hacks (`--`, `"`, `x`).
 
 ---
@@ -71,18 +80,9 @@ Inspect desktop (`1440px` / `1280px`), mobile (`390px`), or print trim margins:
 
 ---
 
-## Pass 6 — Medium-Specific Sign-Off Gates (6 Flagship Pillars)
+## Pass 6 — Medium-Specific Sign-Off Gate
 
-Confirm every row matching your active medium(s):
-
-| Pillar | Mandatory Final Checks |
-| :--- | :--- |
-| **1. Websites & Dashboards** *(+ Dual-Safe One-Pagers)* | Above-the-fold hero holds focal message + Diegetic Artifact + max 1 primary CTA cleanly at `1280×800`, `1440×900`, and `390×844`; *Persuade/Experience* pages include **1 genuine Interactive Proof widget**; mobile tap targets `>= 44×44px`; nav `<= 5` top links. Dashboards use hairline shell rail (`220–248px`) + open KPI strip, `>= 65%` primary chart width, right-aligned `tabular-nums`, empty/loading/error/`:focus-visible` states. Dual-safe one-pagers fit `188×257mm` on light ink-saving print ground with `<= 10%` masthead. |
-| **2. UI Animations & Micro-Interactions** | Passes Frequency Test (`0–100ms` high-frequency, `< 300ms` overlays); zero `scale(0)` or `ease-in` entrances; trigger-anchored `transform-origin`; interruptible transitions/springs; View Transitions / scroll-linked reveals degrade cleanly; `1.2s–2.4s` auto-play-once demo yields on input and respects `prefers-reduced-motion`. |
-| **3. Motion Design & Launch Video** | Deterministic timeline (`window.__d27Seek(t)` or Remotion/HyperFrames/Manim frame math); 2.5D camera rig + depth planes; seeded waveforms/particles; `d27-frames.mjs sheet` contact sheet verified at Frame 0 and beat boundaries; `d27-check.mjs` verifies `.mp4` `ffprobe` / `-14..-16 LUFS` / `yuv420p`; final `>= 1.2s` lockup hold intact. |
-| **4. Book Writing & Editorial Publishing** | Book Charter + Chapter Beat Cards locked; every chapter opens with a concrete scene/artifact/measurement; **zero AI prose slop** (*delve, tapestry, testament, pivotal, underscore*, negative parallelisms, throat-clearing openers, `<= 2` em-dashes/para) + strong sentence burstiness; web-books include accessible Tufte sidenotes (`aria-describedby` + `role="note"`) + TOC rail + `@media print`; print/Typst obeys binding-aware inner gutter (`15mm` `<= 120pp` saddle-stitch, `18–22mm` perfect-bound `121–400pp`, `25mm` `> 400pp`), suppressed running headers on openers/versos, and **zero double-signaled paragraphs** (`text-indent` XOR `margin-bottom`). |
-| **5. Mascot Creation & SVG Rigging** | Anatomy derived from **2-Noun Domain Metaphor Matrix** (zero unprompted fox/cat ears on technical tools); primary `<svg>` contains `>= 4` named `<g id="...">` groups; silhouettes use **`--m-fill`/`--m-cut` CSS-variable cutouts or `<mask>`** (zero blind `filter: brightness(0)`), verified across `400px → 64px → 32px → 16px` on light & dark; interactive showcase provides hover/focus `#group` isolation + restrained `prefers-reduced-motion`-safe idle micro-motion. |
-| **6. YouTube & Social Thumbnails** | Emitted alongside a **complementary Video/Article Title** forming a Curiosity Gap (`< 50%` shared words); `<= 3` visual elements; `0–4` words max inside `#thumbnail-canvas`; **live `160×90px` dark/light feed context preview** passes squint legibility; **YouTube bottom-right timestamp dead zone (`x: 1000–1280, y: 590–720`) completely clear** of text, faces, and logos. |
+Run the **Final Medium Gate** at the end of your active medium module(s) (`websites.md`, `animations.md`, `motion-design.md`, `book-writing.md`, `mascot-creation.md`, `thumbnails.md`). Only the active medium's gate is loaded.
 
 ---
 
@@ -92,7 +92,7 @@ If ANY of these patterns survived into the artifact, **STOP — revise before de
 
 1. **Polite Charcoal + Safety-Orange Convergence** (`#090B10` + `Geist` + `#FF5B1F`) or default purple-blue/pink AI gradient (`#6366f1` → `#a855f7` → `#ec4899`) ignoring the brief's Material World.
 2. **Eyebrow Spam & Structural Repetition:** Tracked uppercase eyebrows stamped mechanically above every `<h2>`, 3-column icon-in-a-square card soup, or identical `.ruled-row` `01/02/03` stacks.
-3. **Static Persuade Pages:** Zero functional interactive proof widget or zero auto-play-once signature load demo on a landing/product showcase.
+3. **Unproven Persuade Pages:** A testable claim with no interactive proof, or a waived proof with no story/evidence replacing it and no logged reason.
 4. **AI Prose & Hype Slop:** *delve, tapestry, testament, pivotal, underscore, supercharge, seamless, unlock*, `"It's not just X — it's Y"`, `"Moreover,"`, `"Welcome back! 👋"`, `!` spam, or single italic gimmick words inside roman display headings.
 5. **Broken Mascot / Animation Physics:** Blind `filter: brightness(0)` silhouette blobs, cloned fox-ear templates on technical tools, `scale(0)` or `ease-in` UI entrances, `transition: all`, or linear hover states.
 6. **Fake Proof & Decorative Clutter:** Unprompted `✨ AI-Powered` badges, emoji UI icons, fake macOS window dots, floating glass blobs, washed-out low-contrast grey text, or invented metrics/testimonials/logo walls.
@@ -101,14 +101,16 @@ If ANY of these patterns survived into the artifact, **STOP — revise before de
 
 ## Mandatory Studio Sign-Off Block
 
-Include this compact 6-line **Art Director Sign-Off** at the end of Stage 4 (both when building new artifacts and when reviewing existing work) to confirm every gate was verified:
+Include this compact 8-line **Art Director Sign-Off** at the end of Stage 4 (both when building new artifacts and when reviewing existing work) to confirm every gate was verified:
 
 ```markdown
 ### Art Director Sign-Off — Design 27
 - **Checker & Evidence:** [d27-check exit 0 · render: playwright|chrome-cdp · snapshots/frames inspected | UNVERIFIED: <exact reason>]
+- **Idea:** [SMP in ≤ 12 words · concept in 1 sentence · line · 3 competitors whose code was banned]
 - **D27-Lock & Material World:** [M:x I:x H:x C:x R:x] — [Material World · Macrostructure · Diegetic Artifact · Mode · Banned Cliché]
 - **Focal Anchor & Interactive Proof:** [Pass / Revised] — [Assertion Headline → Interactive Proof / Motion Hook → Action]
 - **Contrast, Type & Prose Hygiene:** [Pass / Revised] — [Min contrast ratio, measure, scale ratio, eyebrow count, AI-prose check]
 - **Spatial Rhythm, Physics & Medium Gate:** [Pass / Revised] — [CSS/print/SVG-cutout/dead-zone/AV floor + medium pillar gate verified]
+- **Emotion & Story:** [Pass / Revised] — [Emotional Target · `brief-emotion-chroma-mismatch` clear · peak moment · end moment · 0 Grade-C claims (`emotion-science.md` §7)]
 - **Material Honesty & Waivers:** [0 Floor fails · 0 invented facts · Waivers: None / Rule + rationale]
 ```

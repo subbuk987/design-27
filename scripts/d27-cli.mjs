@@ -7,7 +7,7 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
-const VERSION = "4.0.0";
+import { VERSION } from "./lib/version.mjs";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, "..");
 const [cmd, ...rest] = process.argv.slice(2);
@@ -31,7 +31,7 @@ if (!cmd || cmd === "--help" || cmd === "-h") {
   process.exit(0);
 }
 
-// Fast in-process ESM dispatch (0ms V8 fork overhead)
+// In-process dispatch for check/doctor/hook/frames; deal/captions/eval still spawn a child (~30ms).
 if (cmd === "check") {
   const { runCheck } = await import("./d27-check.mjs");
   process.exitCode = await runCheck(rest);

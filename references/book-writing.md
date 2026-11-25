@@ -2,6 +2,8 @@
 
 Load this module alongside `SKILL.md` whenever writing or editing nonfiction books, technical monographs, long-form essays, engineering manuals, or typesetting web-books, CSS Paged Media PDFs, and Typst print masters.
 
+> **Emotion levers ([`emotion-science.md`](emotion-science.md) §0; study codes in [`emotion-evidence.md`](emotion-evidence.md)):** Lock the Emotional Target first. Predictable structure lets readers anticipate (S1); scene openers drive transportation (S2); typesetting moves mood, not speed (T1, T4).
+
 ---
 
 ## 1. Pre-Draft Manuscript Architecture (Decisions Before Drafting)
@@ -11,7 +13,7 @@ Never draft chapters cold. Unplanned manuscripts drift into bloated summaries, m
 ### A. The Book Charter (One Page, Locked Before Chapter 1)
 Every book or long-form monograph requires four explicit commitments:
 
-1. **Core Thesis:** One falsifiable claim the entire book exists to prove. *(Bad: "A guide to distributed databases." Good: "Consensus bugs rarely come from broken algorithms; they come from unmodeled clocks, queues, and operator retries.")*
+1. **Core Thesis:** One falsifiable claim the entire book exists to prove. *(Bad: "A guide to distributed databases." Good: "Most consensus bugs come from unmodeled clocks, queues, and operator retries.")*
 2. **Target Reader & Transformation:** Who picks this up on page 1, what false assumption they hold, and what concrete mental model or decision rule they carry out on the final page.
 3. **Voice Register (Pick Exactly One):**
    - **Clinical Systems Engineer** — Measurements, causal chains, failure boundaries, terse active verbs, zero hype.
@@ -31,6 +33,15 @@ Draft every chapter from a 5-beat card so prose moves forward with mechanical te
 | **4. Counter-Case & Boundary** | Show where the chapter's own thesis stops holding or requires an uncomfortable trade-off. | Earns reader trust by refusing one-size-fits-all dogma. |
 | **5. Sharp Implication** | Close on the concrete decision, diagnostic check, or mental shift that follows immediately. | Never end with a cozy recap paragraph (*"In summary, we have seen..."*). |
 
+### C. Story Craft (Narrative, Memoir, Investigative Registers & Launch Copy)
+- **Scene vs. Summary:** Scenes (one place, one time, one person acting) carry emotion; summary carries time. Open and close chapters in scene; summarize only the stretches between.
+- **Point of View & Distance:** Pick first/third person and a narrator distance (close = thoughts, far = camera) per chapter, and never drift mid-scene.
+- **Character = Desire + Obstacle:** Every person on the page wants something concrete and meets a specific obstacle. No obstacle, no scene.
+- **Escalating Stakes:** Each beat raises what is lost if it fails (time → money → people → trust). Flat stakes read as a report.
+- **Dialogue:** Dialogue moves the scene or reveals the character, never delivers exposition. Use "said" and cut adverbs.
+- **Endings:** End chapters on an open loop (a question the next chapter answers) or a turned expectation, never on a recap. Plan the whole-book arc as the reader's change from page 1 to the last page (Charter item 2).
+- **Truth:** Use real people, dates and documents only (Tier 1 Zero Fabrication). Invented anecdotes break trust and the verisimilitude that drives transportation (`emotion-evidence.md` S2).
+
 ---
 
 ## 2. Chapter Dramaturgy & Sentence Burstiness
@@ -38,9 +49,9 @@ Draft every chapter from a 5-beat card so prose moves forward with mechanical te
 AI-generated prose fails primarily through **metronomic uniformity**: every sentence runs `16–20` words, every paragraph holds `3` neat sentences, and every turn arrives announced by a polite transition word. Human editorial prose breathes through contrast.
 
 ### Sentence-Length Burstiness Law
-Alternate **short declarative strikes (`5–9` words)** with **analytical clauses (`22–35` words)** that carry evidence, qualification, or causal mechanism. Never emit four consecutive medium-length (`14–20` word) sentences.
+Vary sentence length **by meaning, not by pattern**: short declarative sentences (`5–9` words) for verdicts, analytical clauses (`22–35` words) for evidence and causal chains. Never emit four consecutive medium-length (`14–20` word) sentences, and never a run of fragments (`low-sentence-burstiness` also flags `> 40%` of sentences at `<= 4` words — strict alternation is a pattern too).
 
-- **Short Strike (`5–9` words):** Lands a claim, pivot, or verdict. *"The cache did not fail. Its clock did."*
+- **Short Strike (`5–9` words):** Lands a claim or verdict. *"The clock drifted four seconds."*
 - **Long Analytical Clause (`22–35` words):** Unpacks the causal chain or exact measurement without splitting every clause into choppy fragments.
 - **Paragraph Rhythm Variety:** Contrast **single-sentence pivot paragraphs** (sparingly, at genuine turns) against **4–6 sentence evidentiary blocks**. Never repeat identical 3-sentence blocks down an entire section.
 
@@ -56,29 +67,29 @@ Replace vague abstractions with **observable objects, numbers, dates, and verbs*
 Automated editorial checks (`node scripts/d27-check.mjs --medium=book`) flag vocabulary and structural tics that immediately expose unedited machine prose. Scrub every draft through this filter before typesetting.
 
 ### A. Banned AI Vocabulary (`no-ai-slop-vocabulary`)
-Never emit these words in manuscript prose (`FLOOR` fail at `>= 2` hits under `--medium=book`):
+Never emit these words in manuscript prose. Under `--medium=book` they `FLOOR`-fail at `>= 2` hits **and** `>= 3` hits per 1,000 words; inside quotation marks they only warn (verbatim quotes and dialogue are allowed):
 - `delve` / `delves` / `delving`
 - `tapestry`
 - `testament`
-- `landscape` *(metaphorical, e.g., "the evolving security landscape")*
+- `landscape` *(warn only; metaphorical use, e.g., "the evolving security landscape". `landscape mode` is exempt)*
 - `pivotal`
-- `underscore` / `underscores` / `underscoring`
+- `underscore` / `underscores` / `underscoring` *(warn only; `leading underscore` and similar literal uses are exempt)*
 - `realm`
-- `beacon`
+- `beacon` *(warn only)*
 - `vibrant`
 - `intricate`
 - `multifaceted`
 - `overarching`
-- `foster`
+- `foster` *(warn only)*
 - `garner`
 
-Also cut editorial filler verbs (`showcase`, `leverage`, `embark`, `spearhead`) in favor of plain physical verbs (`show`, `use`, `start`, `lead`).
+Also cut editorial filler verbs (`showcase`, `leverage`, `embark`, `spearhead`; literal `leverage ratio` / `breaker bar` uses are exempt) in favor of plain physical verbs (`show`, `use`, `start`, `lead`). Generic phrasing warns too: `plays a vital role`, `stands as a`, `navigate the complexities`, `holistic`, `harness the power`, `elevate`, `empower`, `seamless`.
 
 ### B. Banned Structural Tells
 1. **Negative Parallelisms (`no-negative-parallelism-tic`):** Ban *"It's not just X — it's Y"*, *"Not merely X, but Y"*, and *"X isn't about A. It's about B."* State what X actually is directly.
 2. **Throat-Clearing Openers (`no-throat-clearing-opener`):** Ban paragraphs starting with `Moreover,`, `Furthermore,`, `Additionally,`, `In conclusion,`, `It is worth noting`, `Crucially,`, or `Interestingly,`. If a fact matters, state it without announcing that it is worth noting.
-3. **Compulsive Rule-of-Three Lists:** Stop padding every claim with three parallel adjectives (*"fast, reliable, and scalable"*). Pick the single decisive trait or name a concrete metric.
-4. **Self-Answering Rhetorical Questions:** Cut *"So why does this fail in production? Because..."*—just state the cause cleanly.
+3. **Compulsive Rule-of-Three Lists (`no-triad-overload`, `> 3` per 1k words):** Stop padding every claim with three parallel adjectives (*"fast, reliable, and scalable"*). Pick the single decisive trait or name a concrete metric.
+4. **Self-Answering Rhetorical Questions (`no-self-answered-question`):** Cut *"The result? Happier users."* and *"So why does this fail? Because..."*—state the cause cleanly. Openers such as `Ultimately,`, `At its core,`, `Here's the thing`, `Let's dive in` and `In this chapter, we will` are flagged as throat-clearing.
 5. **Em-Dash Rationing:** Cap em-dashes (`—`) at **`<= 2` per paragraph**. Use commas, colons, parentheses, or full stops for varied punctuation cadence.
 
 ### C. Slop vs. Humanized Rewrites
@@ -89,7 +100,7 @@ Also cut editorial filler verbs (`showcase`, `leverage`, `embark`, `spearhead`) 
 
 **Example 2 — Mechanism Explanation (Investigative / Technical)**
 - **Slop:** *"Furthermore, it is worth noting that the intricate interplay between battery chemistry and cold weather underscores a multifaceted engineering constraint. Why does range drop in January? Because lithium ions move slower through cold electrolyte."*
-- **Humanized:** *"Below 0°C, electrolyte viscosity climbs sharply and slows lithium-ion diffusion into the graphite anode. A cell that accepts 150kW at 22°C may throttle to 38kW at -10°C—not from battery damage, but to stop metallic lithium from plating onto the electrode surface."*
+- **Humanized:** *"Below 0°C, electrolyte viscosity climbs sharply and slows lithium-ion diffusion into the graphite anode. A cell that accepts 150kW at 22°C may throttle to 38kW at -10°C. The battery is not damaged; the charger throttles to stop metallic lithium from plating onto the electrode surface."*
 
 **Example 3 — Practitioner Trade-Off**
 - **Slop:** *"Code review is a vibrant tapestry of collaboration and rigor, serving as a beacon of quality across modern engineering realms."*
@@ -406,3 +417,9 @@ Postgres grants an `ACCESS EXCLUSIVE` lock only after active readers finish, yet
 - **Screen Comprehension vs. Skimming:** Wider lines (`~100 cpl`) maximize raw skimming speed, but **`55 cpl`** outperforms `100 cpl` on comprehension; scale `line-height` upward with measure (`1.35` at `55ch` → `1.45` at `72ch`) ([Dyson, 2004](https://stu.westga.edu/~ssynan1/literacy/Dyson.pdf); [Butterick's Practical Typography](https://practicaltypography.com/summary-of-key-rules.html)).
 - **Hyphenation-Gated Justification:** Greedy browser line-breaking creates rivers in 69% of paragraphs compared to optimal-fit TeX/Typst breaking ([Knuth & Plass, 1981](https://gwern.net/doc/design/typography/tex/1981-knuth.pdf)); ban `text-align: justify` on web books unless `hyphens: auto` is active, and use progressive `2:3:4:6` margins on print spreads ([Van de Graaf Canon](https://en.wikipedia.org/wiki/Canons_of_page_construction)).
 - **Empirical Excess-Vocabulary & Burstiness Metrics:** A 15.1M-abstract analysis isolated 379 excess LLM style markers (*delves* `r = 28.0`, *underscores* `r = 13.8`, *showcasing* `r = 10.7`; [Kobak et al., 2025, *Science Advances*](https://arxiv.org/html/2406.07016v5)), while sentence-length variance (`CV = σ / μ`) and short/long tail presence (`<= 10w` / `>= 35w`) strongly separate human from AI prose ([Desaire et al., 2023, *Cell Reports Physical Science*](https://pmc.ncbi.nlm.nih.gov/articles/PMC10328544/)). Enforced via `low-sentence-burstiness` in `scripts/lib/prose-audit.mjs`.
+
+---
+
+## Final Medium Gate (Stage 4, with `qa-and-critique.md`)
+
+Book Charter + Chapter Beat Cards locked; every chapter opens with a concrete scene/artifact/measurement; **zero AI prose slop** (*delve, tapestry, testament, pivotal, underscore*, negative parallelisms, throat-clearing openers, `<= 2` em-dashes/para) + strong sentence burstiness; web-books include accessible Tufte sidenotes (`aria-describedby` + `role="note"`) + TOC rail + `@media print`; print/Typst obeys binding-aware inner gutter (`15mm` `<= 120pp` saddle-stitch, `18–22mm` perfect-bound `121–400pp`, `25mm` `> 400pp`), suppressed running headers on openers/versos, and **zero double-signaled paragraphs** (`text-indent` XOR `margin-bottom`).

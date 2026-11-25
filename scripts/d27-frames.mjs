@@ -14,7 +14,7 @@ import { pathToFileURL } from "node:url";
 import { spawnSync } from "node:child_process";
 import { captureHtmlFramesWithCdp, verifyHtmlDeterminismWithCdp } from "./lib/chrome-cdp.mjs";
 
-const VERSION = "4.0.0";
+import { VERSION } from "./lib/version.mjs";
 
 export function parseVerifyArgs(argv) {
   const args = argv[0] === "verify" ? argv.slice(1) : argv;

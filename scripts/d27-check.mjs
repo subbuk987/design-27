@@ -12,12 +12,10 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { buildSarif } from "./lib/reporters.mjs";
+import { buildSarif, escapeGhData, escapeGhProp } from "./lib/reporters.mjs";
 import { parseIgnores, matchIgnore, getUnusedIgnores } from "./lib/ignores.mjs";
-import { findChromeBinary, auditHtmlWithCdp, buildDomAuditFnSource } from "./lib/chrome-cdp.mjs";
 import { LINE_RULES, ALL_RULES } from "./lib/rules-catalog.mjs";
-import { parseHex, contrastRatio, computeApcaLc, suggestContrastingHex } from "./lib/color-math.mjs";
-import { auditVideoFile } from "./lib/media-audit.mjs";
+import { contrastRatio, computeApcaLc, suggestContrastingHex, parseCssColor, relativeChroma, rgbToOklch } from "./lib/color-math.mjs";
 import { auditTypstParagraphs, auditBookProse } from "./lib/prose-audit.mjs";
 import {
   resolveRepoCacheDir,
@@ -27,18 +25,18 @@ import {
   buildCacheKey,
   readCacheEntry,
   writeCacheEntry,
+  VIDEO_EXTS,
 } from "./lib/cache.mjs";
 
 const execFileAsync = promisify(execFile);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const VERSION = "4.0.0";
+import { VERSION } from "./lib/version.mjs";
 const MAX_FILE_BYTES = 512 * 1024;
 const MAX_DIR_DEPTH = 16;
 const EXTENSIONS = new Set([".html", ".htm", ".css", ".scss", ".jsx", ".tsx", ".vue", ".svelte", ".svg", ".js", ".ts"]);
 const BOOK_EXTENSIONS = new Set([...EXTENSIONS, ".md", ".typ"]);
 const CODE_EXTENSIONS = new Set([".html", ".htm", ".css", ".scss", ".jsx", ".tsx", ".vue", ".svelte", ".js", ".ts"]);
-const VIDEO_EXTS = new Set([".mp4", ".mov", ".webm"]);
 const IGNORE_DIRS = new Set(["node_modules", ".git", "dist", "build", ".next", ".design27"]);
 const KNOWN_MEDIUMS = new Set(["web", "animation", "motion", "book", "mascot", "thumbnail"]);
 const KNOWN_FLAGS = [
@@ -99,9 +97,18 @@ async function probeBinaryAsync(cmd, args = ["-version"]) {
   }
 }
 
+let lineStartsFor = null;
+let lineStarts = [];
 function lineNumberAt(content, index) {
   if (index <= 0) return 1;
-  return content.slice(0, index).split(/\r?\n/).length;
+  if (content !== lineStartsFor) {
+    lineStartsFor = content;
+    lineStarts = [];
+    for (let i = content.indexOf("\n"); i !== -1; i = content.indexOf("\n", i + 1)) lineStarts.push(i);
+  }
+  let lo = 0, hi = lineStarts.length;
+  while (lo < hi) { const mid = (lo + hi) >> 1; if (lineStarts[mid] < index) lo = mid + 1; else hi = mid; }
+  return lo + 1;
 }
 
 function parseDurationMs(str) {
@@ -117,14 +124,34 @@ function parseDurationMs(str) {
   return maxMs;
 }
 
+// Linear <svg>...</svg> scan; a lazy [\s\S]*? regex is quadratic on a hostile page of unclosed "<svg " tags.
+function findSvgBlocks(content) {
+  const out = [];
+  const lower = content.toLowerCase();
+  let from = 0;
+  while (out.length < 256) {
+    const start = lower.indexOf("<svg", from);
+    if (start === -1) break;
+    const end = lower.indexOf("</svg>", start);
+    if (end === -1) break;
+    const block = [content.slice(start, end + 6)];
+    block.index = start;
+    out.push(block);
+    from = end + 6;
+  }
+  return out;
+}
+
 function extractTagBlock(html, startIdx) {
-  const openMatch = html.slice(startIdx).match(/^<([a-zA-Z0-9-]+)\b[^>]*>/);
+  const openRe = /<([a-zA-Z0-9-]+)\b[^<>]*>/y;
+  openRe.lastIndex = startIdx;
+  const openMatch = openRe.exec(html);
   if (!openMatch) return "";
   const tag = openMatch[1].toLowerCase();
   const voidTags = new Set(["img", "br", "hr", "input", "meta", "link"]);
   if (voidTags.has(tag)) return openMatch[0];
   let depth = 0;
-  const tagRe = new RegExp(`<(\\/?)${tag}\\b[^>]*>`, "gi");
+  const tagRe = new RegExp(`<(\\/?)${tag}\\b[^<>]*>`, "gi");
   tagRe.lastIndex = startIdx;
   let m;
   while ((m = tagRe.exec(html)) !== null) {
@@ -138,6 +165,45 @@ function extractTagBlock(html, startIdx) {
   return html.slice(startIdx);
 }
 
+const EXIT_STATE_RE = /\b(?:exit\w*|leav\w*|out|clos\w*|dismiss\w*|hid\w*)\b/i;
+
+// Blank text nodes outside <style>/<script>, keeping tags, attributes and line breaks (linear indexOf scan).
+function maskHtmlText(html) {
+  const lower = html.toLowerCase();
+  const blank = (s) => s.replace(/>([^<]+)</g, (m, t) => ">" + t.replace(/[^\r\n]/g, " ") + "<");
+  let out = "";
+  let pos = 0;
+  while (pos < html.length) {
+    const s1 = lower.indexOf("<style", pos);
+    const s2 = lower.indexOf("<script", pos);
+    const start = s1 === -1 ? s2 : s2 === -1 ? s1 : Math.min(s1, s2);
+    if (start === -1) { out += blank(html.slice(pos)); break; }
+    const close = lower.indexOf(start === s1 ? "</style>" : "</script>", start);
+    const end = close === -1 ? html.length : close + (start === s1 ? 8 : 9);
+    out += blank(html.slice(pos, start)) + html.slice(start, end);
+    pos = end;
+  }
+  return out;
+}
+
+// [start, end] offsets of every `@media print { ... }` block (brace-depth scan).
+function mediaPrintRanges(css) {
+  const ranges = [];
+  const re = /@media\s+print\b[^{]{0,200}\{/gi;
+  let m;
+  while ((m = re.exec(css)) !== null && ranges.length < 64) {
+    let depth = 1, i = m.index + m[0].length;
+    while (i < css.length && depth > 0) {
+      if (css[i] === "{") depth += 1;
+      else if (css[i] === "}") depth -= 1;
+      i += 1;
+    }
+    ranges.push([m.index, i]);
+    re.lastIndex = i;
+  }
+  return ranges;
+}
+
 function stripCommentsForAnalysis(src) {
   return src
     .replace(/\/\*[\s\S]*?\*\//g, " ")
@@ -146,7 +212,7 @@ function stripCommentsForAnalysis(src) {
 
 function hasActiveCutoutArchitecture(content) {
   const clean = stripCommentsForAnalysis(content);
-  const maskIds = [...clean.matchAll(/<mask\b[^>]*\bid\s*=\s*["']([^"']+)["']/gi)].map((m) => m[1]);
+  const maskIds = [...clean.matchAll(/<mask\b[^<>]*\bid\s*=\s*["']([^"']+)["']/gi)].map((m) => m[1]);
   const hasUsedMask = maskIds.some((id) => new RegExp(`mask\\s*=\\s*["']url\\(#${escapeRegExp(id)}\\)["']`, "i").test(clean));
   const hasActiveCutVar =
     /--(?:m-cut|sil-bg)\s*:/i.test(clean) &&
@@ -258,6 +324,7 @@ export async function runCheck(rawArgs = [], io = { stdout: process.stdout, stde
       probeBinaryAsync("ffmpeg"),
       import("playwright").then(() => true).catch(() => false),
     ]);
+    const { findChromeBinary } = await import("./lib/chrome-cdp.mjs");
     const chromeBinary = findChromeBinary();
     const capabilities = ["static", "brief", "sarif", "github-annotations"];
     if (ffprobe.available) capabilities.push("video-probe");
@@ -305,6 +372,12 @@ export async function runCheck(rawArgs = [], io = { stdout: process.stdout, stde
     try {
       activeBrief = JSON.parse(fs.readFileSync(resolvedBrief, "utf8"));
       briefHash = computeFileHash(resolvedBrief);
+      if (!activeBrief || typeof activeBrief !== "object" || Array.isArray(activeBrief)) throw new Error("brief must be a JSON object");
+      // brief.json may be attacker-controlled: coerce every field the checker reads to the expected shape.
+      if (typeof activeBrief.medium !== "string") delete activeBrief.medium;
+      if (!Array.isArray(activeBrief.assertions)) activeBrief.assertions = [];
+      if (activeBrief.bannedDefaults && !Array.isArray(activeBrief.bannedDefaults.fonts)) activeBrief.bannedDefaults.fonts = [];
+      if (activeBrief.emotion && !(Array.isArray(activeBrief.emotion.accentChroma) && activeBrief.emotion.accentChroma.every(Number.isFinite))) delete activeBrief.emotion;
     } catch (err) {
       writeErr(`Invalid JSON in brief ${resolvedBrief}: ${err.message}`);
       return 1;
@@ -322,7 +395,7 @@ export async function runCheck(rawArgs = [], io = { stdout: process.stdout, stde
     if (depth > MAX_DIR_DEPTH) return [];
     const lstat = fs.lstatSync(entry);
     if (lstat.isSymbolicLink() && depth > 0) return [];
-    if (lstat.isFile()) return [entry];
+    if (lstat.isFile()) return lstat.size > MAX_FILE_BYTES ? [] : [entry];
     if (!lstat.isDirectory()) return [];
     const allowedExts = effectiveMedium === "book" ? BOOK_EXTENSIONS : EXTENSIONS;
     const out = [];
@@ -359,6 +432,7 @@ export async function runCheck(rawArgs = [], io = { stdout: process.stdout, stde
     const ext = path.extname(file).toLowerCase();
 
     if (VIDEO_EXTS.has(ext)) {
+      const { auditVideoFile } = await import("./lib/media-audit.mjs");
       auditVideoFile({ file, rel, ext, targetLufs, findings, mediaAudit });
       continue;
     }
@@ -412,22 +486,27 @@ export async function runCheck(rawArgs = [], io = { stdout: process.stdout, stde
           /\buseCurrentFrame\b|window\.__timelines\b|window\.__d27Seek\b/.test(content);
     const isCodeFile = CODE_EXTENSIONS.has(ext) || ext === ".svg";
     const hasCutoutArch = hasActiveCutoutArchitecture(content);
+    // Mascot floors apply to any page that declares a mascot, not only runs passed --medium=mascot.
+    const isMascotPage = effectiveMedium === "mascot" || /\bdata-mascot\b|<svg\b[^<>]{0,300}\b(?:id|class)\s*=\s*["'][^"']{0,80}\bmascot\b/i.test(content);
+    // CSS/JS rules must not fire on prose that merely mentions `transition: all`: blank HTML text nodes for them.
+    const codeLines = [".html", ".htm"].includes(ext) ? maskHtmlText(content).split(/\r?\n/) : lines;
 
     if (isCodeFile) {
       lines.forEach((line, idx) => {
         if (line.length > 4000) return;
         const lineNum = idx + 1;
-        const lineForRules = line.replace(STRIP_D27_COMMENT_RE, "");
+        const lineForRules = (codeLines[idx] ?? line).replace(STRIP_D27_COMMENT_RE, "");
+        const markupLine = line.replace(STRIP_D27_COMMENT_RE, "");
         for (const rule of LINE_RULES) {
           if (tierArg === "fast" && rule.speed !== "fast") continue;
           if (rule.videoOnly && !isVideoFile) continue;
-          if (rule.regex.test(lineForRules)) {
+          if (rule.regex.test(rule.markup ? markupLine : lineForRules)) {
             recordFinding({ file: rel, line: lineNum, tier: rule.tier, rule: rule.id, message: rule.message, fix: rule.fix }, directives);
           }
         }
 
         if (!isVideoFile && !/^\s*(?:\/\/|\/\*|\*|<!--)/.test(lineForRules)) {
-          if (/\bscale(?:3d|X|Y)?\s*\(\s*0(?:\s*,\s*0(?:\s*,\s*0)?)?\s*\)/i.test(lineForRules)) {
+          if (/\bscale(?:3d|X|Y)?\s*\(\s*0(?:\s*,\s*0(?:\s*,\s*0)?)?\s*\)/i.test(lineForRules) && !EXIT_STATE_RE.test(lineForRules)) {
             recordFinding({
               file: rel, line: lineNum, tier: "REFLEX", rule: "no-scale-zero-entrance",
               message: "UI animation uses `scale(0)` which looks artificial and disconnected from trigger geometry.",
@@ -435,7 +514,7 @@ export async function runCheck(rawArgs = [], io = { stdout: process.stdout, stde
             }, directives);
           }
 
-          if (/\bease-in(?!-out)\b/i.test(lineForRules) && !/\b(exit|leave|out|close|dismiss|hide)\b/i.test(lineForRules)) {
+          if (/\bease-in(?!-out)\b/i.test(lineForRules) && !EXIT_STATE_RE.test(lineForRules)) {
             const durMs = parseDurationMs(lineForRules);
             if (durMs !== null && durMs > 220) {
               recordFinding({
@@ -450,7 +529,7 @@ export async function runCheck(rawArgs = [], io = { stdout: process.stdout, stde
         if (/\bfilter\s*:[^;\n]*\bbrightness\(\s*0(?:\.0+)?\s*\)/i.test(lineForRules) && !hasCutoutArch) {
           recordFinding({
             file: rel, line: lineNum,
-            tier: effectiveMedium === "mascot" ? "FLOOR" : "REFLEX",
+            tier: isMascotPage ? "FLOOR" : "REFLEX",
             rule: "no-blind-silhouette-filter",
             message: "`filter: brightness(0)` silhouettes flatten interior features into a solid blob without an active `<mask>` or `var(--m-cut)`/`var(--sil-bg)`.",
             fix: "Invert interior features with `--m-fill` / `--m-cut` CSS custom properties or an active `<mask>` cutout.",
@@ -458,14 +537,16 @@ export async function runCheck(rawArgs = [], io = { stdout: process.stdout, stde
         }
       });
 
-      const ruleBlockRe = /([^{}]+)\{([^{}]+)\}/g;
+      const ruleBlockRe = /(?<=^|[{}])([^{}]+)\{([^{}]+)\}/g;
+      const printRanges = mediaPrintRanges(content);
       let m;
       while ((m = ruleBlockRe.exec(content)) !== null) {
         const selector = m[1];
         const body = m[2];
         const lineNum = lineNumberAt(content, m.index);
+        const inPrint = printRanges.some(([a, b]) => m.index > a && m.index < b);
 
-        if (/(?:^|[\s,])body(?:\s|$|,)/i.test(selector) && /\bfont-size\s*:\s*(?:[0-9]|1[0-5])(?:\.\d+)?px\b/i.test(body)) {
+        if (!inPrint && /(?:^|[\s,])body(?:\s|$|,)/i.test(selector) && /\bfont-size\s*:\s*(?:[0-9]|1[0-5])(?:\.\d+)?px\b/i.test(body)) {
           recordFinding({
             file: rel, line: lineNum, tier: "FLOOR", rule: "no-tiny-body-font",
             message: "Web body copy drops below the 16px legibility floor.",
@@ -474,7 +555,7 @@ export async function runCheck(rawArgs = [], io = { stdout: process.stdout, stde
         }
 
         if (!isVideoFile && tierArg !== "fast") {
-          if (!/\b(exit|leave|out|close|dismiss|hide)\b/i.test(selector) &&
+          if (!EXIT_STATE_RE.test(selector) &&
               /\b(?:transition|animation)-timing-function\s*:\s*ease-in(?!-out)\b/i.test(body)) {
             const durMs = parseDurationMs(body);
             if (durMs !== null && durMs > 220) {
@@ -495,8 +576,10 @@ export async function runCheck(rawArgs = [], io = { stdout: process.stdout, stde
     if ([".html", ".htm", ".css", ".scss", ".svg"].includes(ext)) {
       if ([".html", ".htm", ".css", ".scss"].includes(ext)) {
         if (tierArg !== "fast") {
-          const hasAnimation = /@keyframes\b|\banimation\s*:/.test(content);
-          const hasReducedMotion = /prefers-reduced-motion/.test(content);
+          // Comments stripped first: `/* TODO: prefers-reduced-motion */` is not a fallback.
+          const codeOnly = stripCommentsForAnalysis(content);
+          const hasAnimation = /@keyframes\b|\banimation\s*:/.test(codeOnly);
+          const hasReducedMotion = /prefers-reduced-motion/.test(codeOnly);
           if (hasAnimation && !hasReducedMotion && !isVideoFile) {
             recordFinding({
               file: rel, line: 1, tier: "FLOOR", rule: "require-reduced-motion",
@@ -506,8 +589,15 @@ export async function runCheck(rawArgs = [], io = { stdout: process.stdout, stde
           }
 
           const hasInteractive = /<(?:button|a|input|select)\b/i.test(content);
-          const hasFocusVisible = /:focus-visible/.test(content);
-          if (hasInteractive && /<style\b/i.test(content) && !hasFocusVisible) {
+          const hasFocusVisible = /:focus-visible[^{]{0,200}\{[^}]{0,400}(?:outline(?:-color|-style|-width)?\s*:(?!\s*(?:none|0)\b)|box-shadow\s*:(?!\s*none\b))/i.test(codeOnly);
+          const removesFocus = /:focus(?!-within)[^{]{0,200}\{[^}]{0,400}outline(?:-style|-width)?\s*:\s*(?:none|0)\b/i.test(codeOnly);
+          if (hasInteractive && removesFocus && !hasFocusVisible) {
+            recordFinding({
+              file: rel, line: 1, tier: "FLOOR", rule: "require-focus-visible",
+              message: "Focus outline removed (`:focus { outline: none }`) with no visible `:focus-visible` replacement.",
+              fix: "Keep `:focus-visible { outline: 2px solid var(--accent-focal, currentColor); outline-offset: 2px; }`.",
+            }, directives);
+          } else if (hasInteractive && /<style\b/i.test(content) && !hasFocusVisible) {
             recordFinding({
               file: rel, line: 1, tier: "FLOOR", rule: "require-focus-visible",
               message: "Interactive elements styled without an explicit `:focus-visible` indicator.",
@@ -516,54 +606,58 @@ export async function runCheck(rawArgs = [], io = { stdout: process.stdout, stde
           }
         }
 
-        const canvasHex = content.match(/--surface-canvas\s*:\s*(#[0-9a-f]{3,6})\b/i)?.[1];
-        const inkPrimaryHex = content.match(/--ink-primary\s*:\s*(#[0-9a-f]{3,6})\b/i)?.[1];
-        const inkSecondaryHex = content.match(/--ink-secondary\s*:\s*(#[0-9a-f]{3,6})\b/i)?.[1];
+        // Tokens may be hex, oklch() or rgb(): the skill tells authors to write OKLCH, so the gate must read it.
+        const tokenValue = (name) => content.match(new RegExp(`--${name}\\s*:\\s*(#[0-9a-f]{3,6}\\b|oklch\\([^)]{1,80}\\)|rgba?\\([^)]{1,80}\\))`, "i"))?.[1];
+        const canvasHex = tokenValue("surface-canvas");
+        const inkPrimaryHex = tokenValue("ink-primary");
+        const inkSecondaryHex = tokenValue("ink-secondary");
+        const unsolvable = "no ink lightness passes on this canvas: change --surface-canvas";
         const primaryMinRatio = (effectiveMedium === "book" || activeBrief?.surfaceMode === "read") ? 7.0 : 4.5;
         if (canvasHex && inkPrimaryHex) {
-          const bg = parseHex(canvasHex), fg = parseHex(inkPrimaryHex);
+          const bg = parseCssColor(canvasHex), fg = parseCssColor(inkPrimaryHex);
           if (bg && fg) {
             const ratio = contrastRatio(fg, bg);
             const apcaLc = computeApcaLc(fg, bg);
             if (ratio < primaryMinRatio) {
-              const suggested = suggestContrastingHex(fg, bg, 7.0);
+              const suggested = suggestContrastingHex(fg, bg, primaryMinRatio, 75);
               recordFinding({
                 file: rel, line: 1, tier: "FLOOR", rule: "wcag-contrast-fail",
                 message: `--ink-primary (${inkPrimaryHex}) on --surface-canvas (${canvasHex}) has ratio ${ratio.toFixed(2)}:1 (< ${primaryMinRatio.toFixed(1)}:1 floor, APCA Lc=${apcaLc}).`,
                 suggestedColor: suggested,
-                fix: `Change --ink-primary from ${inkPrimaryHex} to ${suggested}.`,
+                fix: suggested ? `Change --ink-primary from ${inkPrimaryHex} to ${suggested}.` : unsolvable,
               }, directives);
             } else if (Math.abs(apcaLc) < 75) {
-              const suggested = suggestContrastingHex(fg, bg, 7.0);
+              const suggested = suggestContrastingHex(fg, bg, primaryMinRatio, 75);
               recordFinding({
                 file: rel, line: 1, tier: "REFLEX", rule: "apca-contrast-fail",
                 message: `--ink-primary (${inkPrimaryHex}) on --surface-canvas (${canvasHex}) fails APCA body floor (Lc=${apcaLc}, |Lc| < 75).`,
                 suggestedColor: suggested,
-                fix: `Increase perceptual contrast by updating --ink-primary toward ${suggested}.`,
+                fix: suggested ? `Increase perceptual contrast by updating --ink-primary toward ${suggested}.` : unsolvable,
               }, directives);
             }
           }
         }
         if (canvasHex && inkSecondaryHex) {
-          const bg = parseHex(canvasHex), fg = parseHex(inkSecondaryHex);
+          const bg = parseCssColor(canvasHex), fg = parseCssColor(inkSecondaryHex);
           if (bg && fg) {
             const ratio = contrastRatio(fg, bg);
             const apcaLc = computeApcaLc(fg, bg);
             if (ratio < 4.5) {
-              const suggested = suggestContrastingHex(fg, bg, 4.6);
+              const suggested = suggestContrastingHex(fg, bg, 4.5, 75);
               recordFinding({
                 file: rel, line: 1, tier: "FLOOR", rule: "wcag-contrast-fail",
                 message: `--ink-secondary (${inkSecondaryHex}) on --surface-canvas (${canvasHex}) has ratio ${ratio.toFixed(2)}:1 (< 4.5:1 floor, APCA Lc=${apcaLc}).`,
                 suggestedColor: suggested,
-                fix: `Change --ink-secondary from ${inkSecondaryHex} to ${suggested}.`,
+                fix: suggested ? `Change --ink-secondary from ${inkSecondaryHex} to ${suggested}.` : unsolvable,
               }, directives);
-            } else if (Math.abs(apcaLc) < 60) {
-              const suggested = suggestContrastingHex(fg, bg, 5.5);
+            } else if (Math.abs(apcaLc) < 75) {
+              // APCA: Lc 75 is the minimum for body-size text; secondary ink carries 14-16px meta and captions.
+              const suggested = suggestContrastingHex(fg, bg, 4.5, 75);
               recordFinding({
                 file: rel, line: 1, tier: "REFLEX", rule: "apca-contrast-fail",
-                message: `--ink-secondary (${inkSecondaryHex}) on --surface-canvas (${canvasHex}) fails APCA UI floor (Lc=${apcaLc}, |Lc| < 60).`,
+                message: `--ink-secondary (${inkSecondaryHex}) on --surface-canvas (${canvasHex}) fails APCA body-text floor (Lc=${apcaLc}, |Lc| < 75).`,
                 suggestedColor: suggested,
-                fix: `Increase perceptual contrast by updating --ink-secondary toward ${suggested}.`,
+                fix: suggested ? `Increase perceptual contrast by updating --ink-secondary toward ${suggested}.` : unsolvable,
               }, directives);
             }
           }
@@ -596,12 +690,44 @@ export async function runCheck(rawArgs = [], io = { stdout: process.stdout, stde
       }
 
       if ([".html", ".htm"].includes(ext)) {
-        const eyebrowRe = /<(span|div|p|small|strong|em)\b([^>]*)>([\s\S]{1,140}?)<\/\1>\s*<h[1-6]\b/gi;
+        const eyebrowRe = /<(span|div|p|small|strong|em)\b([^<>]{0,512})>([^<]{1,140})<\/\1>\s*<h[1-6]\b/gi;
         const eyebrowMatches = [];
+        const codeOnlyHtml = stripCommentsForAnalysis(content);
+        const imgNoAlt = codeOnlyHtml.match(/<img\b(?![^<>]*\balt\s*=)[^<>]*>/i);
+        if (imgNoAlt) {
+          recordFinding({
+            file: rel, line: lineNumberAt(content, content.indexOf(imgNoAlt[0])), tier: "FLOOR", rule: "require-img-alt",
+            message: "`<img>` without an `alt` attribute (WCAG 1.1.1).",
+            fix: "Add descriptive `alt`, or `alt=\"\"` for decorative images.",
+          }, directives);
+        }
+        if (/<html\b(?![^<>]*\blang\s*=)[^<>]*>/i.test(codeOnlyHtml)) {
+          recordFinding({
+            file: rel, line: 1, tier: "FLOOR", rule: "require-html-lang",
+            message: "`<html>` without a `lang` attribute (WCAG 3.1.1).",
+            fix: "Add `<html lang=\"en\">` (or the page language).",
+          }, directives);
+        }
+        if (tierArg !== "fast") {
+          const rootTok = (name) => parseCssColor(content.match(new RegExp(`--${name}\\s*:\\s*(#[0-9a-f]{3,6}\\b|oklch\\([^)]{1,80}\\)|rgba?\\([^)]{1,80}\\))`, "i"))?.[1]);
+          const canvasRgb = rootTok("surface-canvas") || rootTok("bg") || rootTok("background");
+          const accentRgb = rootTok("accent-focal") || rootTok("accent");
+          const darkOrange = canvasRgb && accentRgb && rgbToOklch(canvasRgb).L < 0.2 &&
+            (() => { const a = rgbToOklch(accentRgb); return a.C > 0.15 && a.H >= 25 && a.H <= 60; })();
+          const defaultDisplay = codeOnlyHtml.match(/font-family\s*:\s*["']?(Geist|Inter(?: Tight)?)\b/i)?.[1];
+          const dealt = [activeBrief?.primary, activeBrief?.alternate].some((w) => w?.fonts?.display && defaultDisplay && w.fonts.display.toLowerCase() === defaultDisplay.toLowerCase());
+          if ((darkOrange || defaultDisplay) && !dealt) {
+            recordFinding({
+              file: rel, line: 1, tier: "REFLEX", rule: "convergence-signature",
+              message: `AI-default convergence signature: ${[darkOrange && "near-black canvas + orange accent", defaultDisplay && `\`${defaultDisplay}\` type`].filter(Boolean).join(" and ")}.`,
+              fix: "Re-deal a Material World (`d27-deal --prompt ...`) or justify the choice on record.",
+            }, directives);
+          }
+        }
         let em;
         while ((em = eyebrowRe.exec(content)) !== null) {
           const attrs = em[2];
-          const innerText = em[3].replace(/<[^>]+>/g, "").trim();
+          const innerText = em[3].replace(/<[^<>]+>/g, "").trim();
           const hasEyebrowClass = /\bclass\s*=\s*["'][^"']*(?:eyebrow|kicker|overline|meta|section-tag|badge|tag|cap|label)[^"']*["']/i.test(attrs);
           const hasUppercaseStyle = /text-transform\s*:\s*uppercase|\buppercase\b/i.test(attrs);
           const isAllCapsShort = /^[A-Z0-9\s/·•\-—:]{2,45}$/.test(innerText) && /[A-Z]{2,}/.test(innerText);
@@ -619,7 +745,7 @@ export async function runCheck(rawArgs = [], io = { stdout: process.stdout, stde
 
         const hasThumbMarker = /\b(?:id\s*=\s*["']thumbnail-canvas["']|data-thumbnail\b|class\s*=\s*["'][^"']*\byt-thumb\b)/i.test(content);
         if (effectiveMedium === "thumbnail" || hasThumbMarker) {
-          const stageMatch = content.match(/<(?:div|section|main|figure)\b[^>]*(?:id\s*=\s*["']thumbnail-canvas["']|data-thumbnail\b|class\s*=\s*["'][^"']*\byt-thumb\b)[^>]*>/i);
+          const stageMatch = content.match(/<(?:div|section|main|figure)\b[^<>]*(?:id\s*=\s*["']thumbnail-canvas["']|data-thumbnail\b|class\s*=\s*["'][^"']*\byt-thumb\b)[^<>]*>/i);
           let stageHtml = "";
           let stageLine = 1;
           let stageOpenTag = "";
@@ -628,21 +754,21 @@ export async function runCheck(rawArgs = [], io = { stdout: process.stdout, stde
             stageHtml = extractTagBlock(content, stageMatch.index);
             stageLine = lineNumberAt(content, stageMatch.index);
           } else {
-            const bodyMatch = content.match(/<body\b[^>]*>[\s\S]*?<\/body>/i);
+            const bodyMatch = content.match(/<body\b[^<>]*>[\s\S]*?<\/body>/i);
             stageHtml = bodyMatch ? bodyMatch[0] : content;
           }
           const cleanedStage = stageHtml
             .replace(/<(?:style|script|title|desc|defs)\b[\s\S]*?<\/\s*(?:style|script|title|desc|defs)>/gi, " ")
             .replace(/<!--[\s\S]*?-->/g, " ")
-            .replace(/<(?:span|div|time)\b[^>]*(?:class\s*=\s*["'][^"']*(?:yt-duration|timestamp|deadzone-box)[^"']*["']|data-timestamp)[^>]*>[\s\S]*?<\/\s*(?:span|div|time)>/gi, " ")
-            .replace(/<[^>]+>/g, " ")
+            .replace(/<(?:span|div|time)\b[^<>]*(?:class\s*=\s*["'][^"']*(?:yt-duration|timestamp|deadzone-box)[^"']*["']|data-timestamp)[^<>]*>[\s\S]*?<\/\s*(?:span|div|time)>/gi, " ")
+            .replace(/<[^<>]+>/g, " ")
             .replace(/&[a-z0-9#]+;/gi, " ")
             .trim();
           const words = cleanedStage ? cleanedStage.split(/\s+/).filter(Boolean) : [];
-          if (words.length > 5) {
+          if (words.length > 4) {
             recordFinding({
               file: rel, line: stageLine, tier: "FLOOR", rule: "thumbnail-word-ceiling",
-              message: `Primary thumbnail stage has ${words.length} words ("${words.slice(0, 6).join(" ")}..."), exceeding the 5-word ceiling.`,
+              message: `Primary thumbnail stage has ${words.length} words ("${words.slice(0, 6).join(" ")}..."), exceeding the 4-word ceiling.`,
               fix: "Cut thumbnail stage copy to 0-4 words and move explanatory context into the paired video/article Title.",
             }, directives);
           }
@@ -656,7 +782,7 @@ export async function runCheck(rawArgs = [], io = { stdout: process.stdout, stde
             if (thumbSet.size > 0 && titleSet.size > 0) {
               const shared = [...thumbSet].filter((t) => titleSet.has(t));
               const overlap = shared.length / Math.min(thumbSet.size, titleSet.size);
-              if (overlap >= 0.6 && (shared.length >= 2 || thumbSet.size === 1)) {
+              if (overlap >= 0.5 && (shared.length >= 2 || thumbSet.size === 1)) {
                 recordFinding({
                   file: rel, line: stageLine, tier: "REFLEX", rule: "thumbnail-title-overlap",
                   message: `Thumbnail hook overlaps ${Math.round(overlap * 100)}% of paired title tokens (${shared.join(", ")}), collapsing the Loewenstein information gap.`,
@@ -669,12 +795,11 @@ export async function runCheck(rawArgs = [], io = { stdout: process.stdout, stde
       }
 
       if (tierArg !== "fast") {
-        const svgRe = /<svg\b[\s\S]*?<\/svg>/gi;
-        const svgMatches = [...content.matchAll(svgRe)];
+        const svgMatches = findSvgBlocks(content);
         for (const sm of svgMatches) {
           const svg = sm[0];
           const svgLine = lineNumberAt(content, sm.index);
-          const namedGroups = (svg.match(/<g\b[^>]*\bid\s*=\s*["'][^"']+["']/gi) || []).length;
+          const namedGroups = (svg.match(/<g\b[^<>]*\bid\s*=\s*["'][^"']+["']/gi) || []).length;
           if (
             !/data-asset\s*=\s*["']verified["']/i.test(svg) &&
             !/data-d27-allow/i.test(svg) &&
@@ -702,17 +827,18 @@ export async function runCheck(rawArgs = [], io = { stdout: process.stdout, stde
           if (!/\bviewBox\s*=\s*["'][^"']+["']/i.test(primarySvg)) {
             recordFinding({
               file: rel, line: primaryLine,
-              tier: effectiveMedium === "mascot" ? "FLOOR" : "REFLEX",
+              tier: isMascotPage ? "FLOOR" : "REFLEX",
               rule: "require-svg-named-groups",
               message: "Primary mascot <svg> is missing a `viewBox` attribute (breaks responsive & 16px silhouette scaling).",
               fix: 'Add `viewBox="0 0 400 400"` to the primary mascot `<svg>`.',
             }, directives);
           }
 
-          const groupOpenRe = /<g\b[^>]*\bid\s*=\s*["']([^"']+)["'][^>]*>/gi;
+          const groupOpenRe = /<g\b[^<>]*\bid\s*=\s*["']([^"']+)["'][^<>]*>/gi;
           const semanticGroups = new Set();
           let gm;
-          while ((gm = groupOpenRe.exec(primarySvg)) !== null) {
+          let groupsSeen = 0;
+          while ((gm = groupOpenRe.exec(primarySvg)) !== null && groupsSeen++ < 64) {
             const gid = gm[1].trim();
             if (/^(?:g|group|layer|untitled)\d*$/i.test(gid)) continue;
             const block = extractTagBlock(primarySvg, gm.index);
@@ -720,11 +846,19 @@ export async function runCheck(rawArgs = [], io = { stdout: process.stdout, stde
               semanticGroups.add(gid.toLowerCase());
             }
           }
+          const stockParts = [...semanticGroups].filter((g) => /^(?:ears?|cheeks?|blush)$/.test(g));
+          if (stockParts.length) {
+            recordFinding({
+              file: rel, line: primaryLine, tier: "REFLEX", rule: "no-generic-mascot-features",
+              message: `Mascot uses stock cute-animal parts (${stockParts.map((g) => "#" + g).join(", ")}).`,
+              fix: "Derive anatomy from the 2-noun domain metaphor (mascot-creation.md §1) unless the brief names an animal.",
+            }, directives);
+          }
           if (semanticGroups.size < 4) {
             recordFinding({
               file: rel,
               line: primaryLine,
-              tier: effectiveMedium === "mascot" ? "FLOOR" : "REFLEX",
+              tier: isMascotPage ? "FLOOR" : "REFLEX",
               rule: "require-svg-named-groups",
               message: `Primary mascot <svg> has ${semanticGroups.size} non-empty semantic <g id="..."> group(s) (minimum 4 required).`,
               fix: "Split mascot anatomy into >= 4 non-empty semantic `<g id=\"...\">` groups (e.g. `#chassis`, `#eyes`, `#mouth`, `#badge`).",
@@ -734,6 +868,25 @@ export async function runCheck(rawArgs = [], io = { stdout: process.stdout, stde
       }
 
       if (tierArg !== "fast" && activeBrief && [".html", ".htm", ".css", ".scss"].includes(ext)) {
+        const worlds = [activeBrief.primary, activeBrief.alternate].filter((w) => w && typeof w === "object" && w.tokens);
+        const rootBody = content.match(/:root\s*\{([^}]*)\}/)?.[1];
+        if (worlds.length && rootBody) {
+          const tok = (name) => parseCssColor(rootBody.match(new RegExp(`--${name}\\s*:\\s*(#[0-9a-f]{3,6}\\b|oklch\\([^)]{1,80}\\)|rgba?\\([^)]{1,80}\\))`, "i"))?.[1]);
+          const lab = (rgb) => { const o = rgbToOklch(rgb); const h = (o.H * Math.PI) / 180; return [o.L, o.C * Math.cos(h), o.C * Math.sin(h)]; };
+          // OKLab distance 0.04 ~ a clearly visible step: tolerates emotion tuning and rounding, not a new palette.
+          const near = (a, hex) => { const b = parseCssColor(hex); if (!a || !b) return false; const [x, y] = [lab(a), lab(b)]; return Math.hypot(x[0] - y[0], x[1] - y[1], x[2] - y[2]) < 0.04; };
+          const canvas = tok("surface-canvas"), accent = tok("accent-focal");
+          const usesWorld = worlds.some((w) => near(canvas, w.tokens.surfaceCanvas) && near(accent, w.tokens.accentFocal));
+          const display = worlds.map((w) => w.fonts?.display).filter((f) => typeof f === "string" && f.length < 64);
+          const usesFont = display.some((f) => new RegExp(`font-family\\s*:[^;]{0,200}${escapeRegExp(f)}`, "i").test(content));
+          if ((canvas || accent) && (!usesWorld || (display.length && !usesFont))) {
+            recordFinding({
+              file: rel, line: lineNumberAt(content, content.indexOf(":root")), tier: "REFLEX", rule: "brief-world-drift",
+              message: `Output drifted from the dealt world (${worlds.map((w) => w.slug).join(" / ")}): ${[!usesWorld && "canvas/accent tokens differ", display.length && !usesFont && `display face is not ${display.join(" or ")}`].filter(Boolean).join("; ")}.`,
+              fix: "Use the dealt world's `surfaceCanvas`, `accentFocal` and display face, or log the override: `/* d27-allow: brief-world-drift — reason */`.",
+            }, directives);
+          }
+        }
         if (/<style\b/i.test(content) && !/:root\s*\{/.test(content)) {
           recordFinding({
             file: rel, line: 1, tier: "FLOOR", rule: "brief-require-tokens",
@@ -749,6 +902,29 @@ export async function runCheck(rawArgs = [], io = { stdout: process.stdout, stde
               file: rel, line: 1, tier: "FLOOR", rule: "brief-banned-default-used",
               message: `Built CSS uses banned default font \`${bannedFont}\` from active brief.`,
               fix: `Swap \`${bannedFont}\` for dealt brief typography (${activeBrief.primary?.fonts?.body || "stage 3 token"}).`,
+            }, directives);
+          }
+        }
+        const band = activeBrief.emotion?.accentChroma;
+        const rootBlock = Array.isArray(band) ? content.match(/:root\s*\{([^}]*)\}/)?.[1] : null;
+        if (rootBlock) {
+          // Accent tokens only: ink, surface and state colours (error red, success green) are not the arousal dose.
+          const accents = [...rootBlock.matchAll(/--accent[\w-]*\s*:\s*(#[0-9a-f]{3,6}\b|oklch\([^)]{1,80}\)|rgba?\([^)]{1,80}\))/gi)]
+            .filter((m) => !/--accent-ink\b/i.test(m[0]))
+            .map((m) => parseCssColor(m[1]))
+            .filter(Boolean)
+            .map((rgb) => relativeChroma(rgb));
+          const peak = accents.length ? Math.max(...accents) : null;
+          // 0.05 slack, same as d27-deal's tuning: avoids flagging dealt worlds at the band edge.
+          const [minC, maxC] = band;
+          if (peak !== null && (peak > maxC + 0.05 || peak < minC - 0.05)) {
+            const tooLoud = peak > maxC;
+            recordFinding({
+              file: rel, line: lineNumberAt(content, content.indexOf(":root")), tier: "REFLEX", rule: "brief-emotion-chroma-mismatch",
+              message: `Peak accent relative chroma ${peak.toFixed(2)} is ${tooLoud ? "above" : "below"} the \`${activeBrief.emotion.target}\` arousal band ${minC}-${maxC} (share of max sRGB chroma at that L and H).`,
+              fix: tooLoud
+                ? `Lower accent chroma (keep L and H) to <= ${maxC} of its gamut maximum, or re-deal with a higher-arousal --emotion (references/emotion-science.md §0).`
+                : `Raise one focal accent to >= ${minC} of its gamut maximum, or re-deal with a lower-arousal --emotion (references/emotion-science.md §0).`,
             }, directives);
           }
         }
@@ -773,9 +949,12 @@ export async function runCheck(rawArgs = [], io = { stdout: process.stdout, stde
       auditTypstParagraphs({ content, rel, directives, recordFinding, lineNumberAt });
     }
 
-    const isBookProseTarget = [".md", ".typ"].includes(ext) || (effectiveMedium === "book" && [".html", ".htm"].includes(ext));
+    const isHtmlExt = [".html", ".htm"].includes(ext);
+    const isBookProseTarget = [".md", ".typ"].includes(ext) || (effectiveMedium === "book" && isHtmlExt);
     if (isBookProseTarget) {
       auditBookProse({ content, ext, rel, effectiveMedium, directives, recordFinding });
+    } else if (isHtmlExt && tierArg !== "fast") {
+      auditBookProse({ content, ext, rel, effectiveMedium, directives, recordFinding, lite: true });
     }
 
     if (reportUnused && !noInlineIgnores) {
@@ -826,8 +1005,15 @@ export async function runCheck(rawArgs = [], io = { stdout: process.stdout, stde
         fix: "Enlarge --m-cut interior eyes (>= 36u) and cutout strokes/gaps (>= 25u) in viewBox 0 0 400 400.",
       });
     }
+    if (audit.unnamedControls?.length) {
+      findings.push({ file: rel, line: 1, tier: "FLOOR", rule: "render-unnamed-control", message: `Controls without an accessible name at ${vpLabel}: ${audit.unnamedControls.join(", ")}.`, fix: "Add visible text, `aria-label`, or an associated `<label>`." });
+    }
+    if (audit.targetTooSmall?.length) {
+      findings.push({ file: rel, line: 1, tier: "REFLEX", rule: "render-target-size", message: `Pointer targets < 24x24px at ${vpLabel}: ${audit.targetTooSmall.join(", ")}.`, fix: "Raise hit areas to >= 24x24px (44x44 for primary touch targets)." });
+    }
     for (const re of runtimeErrors || []) {
-      findings.push({ file: rel, line: 1, tier: "FLOOR", rule: "runtime-error", message: re, fix: "Fix broken script or missing asset request." });
+      // Page-controlled text: clip it before it reaches reports, CI annotations and the agent's context.
+      findings.push({ file: rel, line: 1, tier: "FLOOR", rule: "runtime-error", message: String(re).slice(0, 300), fix: "Fix broken script or missing asset request." });
     }
   }
 
@@ -850,6 +1036,7 @@ export async function runCheck(rawArgs = [], io = { stdout: process.stdout, stde
         ? [{ width: 1280, height: 720 }]
         : [{ width: 390, height: 844 }, { width: 1440, height: 900 }];
       const assertions = activeBrief?.assertions || [];
+      const { auditHtmlWithCdp, buildDomAuditFnSource } = await import("./lib/chrome-cdp.mjs");
       let pw = null;
       try { pw = await import("playwright"); } catch { pw = null; }
 
@@ -858,20 +1045,23 @@ export async function runCheck(rawArgs = [], io = { stdout: process.stdout, stde
           const browser = await pw.chromium.launch();
           if (snapshotsDir) fs.mkdirSync(path.resolve(snapshotsDir), { recursive: true });
           const auditFnSrc = buildDomAuditFnSource();
+          const { serveDirectory, commonDir } = await import("./lib/safe-io.mjs");
+          const server = await serveDirectory(commonDir(htmlFiles));
+          try {
 
           for (const htmlFile of htmlFiles) {
             for (const vp of viewports) {
               const page = await browser.newPage({ viewport: vp });
               await page.route("**/*", (route) => {
                 const u = route.request().url();
-                if (u.startsWith("file://") || u.startsWith("data:") || /^https?:\/\/(?:127\.0\.0\.1|localhost)(?::\d+)?\//i.test(u)) {
+                if (u.startsWith("data:") || u.startsWith(`${server.origin}/`)) {
                   return route.continue();
                 }
                 return route.abort("blockedbyclient");
               });
               const runtimeErrors = [];
               page.on("pageerror", (e) => runtimeErrors.push(e.message));
-              await page.goto(pathToFileURL(htmlFile).href, { waitUntil: "domcontentloaded" });
+              await page.goto(server.urlFor(htmlFile), { waitUntil: "domcontentloaded" });
               await page.evaluate(async () => {
                 if (document.fonts && document.fonts.ready) await document.fonts.ready;
                 await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
@@ -879,7 +1069,8 @@ export async function runCheck(rawArgs = [], io = { stdout: process.stdout, stde
 
               if (snapshotsDir) {
                 const snapName = `${path.basename(htmlFile, path.extname(htmlFile))}-${vp.width}x${vp.height}.png`;
-                await page.screenshot({ path: path.join(path.resolve(snapshotsDir), snapName) });
+                const { writeFileSafe } = await import("./lib/safe-io.mjs");
+                writeFileSafe(path.join(path.resolve(snapshotsDir), snapName), await page.screenshot());
               }
 
               const audit = await page.evaluate(
@@ -896,7 +1087,10 @@ export async function runCheck(rawArgs = [], io = { stdout: process.stdout, stde
               await page.close();
             }
           }
-          await browser.close();
+          } finally {
+            await browser.close();
+            await server.close();
+          }
           renderAudit.ran = true;
           renderAudit.engine = "playwright";
         } catch (err) {
@@ -946,7 +1140,7 @@ export async function runCheck(rawArgs = [], io = { stdout: process.stdout, stde
   } else if (githubMode) {
     for (const f of findings) {
       const level = f.tier === "FLOOR" ? "error" : "warning";
-      writeOut(`::${level} file=${f.file},line=${f.line || 1},title=${f.rule}::${f.message} Fix: ${f.fix}`);
+      writeOut(`::${level} file=${escapeGhProp(f.file)},line=${Number(f.line) || 1},title=${escapeGhProp(f.rule)}::${escapeGhData(`${f.message} Fix: ${f.fix}`)}`);
     }
   } else if (jsonMode) {
     writeOut(

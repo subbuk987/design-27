@@ -2,6 +2,8 @@
 
 Load this module alongside `SKILL.md` whenever designing YouTube thumbnails, Open Graph share cards, Shorts/Reels covers, podcast artwork, newsletter headers, or editorial video covers. A thumbnail is not a print broadsheet or dense landing page — it is a single sub-second visual punchline.
 
+> **Emotion levers ([`emotion-science.md`](emotion-science.md) §0; study codes in [`emotion-evidence.md`](emotion-evidence.md)):** Lock the Emotional Target first. Gist and complexity at 17–50 ms (D1); accent chroma sets arousal (C1).
+
 ---
 
 ## 1. Title + Thumbnail Curiosity-Gap Loop
@@ -12,14 +14,15 @@ Never design a thumbnail in isolation. Always pair and output the **Complementar
 - **The Title's Job:** Supply the **specific subject, constraint, and stakes** that explain *why* the visual tension matters.
 
 ### Hard Overlap & Word-Ceiling Laws
-1. **Repeat `< 50%` of Title Words:** Thumbnail hook words must overlap with **fewer than half** of the paired title's words (`0%` overlap — zero shared content words — is strongest).
-2. **`0–4` Word Ceiling (`thumbnail-word-ceiling`):** Use **`0` words** when the visual metaphor is self-explanatory, or **`1–4` punchy words max**. Hard fail at **`> 5` visible words** inside the primary thumbnail stage.
+1. **Repeat `< 50%` of Title Words (`thumbnail-title-overlap`):** Shared content words ÷ the smaller word set must stay **below 50%** (`0%` — zero shared content words — is strongest). The checker warns at `>= 50%`.
+2. **`0–4` Word Ceiling (`thumbnail-word-ceiling`):** Use **`0` words** when the visual metaphor is self-explanatory, or **`1–4` punchy words max**. Hard fail at **`> 4` visible words** inside the primary thumbnail stage.
+3. **Focal Dominance & Direct Labels:** The focal subject occupies **`>= 55%`** of frame area; every chart mark or bar carries a direct label (no unlabelled bars).
 
 | Channel / Format | Weak (Repeats Title / Bloated) | Strong Paired Title (Context & Stakes) | Strong Thumbnail Hook (`< 50%` Overlap) | Overlap |
 | :--- | :--- | :--- | :--- | :--- |
 | **Engineering Benchmark** | *"How We Made Our Node CLI 14x Faster With Zero Dependencies"* | *Why I Rebuilt Our Build Pipeline in Pure Node (11s → 0.8s)* | **`ZERO BLOAT.`** + zoomed `11.2s → 0.8s` flamegraph | `0%` (`0/2` words) |
-| **System Postmortem** | *"The Database Outage That Cost Us 4 Hours"* | *One Missing Index Took Down Checkout on Black Friday* | **`4 HOURS DOWN`** + red lock icon over `300%` CPU spike | `0%` (`0/3` words) |
-| **Hardware Teardown** | *"Testing Three Budget Field Recorders Side by Side"* | *Can a $99 Field Recorder Beat a $1,200 Cinema Rig?* | **`$99` vs `$1,200`** + clean split waveform verdict | `25%` (`1/4` words) |
+| **System Postmortem** | *"The Database Outage That Cost Us 4 Hours"* | *One Missing Index Broke Checkout on Black Friday* | **`4 HOURS DARK`** + red lock icon over `300%` CPU spike | `0%` (`0/3` words) |
+| **Hardware Teardown** | *"Testing Three Budget Field Recorders Side by Side"* | *Can a Cheap Recorder Beat a Cinema Rig?* | **`$99` vs `$1,200`** + clean split waveform verdict | `0%` (`0/2` words) |
 | **Visual Essay / Podcast** | *"Why Modern Software Feels Slower Than 1995"* | *The Latency Tax: Why Modern Apps Feel Sluggish on M4 Chips* | **`0` words** (1995 CRT cursor vs. spinning 2026 loader) | `0%` |
 
 ---
@@ -51,7 +54,7 @@ Count every distinct object inside the frame — you get **at most 3**:
 | Metric | Hard Rule |
 | :--- | :--- |
 | **Word Count** | `0` words (pure visual metaphor) or **`1–4` words**. Hard fail **`> 5` words** (`thumbnail-word-ceiling`). |
-| **Type Size** | Each line measures **`>= 16–24%`** of canvas height (`115–175px` tall on a `1280×720` stage). |
+| **Type Size** | Target **`16–24%`** of canvas height per line (checker floor `14%`, `thumbnail-hook-too-small`) (`115–175px` tall on a `1280×720` stage). |
 | **Face & Weight** | Heavy geometric/neo-grotesk sans (`800–900` weight) or condensed display. Zero light/thin weights (`<= 400`) or scripts. |
 | **Leading & Accent** | Tight `line-height: 0.90–1.0`, max `1–2` stacked lines, **1 power word** highlighted in `--accent-focal`. |
 | **Backing Contrast** | **`>= 7:1`** contrast via directional dark scrim, crisp solid block fill, or tight contact shadow (`0 6px 24px rgba(0,0,0,0.65)`). Never fuzzy neon blurs. |
@@ -360,7 +363,13 @@ Generate photographic or 3D-illustrated subject plates **without baked-in AI tex
 
 ## 7. Cognitive Psychology & Empirical CTR Grounding
 
-- **13 ms Gist & 50 ms Aesthetic Gate:** Humans extract conceptual scene meaning at **13 ms** ([Potter et al., 2014](https://pubmed.ncbi.nlm.nih.gov/24374558/)), and **50 ms** aesthetic judgments tightly track **500 ms** evaluations ([Lindgaard et al., 2006](https://www.tandfonline.com/doi/abs/10.1080/01449290500330448)). Always audit downscaled at `160×90`–`320×180`.
+- **50 ms Aesthetic Gate (Grade A) & the 13 ms Gist Claim (Grade C):** **50 ms** appeal judgments tightly track **500 ms** evaluations ([Lindgaard et al., 2006](https://www.tandfonline.com/doi/abs/10.1080/01449290500330448)), and complexity matters at 17 ms (Tuch et al., 2012). Potter et al.'s **13 ms** "conceptual gist" ([2014](https://pubmed.ncbi.nlm.nih.gov/24374558/)) failed replication with proper masking ([Maguire & Howe, 2016](https://link.springer.com/article/10.3758/s13414-016-1096-5)): do not cite it. Always audit downscaled at `160×90`–`320×180`.
 - **2-of-3 Pre-Attentive Saliency Channels:** Separate the focal subject from ground on at least **2 of 3** visual saliency channels—**intensity (luminance)**, **color opponency**, and **orientation** ([Itti, Koch, & Niebur, 1998](https://www.cse.psu.edu/~rtc12/CSE597E/papers/Itti_etal98pami.pdf); [Itti & Koch, 2001](https://pubmed.ncbi.nlm.nih.gov/11256080/)).
 - **Reflexive Gaze Cueing (`105–300 ms`):** Nonpredictive eye gaze shifts viewer attention involuntarily within **105 ms** and triggers stronger right-TPJ attentional expectation than symbolic arrows ([Friesen & Kingstone, 1998](http://wexler.free.fr/library/files/friesen%20(1998)%20the%20eyes%20have%20it!%20reflexive%20orienting%20is%20triggered%20by%20nonpredictive%20gaze.pdf); [Callejas et al., 2014](https://academic.oup.com/scan/article/10/2/294/1656170)).
-- **Optimal Information Gap & Expression Data:** Pair Title + Thumbnail with `< 40%` Jaccard token overlap so neither closes the curiosity gap alone ([Loewenstein, 1994](https://www.cmu.edu/dietrich/sds/docs/loewenstein/PsychofCuriosity.pdf); [Veritasium](https://youtu.be/S2xHZPH5Sng)); closed-mouth expressions beat open-mouth **30/30** times in MrBeast A/B testing ([Social Media Today](https://www.socialmediatoday.com/news/youtube-shares-insights-mrbeasts-team-creates-compelling-thumbnail/709817/)).
+- **Optimal Information Gap & Expression Data:** Pair Title + Thumbnail with `< 50%` shared content words (rule 1 above) so neither closes the curiosity gap alone ([Loewenstein, 1994](https://www.cmu.edu/dietrich/sds/docs/loewenstein/PsychofCuriosity.pdf); [Veritasium](https://youtu.be/S2xHZPH5Sng)); one channel's team reported closed-mouth faces slightly beat open-mouth ones on watch time across about 30 videos (single-channel anecdote, Grade C; test on your own audience) ([Social Media Today](https://www.socialmediatoday.com/news/youtube-shares-insights-mrbeasts-team-creates-compelling-thumbnail/709817/)).
+
+---
+
+## Final Medium Gate (Stage 4, with `qa-and-critique.md`)
+
+Emitted alongside a **complementary Video/Article Title** forming a Curiosity Gap (`< 50%` shared words); `<= 3` visual elements; `0–4` words max inside `#thumbnail-canvas`; **live `160×90px` dark/light feed context preview** passes squint legibility; **YouTube bottom-right timestamp dead zone (`x: 1000–1280, y: 590–720`) completely clear** of text, faces, and logos.

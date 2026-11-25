@@ -1,6 +1,6 @@
 # Design 27 `v4.0.0` — Reproducible Adversarial Eval Suite
 
-Run the **14-assertion deterministic contract & floor suite** locally (zero dependencies, Node 18+; `--render` uses zero-socket headless Chrome `--remote-debugging-pipe` CDP automatically when Chrome/Chromium is present):
+Run the **35-test deterministic contract & floor suite** locally (zero dependencies, Node 18+; `--render` uses headless Chrome over `--remote-debugging-pipe` CDP (pages served from a jailed `127.0.0.1` folder server) automatically when Chrome/Chromium is present):
 
 ```bash
 node evals/run-eval.mjs

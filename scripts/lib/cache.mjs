@@ -7,8 +7,8 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-export const CACHE_SCHEMA_VERSION = 1;
-export const VIDEO_EXT_RE = /\.(mp4|mov|webm|mkv|m4v|avi)$/i;
+const CACHE_SCHEMA_VERSION = 1;
+export const VIDEO_EXTS = new Set([".mp4", ".mov", ".webm", ".mkv", ".m4v", ".avi"]);
 
 function sha256(str) {
   return crypto.createHash("sha256").update(str).digest("hex");
@@ -77,7 +77,7 @@ export function computeFileHash(absPath) {
 }
 
 export function shouldBypassCache({ render, noCache, relPath }) {
-  return Boolean(render || noCache || VIDEO_EXT_RE.test(relPath || ""));
+  return Boolean(render || noCache || VIDEO_EXTS.has(path.extname(relPath || "").toLowerCase()));
 }
 
 export function buildCacheKey({
@@ -122,6 +122,22 @@ export function readCacheEntry(cacheDir, key) {
   }
 }
 
+// Entries were never deleted; drop ones untouched for 30 days (at most once per process).
+let pruned = false;
+function pruneOldEntries(cacheDir) {
+  if (pruned) return;
+  pruned = true;
+  const cutoff = Date.now() - 30 * 24 * 3600 * 1000;
+  try {
+    for (const name of fs.readdirSync(cacheDir)) {
+      if (!name.endsWith(".json")) continue;
+      const p = path.join(cacheDir, name);
+      const st = fs.lstatSync(p);
+      if (st.isFile() && st.mtimeMs < cutoff) fs.unlinkSync(p);
+    }
+  } catch { /* best effort */ }
+}
+
 export function writeCacheEntry(cacheDir, key, payload) {
   if (!cacheDir || !key) return false;
   const finalPath = path.join(cacheDir, `${key}.json`);
@@ -136,6 +152,7 @@ export function writeCacheEntry(cacheDir, key, payload) {
       { flag: "wx", mode: 0o600 }
     );
     fs.renameSync(tmpPath, finalPath);
+    pruneOldEntries(cacheDir);
     return true;
   } catch {
     try { fs.unlinkSync(tmpPath); } catch { /* ignore */ }

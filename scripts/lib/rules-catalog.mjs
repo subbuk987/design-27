@@ -35,19 +35,25 @@ export const LINE_RULES = [
   },
   {
     id: "no-emoji-ui-icon", tier: "REFLEX", speed: "fast", medium: "web",
-    regex: /<(?:h[1-6]|button|span|a|label|li)[^>]*>[^<]*[✨🚀🔥👋🎉💡⚡]/u,
+    regex: /<(?:h[1-6]|button|span|a|label|li)[^<>]*>[^<]*[✨🚀🔥👋🎉💡⚡]/u, markup: true,
     message: "Decorative emoji used inside UI heading, button, or label.",
     fix: "Remove the emoji or replace with a uniform monoline SVG icon (`16-18px`, `1.5px` stroke, `currentColor`).",
   },
   {
-    id: "no-hype-copy", tier: "REFLEX", speed: "fast", medium: "all",
-    regex: /\b(supercharge|revolutionize|game-changing|unlock the power|seamless experience)\b|Welcome back,\s*[^<]{1,30}!/i,
+    id: "no-hype-copy", tier: "REFLEX", speed: "fast", medium: "all", markup: true,
+    regex: /\b(supercharge|revolutionize|game-changing|unlock the power|seamless experience|elevate your|next[- ]level|transforms? the way|all-in-one|effortless(?:ly)?|cutting-edge|world-class|unleash|harness the power|blazing(?:ly)?[- ]fast)\b|Welcome back,\s*[^<]{1,30}!/i,
     message: "AI hype buzzword or generic greeting detected in interface copy.",
     fix: "Rewrite in plain, product-specific language with zero exclamation marks.",
   },
   {
+    id: "no-generic-microcopy", tier: "REFLEX", speed: "fast", medium: "web", markup: true,
+    regex: />\s*(?:Get Started|Learn More|Submit|Click [Hh]ere|Read [Mm]ore)\s*<\/|\bOops!|Something went wrong/,
+    message: "Generic microcopy (`Get Started`, `Learn More`, `Submit`, `Oops!`, `Something went wrong`).",
+    fix: "Buttons = verb + object (`Reserve unit`); errors = what happened + why + the fix; empty states = what appears here + the first action.",
+  },
+  {
     id: "no-fake-italic-heading", tier: "REFLEX", speed: "fast", medium: "web",
-    regex: /<h[12][^>]*>[^<]*<(?:em|i)\b[^>]*>[^<\s]+<\/(?:em|i)>[^<]*<\/h[12]>/i,
+    regex: /<h[12][^<>]*>[^<]*<(?:em|i)\b[^<>]*>[^<\s]+<\/(?:em|i)>[^<]*<\/h[12]>/i, markup: true,
     message: "Single italic word inside a roman display heading is a known AI fake-editorial cliché.",
     fix: "Keep display headings cohesive or use one of the 4 legal Tension Archetypes in `references/direction-matrix.md`.",
   },
@@ -90,7 +96,7 @@ export const LINE_RULES = [
   },
 ];
 
-export const EXTRA_RULES = [
+const EXTRA_RULES = [
   { id: "no-eyebrow-spam", tier: "REFLEX", speed: "fast", medium: "web", message: ">= 4 tracked-uppercase eyebrow/meta tags immediately preceding headings in one HTML file.", fix: "Cap section eyebrows to 1-2 structural landmarks; vary section openings with direct headings, numbers, or artifacts." },
   { id: "no-scale-zero-entrance", tier: "REFLEX", speed: "fast", medium: "animation", message: "UI entrance/transition uses `scale(0)` instead of `scale(0.95 -> 1)`.", fix: "Animate UI surfaces from `scale(0.95)` to `scale(1)` anchored to the trigger `transform-origin`." },
   { id: "no-ease-in-ui-entrance", tier: "REFLEX", speed: "fast", medium: "animation", message: "UI entrance/transition > 220ms uses `ease-in` (feels sluggish on arrival).", fix: "Use `cubic-bezier(0.16, 1, 0.3, 1)` or `ease-out` for UI entrances under 300ms; reserve `ease-in` for exits." },
@@ -105,6 +111,8 @@ export const EXTRA_RULES = [
   { id: "no-negative-parallelism-tic", tier: "REFLEX", speed: "fast", medium: "book", message: "Negative parallelism prose tic (`It's not just X — it's Y` / `not merely X, but Y`) detected.", fix: "State the actual claim directly without the formulaic negation contrast." },
   { id: "no-throat-clearing-opener", tier: "REFLEX", speed: "fast", medium: "book", message: "Paragraph opens with throat-clearing filler (`Moreover,`, `Furthermore,`, `Additionally,`, `In conclusion,`, `It is worth noting`, `In today's rapidly evolving`).", fix: "Cut the transition crutch and lead directly with the noun, verb, or evidence." },
   { id: "no-em-dash-overload", tier: "REFLEX", speed: "deep", medium: "book", message: "Paragraph exceeds the 2 em-dash (`—`) ceiling.", fix: "Vary punctuation with periods, colons, or parentheses instead of chaining em-dashes." },
+  { id: "no-self-answered-question", tier: "REFLEX", speed: "fast", medium: "all", message: "Self-answered rhetorical question (`The result? ...`).", fix: "State the result directly as a declarative sentence." },
+  { id: "no-triad-overload", tier: "REFLEX", speed: "deep", medium: "book", message: "More than 3 rule-of-three lists per 1k words.", fix: "Keep a triad only where three items are real." },
   { id: "low-sentence-burstiness", tier: "REFLEX", speed: "deep", medium: "book", message: "Metronomic AI sentence cadence detected (sentence-length CV < 0.35 or > 75% in 15–28 word band without short strikes).", fix: "Alternate short declarative strikes (5–10 words) with analytical clauses (22–35 words)." },
   { id: "apca-contrast-fail", tier: "REFLEX", speed: "fast", medium: "web", message: "Declared semantic ink/canvas pair fails polarity-aware APCA |Lc| >= 60 perceptual contrast floor.", fix: "Increase perceptual lightness separation (target |Lc| >= 75 for body text, >= 90 for reading)." },
   { id: "no-double-signaled-paragraphs", tier: "FLOOR", speed: "deep", medium: "book", message: "Book stylesheet combines positive `text-indent` (`first-line-indent`) with positive paragraph `margin-bottom`/`spacing`.", fix: "Pick one paragraph separator: either `text-indent` with `margin-bottom: 0`, OR vertical spacing with `text-indent: 0`." },
@@ -113,6 +121,15 @@ export const EXTRA_RULES = [
   { id: "wcag-contrast-fail", tier: "FLOOR", speed: "fast", medium: "web", message: "Declared semantic ink token fails WCAG 2.1 4.5:1 contrast floor against `--surface-canvas`.", fix: "Adjust `--ink-primary` / `--ink-secondary` to meet >= 4.5:1 (>= 7:1 recommended for primary ink)." },
   { id: "brief-require-tokens", tier: "FLOOR", speed: "deep", medium: "web", message: "Active brief requires semantic `:root` design tokens.", fix: "Declare `--surface-canvas`, `--ink-primary`, and `--accent-focal` inside `:root`." },
   { id: "brief-banned-default-used", tier: "FLOOR", speed: "deep", medium: "web", message: "Built CSS uses a banned default font from the active brief.", fix: "Replace the banned default font with the brief's dealt typography." },
+  { id: "brief-emotion-chroma-mismatch", tier: "REFLEX", speed: "deep", medium: "web", message: "Peak `:root` OKLCH chroma falls outside the brief's emotional-arousal band.", fix: "Move accent chroma into the dealt `emotion.accentChroma` band or re-deal with a different `--emotion`." },
+  { id: "brief-world-drift", tier: "REFLEX", speed: "deep", medium: "web", message: "`:root` tokens or display font do not match the dealt primary or alternate world.", fix: "Use the dealt world's canvas, accent and display face, or log the override with `/* d27-allow: brief-world-drift — reason */`." },
+  { id: "convergence-signature", tier: "REFLEX", speed: "deep", medium: "web", message: "AI-default convergence signature (near-black canvas + orange accent, or Geist/Inter display).", fix: "Re-deal a Material World or justify the choice on record." },
+  { id: "require-img-alt", tier: "FLOOR", speed: "fast", medium: "web", message: "`<img>` without an `alt` attribute (WCAG 1.1.1).", fix: "Add descriptive `alt`, or `alt=\"\"` for decorative images." },
+  { id: "require-html-lang", tier: "FLOOR", speed: "fast", medium: "web", message: "`<html>` without a `lang` attribute (WCAG 3.1.1).", fix: "Add `<html lang=\"en\">` (or the page language)." },
+  { id: "render-unnamed-control", tier: "FLOOR", speed: "deep", medium: "web", message: "Rendered interactive control has no accessible name (WCAG 4.1.2).", fix: "Add visible text, `aria-label`, or an associated `<label>`." },
+  { id: "render-target-size", tier: "REFLEX", speed: "deep", medium: "web", message: "Rendered pointer target smaller than 24x24 CSS px (WCAG 2.5.8).", fix: "Raise the hit area to >= 24x24px (44x44 for primary touch targets), e.g. padding or `min-block-size`." },
+  { id: "no-generic-mascot-features", tier: "REFLEX", speed: "deep", medium: "mascot", message: "Mascot uses stock cute-animal parts (`#ears`, `#cheeks`, `#blush`).", fix: "Derive anatomy from the 2-noun domain metaphor (mascot-creation.md §1) unless the brief names an animal." },
+  { id: "d27/unused-ignore", tier: "REFLEX", speed: "fast", medium: "all", message: "Inline d27 waiver matched no finding (--report-unused-ignores).", fix: "Delete the stale waiver comment." },
   { id: "brief-banned-cliche", tier: "FLOOR", speed: "deep", medium: "web", message: "Output tripped the dealt banned cliché signature.", fix: "Recalibrate palette and layout to match the dealt Material World." },
   { id: "require-mp4-faststart", tier: "REFLEX", speed: "fast", medium: "motion", message: "MP4 `moov` atom is not before `mdat`.", fix: "Re-mux with `-movflags +faststart`." },
   { id: "require-yuv420p", tier: "FLOOR", speed: "fast", medium: "motion", message: "Video pixel format is not `yuv420p`.", fix: "Encode with `-pix_fmt yuv420p`." },

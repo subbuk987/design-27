@@ -2,6 +2,8 @@
 
 Load this module alongside `SKILL.md` (and `references/animations.md` for interactive web motion) whenever creating original brand mascots, product character systems, SVG emblem rigs, or AI character sheets.
 
+> **Emotion levers ([`emotion-science.md`](emotion-science.md) §0; study codes in [`emotion-evidence.md`](emotion-evidence.md)):** Lock the Emotional Target first. Baby-schema proportions tune warmth vs. authority (A5; numbers in §3 below); curved vs. angular silhouettes shift valence (T3).
+
 ---
 
 ## 1. The 2-Noun Domain Metaphor Matrix (Anti-Cloning Law)
@@ -12,9 +14,9 @@ Instead, fuse **Noun A (Physical / Technical Medium)** + **Noun B (Kinetic / Exp
 
 | Product Domain | Noun A — Physical / Technical Medium | Noun B — Kinetic / Expressive Cue | Resulting Character Anatomy (Zero Generic Ears) |
 | :--- | :--- | :--- | :--- |
-| **CLI Benchmark** | Dual-inline IC chip package + brass DIP pins | `>_` terminal prompt-chevron & cursor eyes + ECG pulse mouth | Rectangular chamfered chip chassis, 8 articulated brass pin arms, lightning-bolt pinhead antenna, `>_` OLED visor eyes, sweeping heartbeat line |
+| **Ferry Timetable App** | Riveted ferry hull + porthole glass | Swinging tide-gauge needle eyes + bow-wave smile | Rounded hull torso with a raked bow (silhouette hook), twin porthole eyes with gauge-needle pupils, rope-coil arms, wake-line mouth |
 | **Encrypted Backup** | Brass & slate padlock housing + hardened U-shackle | Periscope keyhole eye + ready-state dash + checksum wave | Asymmetric unlocked shackle crown (`30%` silhouette hook), key-tooth shoulder bolts, keyhole + status-bar eyes, stepped verification pulse |
-| **Audio Field Recorder** | Milled XLR field body + furry deadcat windscreen | Dual analog VU-meter pupils + coiled TRS cable tail | Fluffy asymmetrical windscreen crest (ear-free silhouette hook), recessed meter-dial face with bouncing needle pupils, coiled spring tail |
+| **Seed Bank** | Glass specimen jar + wax-sealed lid | Germinating sprout brow + root-tendril feet | Squat jar body with a tilted wax-seal cap, single curling sprout as the hook, seed-pupil eyes behind the glass, root tendrils as legs |
 | **Graph Database** | Faceted geodesic polyhedron + magnetic node sockets | Orbital satellite hands + directional edge-beam gaze | Isometric hexagonal prism head/torso, floating orbital node spheres for hands, connected vertex constellation eyes |
 | **Culinary App** | Enameled cast-iron cocotte + brass lid knob | Rising steam-curl brow + wooden ladle-hook arm | Squat rounded pot torso with asymmetric loop handles, billowing asymmetric steam plume crest, expressive arched steam brows |
 
@@ -72,6 +74,12 @@ Inside a `viewBox="0 0 400 400"`, `16px` renders at **`0.04×` scale** (`25 SVG 
 ---
 
 ## 3. Constructive Vector Craft, Palette & Finish Registers
+
+### Construction, Line Weight & Proportion (draw before you rig)
+- **Build from 3–5 primitives:** block the character in circles, rounded rectangles and one triangle before any freehand `<path>`. If it cannot be described as primitives, it will not survive `16px`.
+- **Line-weight hierarchy:** outer silhouette stroke = `1.5×` inner detail strokes; never let interior lines match the outline.
+- **Warmth dial (baby schema, `emotion-science.md` §0, `emotion-evidence.md` A5):** for `calm` / `inviting` / `playful` targets, head `>= 40%` of total height, eyes at or below the head's midline, eye diameter `18–24%` of head width, eye spacing `>= 1` eye-width. For `trust` / `urgent` / authority mascots, head `<= 30%`, eyes above midline and smaller (`10–14%`).
+- **Sheet before scene:** deliver a 3-view turnaround (front, ¾, side) and a 6-expression sheet (neutral, joy, focus, surprise, concern, success) before any state animation. Score **Appeal** (silhouette readable at `32px`, one memorable hook, drawable from memory) instead of Interactive Proof.
 
 ### Shape Language & Line of Action
 - **`70 / 30` Mass-to-Hook Ratio:** Dedicate `70%` of the visual footprint to one bold, calm primary mass (chassis, vessel, polyhedron, body) and `30%` to asymmetric silhouette hooks (unlocked shackle, articulated limbs, coiled cable, steam plume, antenna) that establish unmistakable facing direction.
@@ -404,3 +412,9 @@ When generating raster mascot renders or 3D clay/vinyl turnarounds with an image
 - **Gestalt Silhouette Parsing & Anti-Tangents:** Vision segments silhouettes at **negative minima of curvature**, favors **convex** figure regions (`57%–89%` of trials), and relies on proximity for `~75%` of grouping (`< 1.5×` competing gap ratio, `<= 90°` implied-closure turns; [Wagemans et al., 2012, *Psychological Bulletin*](https://pmc.ncbi.nlm.nih.gov/articles/PMC3482144/)). Eliminate kissing tangents with deliberate overlap ([Walt Stanchfield, *Drawn to Life*](https://thekeypoint.org/2025/10/12/drawn-to-life-20-golden-years-of-disney-master-classes/)).
 - **Optical Weight Overshoot & Centroid Centering:** A circle requires **`112.84%`** ($\sqrt{4/\pi}$) of a square's width to match visual weight; equalize **convex hull area** and center asymmetric marks by **geometric centroid** rather than bounding box ([Bjango, *Formulas for Optical Adjustments*](https://bjango.com/articles/opticaladjustments/)).
 - **Dedicated `16×16` Pixel-Grid Marks:** Downscaling a `24px` (`2px`-stroke) outline icon to `16px` spikes partial-alpha blur pixels from `37.9%–46.5%` to **`81.1%–98.4%`**; author dedicated `16×16` variants with odd strokes (`1px`) snapped to `.5` coordinates and even strokes (`2px`) on whole integers ([Icony](https://iconyapp.com/blog/fix-blurry-svg-icons); [Material System Icons](https://m2.material.io/design/iconography/system-icons.html)). Verified via `partialAlphaRatio` and `inkComponents` in `scripts/lib/pixel-audit.mjs`.
+
+---
+
+## Final Medium Gate (Stage 4, with `qa-and-critique.md`)
+
+Anatomy derived from **2-Noun Domain Metaphor Matrix** (zero unprompted fox/cat ears on technical tools); primary `<svg>` contains `>= 4` named `<g id="...">` groups; silhouettes use **`--m-fill`/`--m-cut` CSS-variable cutouts or `<mask>`** (zero blind `filter: brightness(0)`), verified across `400px → 64px → 32px → 16px` on light & dark; interactive showcase provides hover/focus `#group` isolation + restrained `prefers-reduced-motion`-safe idle micro-motion.

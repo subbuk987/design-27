@@ -2,6 +2,8 @@
 
 Load this module alongside `SKILL.md`, `references/websites.md`, or `references/mascot-creation.md` whenever building interactive controls, overlays, state transitions, scroll reveals, or web-based SVG character motion. *(For timeline-scrubbed launch films, 2.5D camera rigs, Remotion, HyperFrames, Manim, and FFmpeg mastering, load `references/motion-design.md`.)*
 
+> **Emotion levers ([`emotion-science.md`](emotion-science.md) §0; study codes in [`emotion-evidence.md`](emotion-evidence.md)):** Lock the Emotional Target first. The target's motion row in §0 sets duration, easing and overshoot *inside* this module's Frequency Test and `< 300ms` overlay limits (M1).
+
 ---
 
 ## 1. The Frequency & Intent Gate
@@ -13,7 +15,7 @@ Animation earns its pixels only when it clarifies spatial cause-and-effect or pr
 | **High-Frequency / Keyboard (`100×/day`)** | `Cmd+K` palette open/filter, arrow-key list navigation, tab switches, autocomplete, typing feedback | **`0ms–80ms`** (`0ms` for selection moves) | **Never animate keyboard-driven focus or list selection.** Slow transitions on `100×/day` shortcuts feel like input lag. |
 | **Direct Micro-Feedback** | Button hover/press, toggle switch, checkbox tick, segmented pill, chip press | **`120–200ms`** | Use `--ease-out-quart` + tactile `:active` (`scale(0.97)` or `translateY(2px)`). Never block repeated clicks. |
 | **Contextual Overlays** | Popovers, dropdown menus, tooltips, dialogs, drawers, toasts | **`180–280ms`** (`< 300ms` hard cap) | Scale `0.95 → 1.0` + `opacity` from trigger `transform-origin`. Exits run **25–30% faster** (`130–190ms`). |
-| **Signature Load / Proof Moment** | Initial waveform/meter sweep, `pathLength="1"` diagram/mascot trace | **`1.2–2.2s` once** | Auto-plays once on first paint, **cancels immediately** on any user input, and skips under `prefers-reduced-motion: reduce`. |
+| **Signature Load / Proof Moment** | Initial waveform/meter sweep, `pathLength="1"` diagram/mascot trace | **`1.2–2.4s` once** | Auto-plays once on first paint, **cancels immediately** on any user input, and skips under `prefers-reduced-motion: reduce`. |
 
 ---
 
@@ -78,7 +80,7 @@ Animation earns its pixels only when it clarifies spatial cause-and-effect or pr
 
 ## 4. Signature Load Moment ("Auto-Play Once, Then Hand Off")
 
-On *Persuade* and *Experience* pages, give the primary interactive proof or hero SVG diagram **one `1.2–2.2s` opening demonstration** on initial load so visitors immediately see what moves and why it matters. **Never trap user input:** cancel the demo cleanly on the very first `pointerdown`, `keydown`, or `input`, and jump straight to the informative resting state when `prefers-reduced-motion: reduce` is active.
+On *Persuade* and *Experience* pages, give the primary interactive proof or hero SVG diagram **one `1.2–2.4s` opening demonstration** on initial load so visitors immediately see what moves and why it matters. **Never trap user input:** cancel the demo cleanly on the very first `pointerdown`, `keydown`, or `input`, and jump straight to the informative resting state when `prefers-reduced-motion: reduce` is active.
 
 ```html
 <!-- Pattern A: SVG Signature Stroke Trace (pathLength="1") -->
@@ -110,9 +112,12 @@ function runOnceDemo(slider, onUpdate, { from = 1.0, peak = 5.2, settle = 3.4, d
   const start = performance.now();
   const stop = () => { cancelled = true; cancelAnimationFrame(rafId); };
 
-  ["pointerdown", "keydown", "input", "wheel"].forEach((evt) =>
-    slider.addEventListener(evt, stop, { once: true, passive: true })
+  // Any input anywhere hands control back, not just input on the slider itself.
+  ["pointerdown", "keydown", "wheel", "touchstart"].forEach((evt) =>
+    window.addEventListener(evt, stop, { once: true, passive: true, capture: true })
   );
+  slider.addEventListener("input", stop, { once: true });
+  // onUpdate(val) must not write to an aria-live region: announce only settled user changes.
 
   const tick = (now) => {
     if (cancelled) return;
@@ -261,3 +266,9 @@ Gate native CSS scroll timelines inside BOTH `@supports (animation-timeline: vie
   - *Edge rubber-banding:* `f(x, d, c) = (x * d * c) / (d + c * x)` (`c = 0.55`, `x` = overscroll distance, `d` = viewport dimension).
   - *Design-facing springs:* Convert `(damping, response)` to physics via `stiffness = (2π / response)²`, `damp = 4π * damping / response` (`mass = 1`); use closed-form springs for fixed targets and reserve RK4 (`stepSpring`) for pointer-tracked or mid-flight retargeted springs; enforce `10pt` swipe hysteresis.
 - **Instant-Subsequent Tooltips & CSS `linear()` Discipline:** Set `transition-duration: 0ms` (`[data-instant]`) for subsequent hovers within a tooltip group ([Emil Kowalski](https://emilkowal.ski/ui/7-practical-animation-tips); [Rauno Freiberg](https://every.to/p/invisible-details-of-interaction-design)), and never apply overshooting `linear()` springs to `opacity` (clips/flickers past `1.0`; [Josh W. Comeau](https://www.joshwcomeau.com/animation/linear-timing-function/)).
+
+---
+
+## Final Medium Gate (Stage 4, with `qa-and-critique.md`)
+
+Passes Frequency Test (`0–100ms` high-frequency, `< 300ms` overlays); zero `scale(0)` or `ease-in` entrances; trigger-anchored `transform-origin`; interruptible transitions/springs; View Transitions / scroll-linked reveals degrade cleanly; `1.2s–2.4s` auto-play-once demo yields on input and respects `prefers-reduced-motion`.

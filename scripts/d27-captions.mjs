@@ -5,8 +5,9 @@
  */
 import fs from "node:fs";
 import path from "node:path";
+import { writeFileSafe } from "./lib/safe-io.mjs";
 
-const VERSION = "4.0.0";
+import { VERSION } from "./lib/version.mjs";
 const args = process.argv.slice(2);
 const VALUE_FLAGS = new Set(["--fps", "--aspect", "--format", "--out"]);
 const skipIndices = new Set();
@@ -198,7 +199,7 @@ if (format === "srt") {
 if (outArg) {
   const resolvedOut = path.resolve(outArg);
   fs.mkdirSync(path.dirname(resolvedOut), { recursive: true });
-  fs.writeFileSync(resolvedOut, `${output}\n`, "utf8");
+  writeFileSafe(resolvedOut, `${output}\n`);
 } else {
   console.log(output);
 }
