@@ -398,3 +398,11 @@ At 14:02 UTC on a quiet Tuesday, checkout latency climbed from 42ms to 4.8s with
 
 Postgres grants an `ACCESS EXCLUSIVE` lock only after active readers finish, yet every new reader arriving behind the queued migration blocks behind it.
 ```
+
+---
+
+## 5. Empirical Typography & Anti-AI Prose Research
+
+- **Screen Comprehension vs. Skimming:** Wider lines (`~100 cpl`) maximize raw skimming speed, but **`55 cpl`** outperforms `100 cpl` on comprehension; scale `line-height` upward with measure (`1.35` at `55ch` → `1.45` at `72ch`) ([Dyson, 2004](https://stu.westga.edu/~ssynan1/literacy/Dyson.pdf); [Butterick's Practical Typography](https://practicaltypography.com/summary-of-key-rules.html)).
+- **Hyphenation-Gated Justification:** Greedy browser line-breaking creates rivers in 69% of paragraphs compared to optimal-fit TeX/Typst breaking ([Knuth & Plass, 1981](https://gwern.net/doc/design/typography/tex/1981-knuth.pdf)); ban `text-align: justify` on web books unless `hyphens: auto` is active, and use progressive `2:3:4:6` margins on print spreads ([Van de Graaf Canon](https://en.wikipedia.org/wiki/Canons_of_page_construction)).
+- **Empirical Excess-Vocabulary & Burstiness Metrics:** A 15.1M-abstract analysis isolated 379 excess LLM style markers (*delves* `r = 28.0`, *underscores* `r = 13.8`, *showcasing* `r = 10.7`; [Kobak et al., 2025, *Science Advances*](https://arxiv.org/html/2406.07016v5)), while sentence-length variance (`CV = σ / μ`) and short/long tail presence (`<= 10w` / `>= 35w`) strongly separate human from AI prose ([Desaire et al., 2023, *Cell Reports Physical Science*](https://pmc.ncbi.nlm.nih.gov/articles/PMC10328544/)). Enforced via `low-sentence-burstiness` in `scripts/lib/prose-audit.mjs`.

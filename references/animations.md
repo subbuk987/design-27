@@ -250,3 +250,14 @@ Gate native CSS scroll timelines inside BOTH `@supports (animation-timeline: vie
 2. **GPU-Only Compositing:** Animate ONLY **`transform`**, **`opacity`**, and **`clip-path`**. Never animate `width`, `height`, `top`, `left`, `margin`, `padding`, `border-width`, or `font-size`. Never write `transition: all`.
 3. **Zero `will-change` Spam:** Never sprinkle permanent `will-change: transform` across dozens of static cards or rows (exhausts GPU tile memory). Modern browsers promote active `transform`/`opacity` keyframes automatically; apply `will-change` strictly during an active pointer drag and clear it on `pointerup`.
 4. **`prefers-reduced-motion: reduce` Floor:** Replace spatial translation/scaling sweeps with instant swaps (`0ms`) or subtle `150ms` opacity crossfades. Never strip functional state feedback (focus rings, error states, progress bars, or checked indicators).
+
+---
+
+## 7. Empirical Perception & Fluid Gesture Physics
+
+- **Human Latency Budgets:** Anchor interaction timing to Jakob Nielsen's thresholds (`100ms` instantaneous, `1,000ms` unbroken flow, `10,000ms` attention ceiling; [NN/g Response Time Limits](https://www.nngroup.com/articles/response-times-3-important-limits/)) and the **`< 400ms` Doherty Threshold** ([Laws of UX](https://lawsofux.com/doherty-threshold/)).
+- **Fluid Gesture Formulas ([WWDC18 *Designing Fluid Interfaces*](https://developer.apple.com/videos/play/wwdc2018/803/), [Holko](https://holko.pl/2014/07/06/inertia-bouncing-rubber-banding-uikit-dynamics/)):**
+  - *Momentum projection:* `project(v, d) = (v / 1000) * d / (1 - d)` (projects flick release velocity to resting target).
+  - *Edge rubber-banding:* `f(x, d, c) = (x * d * c) / (d + c * x)` (`c = 0.55`, `x` = overscroll distance, `d` = viewport dimension).
+  - *Design-facing springs:* Convert `(damping, response)` to physics via `stiffness = (2π / response)²`, `damp = 4π * damping / response` (`mass = 1`); use closed-form springs for fixed targets and reserve RK4 (`stepSpring`) for pointer-tracked or mid-flight retargeted springs; enforce `10pt` swipe hysteresis.
+- **Instant-Subsequent Tooltips & CSS `linear()` Discipline:** Set `transition-duration: 0ms` (`[data-instant]`) for subsequent hovers within a tooltip group ([Emil Kowalski](https://emilkowal.ski/ui/7-practical-animation-tips); [Rauno Freiberg](https://every.to/p/invisible-details-of-interaction-design)), and never apply overshooting `linear()` springs to `opacity` (clips/flickers past `1.0`; [Josh W. Comeau](https://www.joshwcomeau.com/animation/linear-timing-function/)).

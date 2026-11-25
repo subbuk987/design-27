@@ -427,8 +427,7 @@ export function buildDomAuditFnSource() {
           canvas.width = 16;
           canvas.height = 16;
           const ctx = canvas.getContext("2d", { willReadFrequently: true });
-          ctx.fillStyle = "#ffffff";
-          ctx.fillRect(0, 0, 16, 16);
+          ctx.clearRect(0, 0, 16, 16);
           ctx.drawImage(img, 0, 0, 16, 16);
           mascotCutout = analyzeCutoutBitmap(ctx.getImageData(0, 0, 16, 16).data, 16, 16);
         } catch {

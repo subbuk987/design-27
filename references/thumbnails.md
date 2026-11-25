@@ -355,3 +355,12 @@ Generate photographic or 3D-illustrated subject plates **without baked-in AI tex
 [STYLE]       Editorial studio photography, 50mm lens, crisp eye catchlights, >= 60% foreground-background luminance separation.
 [CONSTRAINTS] Zero baked-in text, zero watermarks, zero extra icons; keep bottom-right corner (x: 78%–100%, y: 82%–100%) quiet dark negative space for the duration pill.
 ```
+
+---
+
+## 7. Cognitive Psychology & Empirical CTR Grounding
+
+- **13 ms Gist & 50 ms Aesthetic Gate:** Humans extract conceptual scene meaning at **13 ms** ([Potter et al., 2014](https://pubmed.ncbi.nlm.nih.gov/24374558/)), and **50 ms** aesthetic judgments tightly track **500 ms** evaluations ([Lindgaard et al., 2006](https://www.tandfonline.com/doi/abs/10.1080/01449290500330448)). Always audit downscaled at `160×90`–`320×180`.
+- **2-of-3 Pre-Attentive Saliency Channels:** Separate the focal subject from ground on at least **2 of 3** visual saliency channels—**intensity (luminance)**, **color opponency**, and **orientation** ([Itti, Koch, & Niebur, 1998](https://www.cse.psu.edu/~rtc12/CSE597E/papers/Itti_etal98pami.pdf); [Itti & Koch, 2001](https://pubmed.ncbi.nlm.nih.gov/11256080/)).
+- **Reflexive Gaze Cueing (`105–300 ms`):** Nonpredictive eye gaze shifts viewer attention involuntarily within **105 ms** and triggers stronger right-TPJ attentional expectation than symbolic arrows ([Friesen & Kingstone, 1998](http://wexler.free.fr/library/files/friesen%20(1998)%20the%20eyes%20have%20it!%20reflexive%20orienting%20is%20triggered%20by%20nonpredictive%20gaze.pdf); [Callejas et al., 2014](https://academic.oup.com/scan/article/10/2/294/1656170)).
+- **Optimal Information Gap & Expression Data:** Pair Title + Thumbnail with `< 40%` Jaccard token overlap so neither closes the curiosity gap alone ([Loewenstein, 1994](https://www.cmu.edu/dietrich/sds/docs/loewenstein/PsychofCuriosity.pdf); [Veritasium](https://youtu.be/S2xHZPH5Sng)); closed-mouth expressions beat open-mouth **30/30** times in MrBeast A/B testing ([Social Media Today](https://www.socialmediatoday.com/news/youtube-shares-insights-mrbeasts-team-creates-compelling-thumbnail/709817/)).

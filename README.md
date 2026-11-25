@@ -2,7 +2,7 @@
 
 **The zero-dependency creative director, motion choreographer & anti-slop linter for coding agents — engineered for websites, UI animations, launch motion, book writing, mascots, and thumbnails.**
 
-Most design skills either give agents vague vibes (*"be bold"*) with zero enforcement, or lock you into heavy external runtimes for one narrow medium. **Design 27 (`v4.0.0`)** pairs a **lean progressive-disclosure router** (`SKILL.md`) and **9 focused craft modules** with a **zero-npm-dependency Node ESM CLI suite** (`d27-cli`, `d27-deal` v4, `d27-check` with SARIF 2.1.0 + `--github` + `--doctor` + WCAG `suggestedColor` + `ebur128`/`ffprobe` + **zero-dep headless Chrome CDP `--render`**, `d27-frames` with HTML `window.__d27Seek` capture, `d27-captions`, and `d27-hook`), a **23-assertion security, 10×-leap & 6-pillar contract suite** (`evals/`), and a **live interactive DOM gallery** ([`docs/index.html`](docs/index.html)).
+Most design skills either give agents vague vibes (*"be bold"*) with zero enforcement, or lock you into heavy external runtimes for one narrow medium. **Design 27 (`v4.0.0`)** pairs a **lean progressive-disclosure router** (`SKILL.md`) and **9 focused craft modules** with a **zero-npm-dependency Node ESM CLI suite** (`d27-cli`, `d27-deal` v4, `d27-check` with SARIF 2.1.0 + `--github` + `--doctor` + WCAG `suggestedColor` + `ebur128`/`ffprobe` + **zero-dep headless Chrome CDP `--render`**, `d27-frames` with HTML `window.__d27Seek` capture, `d27-captions`, and `d27-hook`), a **26-assertion research-backed, security & 6-pillar contract suite** (`evals/`), and a **live interactive DOM gallery** ([`docs/index.html`](docs/index.html)).
 
 ## Before & After (Same Prompt, Stock Agent vs. Design 27 `v4.0.0`)
 
@@ -108,7 +108,7 @@ design-27/
 │   └── v4-research-and-action-plan.md     # Competitive benchmark autopsy & action plan
 ├── evals/
 │   ├── README.md                          # 6 adversarial slop-trap prompts & pass criteria
-│   ├── run-eval.mjs                       # 23-assertion deterministic security, 10x-leap, 6-pillar & scope-hygiene suite
+│   ├── run-eval.mjs                       # 26-assertion research-backed security, 10x-leap & 6-pillar suite
 │   ├── fixtures/
 │   │   ├── slop-saas.html                 # Stock AI web baseline (expected exit 2)
 │   │   ├── design27-saas.html             # Design 27 v4.0 web reference + live gain scrubber (exit 0)

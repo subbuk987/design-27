@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Design 27 v4.0.0 — 23-Assertion Deterministic Security, 10x-Leap, 6-Pillar & Scope-Hygiene Eval Suite
+ * Design 27 v4.0.0 — 26-Assertion Research-Backed Security, 10x-Leap, 6-Pillar & Scope-Hygiene Eval Suite
  */
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -11,6 +11,8 @@ import { runCheck } from "../scripts/d27-check.mjs";
 import { evaluateDeterminismHashes } from "../scripts/lib/chrome-cdp.mjs";
 import { parseVerifyArgs } from "../scripts/d27-frames.mjs";
 import { analyzeCutoutBitmap } from "../scripts/lib/pixel-audit.mjs";
+import { computeApcaLc } from "../scripts/lib/color-math.mjs";
+import { computeBurstiness } from "../scripts/lib/prose-audit.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, "..");
@@ -35,7 +37,7 @@ const fixtures = {
   cleanMotion: path.join(__dirname, "fixtures", "clean-motion.html"),
 };
 
-console.log("Design 27 v4.0.0 — Reproducible 23-Assertion Security, 10x-Leap & 6-Pillar Eval Suite\n");
+console.log("Design 27 v4.0.0 — Reproducible 26-Assertion Research-Backed Security, 10x-Leap & 6-Pillar Eval Suite\n");
 let failed = 0;
 
 function assert(name, ok, detail) {
@@ -528,5 +530,75 @@ assert(
   `Pass(cutout=${bmCutoutPass.interiorCutoutPixels},cov=${bmCutoutPass.inkCoverage}) | Blob(collapsed=${bmSolidBlob.collapsed}) | Notch(cutout=${bmOpenNotch.interiorCutoutPixels}) | Tiny(cov=${bmTooTiny.inkCoverage})`
 );
 
-console.log(`\nSummary: ${23 - failed}/23 passed`);
+// 24. Research Gate: APCA 0.98G-4g-W3 polarity-aware contrast & layout-thrash transition guard
+const lcDarkOnLight = computeApcaLc([17, 18, 20], [250, 248, 243]);
+const lcLightOnDark = computeApcaLc([240, 242, 246], [11, 14, 20]);
+const tmpThrashDir = fs.mkdtempSync(path.join(os.tmpdir(), "d27-eval-thrash-"));
+let r24Thrash, d24Thrash;
+try {
+  const thrashFile = path.join(tmpThrashDir, "thrash.css");
+  fs.writeFileSync(thrashFile, ".drawer { transition: width 240ms ease-out; }\n", "utf8");
+  r24Thrash = spawnSync(process.execPath, [checker, thrashFile, "--medium=animation", "--strict", "--json"], { encoding: "utf8" });
+  d24Thrash = safeJson(r24Thrash.stdout);
+} finally {
+  fs.rmSync(tmpThrashDir, { recursive: true, force: true });
+}
+const rules24 = new Set((d24Thrash?.findings || []).map((f) => f.rule));
+assert(
+  "24. APCA 0.98G-4g-W3 Polarity Contrast & Layout-Thrash Transition Guard",
+  lcDarkOnLight > 95 && lcLightOnDark < -95 && r24Thrash?.status === 2 && rules24.has("no-layout-thrash-transition"),
+  `APCA(+)=${lcDarkOnLight} | APCA(-)=${lcLightOnDark} | Thrash rules: ${[...rules24].join(", ")}`
+);
+
+// 25. Research Gate: Desaire/Kobak quantitative sentence-length burstiness (CV)
+const flatAiParas = [{
+  startLine: 1,
+  text: Array.from({ length: 12 }, () => "Modern distributed systems require careful architectural planning to handle unexpected network partitions gracefully under heavy production load.").join(" ")
+}];
+const humanParas = [{
+  startLine: 1,
+  text: "The cache held. Its clock drifted by four seconds. When three payment workers retried simultaneously behind one unindexed connection pool, checkout p99 latency climbed from 42ms to 4.8s across eighteen thousand live requests. Nothing crashed. Requests simply queued. Engineers inspected disk throughput, garbage collection pauses, and kernel socket buffers before noticing one waiting migration parked behind a seven-minute reporting query. Fix the timeout. Short lock ceilings save production traffic only when the runner backs off cleanly instead of hammering the primary node. Drop retries. Measure queues."
+}];
+const bFlat = computeBurstiness(flatAiParas);
+const bHuman = computeBurstiness(humanParas);
+assert(
+  "25. Desaire/Kobak Quantitative Sentence Burstiness (CV)",
+  bFlat.metronomic === true && bFlat.cv < 0.35 && bHuman.metronomic === false && bHuman.cv >= 0.45,
+  `Flat AI(CV=${bFlat.cv},metronomic=${bFlat.metronomic}) | Human(CV=${bHuman.cv},metronomic=${bHuman.metronomic})`
+);
+
+// 26. Research Gate: Netflix caption timing (<833ms / 1-frame gap) & 16px partial-alpha/island collapse
+const tmpNetDir = fs.mkdtempSync(path.join(os.tmpdir(), "d27-eval-net-"));
+let r26Cap, d26Cap;
+try {
+  const wFile = path.join(tmpNetDir, "short.json");
+  fs.writeFileSync(wFile, JSON.stringify([
+    { word: "One", start: 0.0, end: 0.06 },
+    { word: "two", start: 0.06, end: 0.12 },
+    { word: "three", start: 0.12, end: 0.18 },
+    { word: "four", start: 0.18, end: 0.24 },
+    { word: "five", start: 0.24, end: 0.30 },
+    { word: "six", start: 0.30, end: 0.36 },
+    { word: "seven", start: 0.36, end: 0.42 },
+    { word: "eight", start: 0.42, end: 0.50 },
+    { word: "Flash", start: 0.52, end: 1.50 },
+  ]), "utf8");
+  r26Cap = spawnSync(process.execPath, [captions, wFile, "--fps", "30", "--aspect", "16:9", "--validate"], { encoding: "utf8" });
+  d26Cap = safeJson(r26Cap.stdout);
+} finally {
+  fs.rmSync(tmpNetDir, { recursive: true, force: true });
+}
+// Construct 16x16 blurry partial-alpha bitmap (alpha=128 everywhere on ink)
+const blurryBuf = new Uint8ClampedArray(16 * 16 * 4);
+for (let i = 0; i < 256; i++) { blurryBuf[i * 4] = 0; blurryBuf[i * 4 + 1] = 0; blurryBuf[i * 4 + 2] = 0; blurryBuf[i * 4 + 3] = 128; }
+const bmBlurry = analyzeCutoutBitmap(blurryBuf, 16, 16);
+const hasMinDurWarn = (d26Cap?.warnings || []).some((w) => w.includes("833ms"));
+const hasGapWarn = (d26Cap?.warnings || []).some((w) => w.includes("< 2 frames"));
+assert(
+  "26. Netflix Caption Timing (833ms/2-Frame Gap) & 16px Partial-Alpha Blur Gate",
+  r26Cap?.status === 2 && hasMinDurWarn && hasGapWarn && bmBlurry.collapsed === true && bmBlurry.partialAlphaRatio > 0.8,
+  `Netflix warns=${d26Cap?.warnings?.length} (833ms=${hasMinDurWarn},2fGap=${hasGapWarn}) | Blurry(partialAlpha=${bmBlurry.partialAlphaRatio},collapsed=${bmBlurry.collapsed})`
+);
+
+console.log(`\nSummary: ${26 - failed}/26 passed`);
 process.exit(failed === 0 ? 0 : 1);

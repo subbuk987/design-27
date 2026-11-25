@@ -396,3 +396,11 @@ When generating raster mascot renders or 3D clay/vinyl turnarounds with an image
 [5. EXPRESSION & POSE]   [POSE_ACTION] on a subtle 4-degree C-curve line of action, [EXPRESSION_MOOD] eyes and mouth, generous readable facial contrast.
 [6. FRAMING & LIMITS]    Centered full-body three-quarter view inside a square 1:1 studio backdrop in [BACKDROP_TONE], crisp rim light, no text, no watermarks, no cluttered props.
 ```
+
+---
+
+## 7. Gestalt Perception, Optical Overshoot & `16px` Crispness Research
+
+- **Gestalt Silhouette Parsing & Anti-Tangents:** Vision segments silhouettes at **negative minima of curvature**, favors **convex** figure regions (`57%–89%` of trials), and relies on proximity for `~75%` of grouping (`< 1.5×` competing gap ratio, `<= 90°` implied-closure turns; [Wagemans et al., 2012, *Psychological Bulletin*](https://pmc.ncbi.nlm.nih.gov/articles/PMC3482144/)). Eliminate kissing tangents with deliberate overlap ([Walt Stanchfield, *Drawn to Life*](https://thekeypoint.org/2025/10/12/drawn-to-life-20-golden-years-of-disney-master-classes/)).
+- **Optical Weight Overshoot & Centroid Centering:** A circle requires **`112.84%`** ($\sqrt{4/\pi}$) of a square's width to match visual weight; equalize **convex hull area** and center asymmetric marks by **geometric centroid** rather than bounding box ([Bjango, *Formulas for Optical Adjustments*](https://bjango.com/articles/opticaladjustments/)).
+- **Dedicated `16×16` Pixel-Grid Marks:** Downscaling a `24px` (`2px`-stroke) outline icon to `16px` spikes partial-alpha blur pixels from `37.9%–46.5%` to **`81.1%–98.4%`**; author dedicated `16×16` variants with odd strokes (`1px`) snapped to `.5` coordinates and even strokes (`2px`) on whole integers ([Icony](https://iconyapp.com/blog/fix-blurry-svg-icons); [Material System Icons](https://m2.material.io/design/iconography/system-icons.html)). Verified via `partialAlphaRatio` and `inkComponents` in `scripts/lib/pixel-audit.mjs`.

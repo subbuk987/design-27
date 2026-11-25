@@ -16,7 +16,7 @@ import { buildSarif } from "./lib/reporters.mjs";
 import { parseIgnores, matchIgnore, getUnusedIgnores } from "./lib/ignores.mjs";
 import { findChromeBinary, auditHtmlWithCdp, buildDomAuditFnSource } from "./lib/chrome-cdp.mjs";
 import { LINE_RULES, ALL_RULES } from "./lib/rules-catalog.mjs";
-import { parseHex, contrastRatio, suggestContrastingHex } from "./lib/color-math.mjs";
+import { parseHex, contrastRatio, computeApcaLc, suggestContrastingHex } from "./lib/color-math.mjs";
 import { auditVideoFile } from "./lib/media-audit.mjs";
 import { auditTypstParagraphs, auditBookProse } from "./lib/prose-audit.mjs";
 import {
@@ -524,13 +524,22 @@ export async function runCheck(rawArgs = [], io = { stdout: process.stdout, stde
           const bg = parseHex(canvasHex), fg = parseHex(inkPrimaryHex);
           if (bg && fg) {
             const ratio = contrastRatio(fg, bg);
+            const apcaLc = computeApcaLc(fg, bg);
             if (ratio < primaryMinRatio) {
               const suggested = suggestContrastingHex(fg, bg, 7.0);
               recordFinding({
                 file: rel, line: 1, tier: "FLOOR", rule: "wcag-contrast-fail",
-                message: `--ink-primary (${inkPrimaryHex}) on --surface-canvas (${canvasHex}) has ratio ${ratio.toFixed(2)}:1 (< ${primaryMinRatio.toFixed(1)}:1 floor).`,
+                message: `--ink-primary (${inkPrimaryHex}) on --surface-canvas (${canvasHex}) has ratio ${ratio.toFixed(2)}:1 (< ${primaryMinRatio.toFixed(1)}:1 floor, APCA Lc=${apcaLc}).`,
                 suggestedColor: suggested,
                 fix: `Change --ink-primary from ${inkPrimaryHex} to ${suggested}.`,
+              }, directives);
+            } else if (Math.abs(apcaLc) < 75) {
+              const suggested = suggestContrastingHex(fg, bg, 7.0);
+              recordFinding({
+                file: rel, line: 1, tier: "REFLEX", rule: "apca-contrast-fail",
+                message: `--ink-primary (${inkPrimaryHex}) on --surface-canvas (${canvasHex}) fails APCA body floor (Lc=${apcaLc}, |Lc| < 75).`,
+                suggestedColor: suggested,
+                fix: `Increase perceptual contrast by updating --ink-primary toward ${suggested}.`,
               }, directives);
             }
           }
@@ -539,13 +548,22 @@ export async function runCheck(rawArgs = [], io = { stdout: process.stdout, stde
           const bg = parseHex(canvasHex), fg = parseHex(inkSecondaryHex);
           if (bg && fg) {
             const ratio = contrastRatio(fg, bg);
+            const apcaLc = computeApcaLc(fg, bg);
             if (ratio < 4.5) {
               const suggested = suggestContrastingHex(fg, bg, 4.6);
               recordFinding({
                 file: rel, line: 1, tier: "FLOOR", rule: "wcag-contrast-fail",
-                message: `--ink-secondary (${inkSecondaryHex}) on --surface-canvas (${canvasHex}) has ratio ${ratio.toFixed(2)}:1 (< 4.5:1 floor).`,
+                message: `--ink-secondary (${inkSecondaryHex}) on --surface-canvas (${canvasHex}) has ratio ${ratio.toFixed(2)}:1 (< 4.5:1 floor, APCA Lc=${apcaLc}).`,
                 suggestedColor: suggested,
                 fix: `Change --ink-secondary from ${inkSecondaryHex} to ${suggested}.`,
+              }, directives);
+            } else if (Math.abs(apcaLc) < 60) {
+              const suggested = suggestContrastingHex(fg, bg, 5.5);
+              recordFinding({
+                file: rel, line: 1, tier: "REFLEX", rule: "apca-contrast-fail",
+                message: `--ink-secondary (${inkSecondaryHex}) on --surface-canvas (${canvasHex}) fails APCA UI floor (Lc=${apcaLc}, |Lc| < 60).`,
+                suggestedColor: suggested,
+                fix: `Increase perceptual contrast by updating --ink-secondary toward ${suggested}.`,
               }, directives);
             }
           }
@@ -631,17 +649,18 @@ export async function runCheck(rawArgs = [], io = { stdout: process.stdout, stde
 
           const pairedTitle = stageOpenTag.match(/\bdata-title\s*=\s*["']([^"']+)["']/i)?.[1];
           if (pairedTitle && words.length > 0) {
-            const norm = (arr) => [...new Set(arr.map((w) => w.toLowerCase().replace(/[^a-z0-9]/g, "")).filter((w) => w.length > 1 && !STOPWORDS.has(w)))];
-            const thumbTokens = norm(words);
-            const titleTokens = new Set(norm(pairedTitle.split(/\s+/)));
-            if (thumbTokens.length > 0 && titleTokens.size > 0) {
-              const shared = thumbTokens.filter((t) => titleTokens.has(t));
-              const ratio = shared.length / Math.min(thumbTokens.length, titleTokens.size);
-              if (ratio >= 0.5) {
+            const stem = (w) => (w.length >= 5 ? w.replace(/(?:ing|ed|es|s)$/, "") : w);
+            const normSet = (arr) => new Set(arr.map((w) => w.toLowerCase().replace(/[^a-z0-9]/g, "")).filter((w) => w.length > 1 && !STOPWORDS.has(w)).map(stem));
+            const thumbSet = normSet(words);
+            const titleSet = normSet(pairedTitle.split(/\s+/));
+            if (thumbSet.size > 0 && titleSet.size > 0) {
+              const shared = [...thumbSet].filter((t) => titleSet.has(t));
+              const overlap = shared.length / Math.min(thumbSet.size, titleSet.size);
+              if (overlap >= 0.6 && (shared.length >= 2 || thumbSet.size === 1)) {
                 recordFinding({
                   file: rel, line: stageLine, tier: "REFLEX", rule: "thumbnail-title-overlap",
-                  message: `Thumbnail hook shares ${Math.round(ratio * 100)}% of content words (${shared.join(", ")}) with paired title.`,
-                  fix: "Rewrite the thumbnail hook to add curiosity-gap tension instead of repeating title words (< 50% overlap).",
+                  message: `Thumbnail hook overlaps ${Math.round(overlap * 100)}% of paired title tokens (${shared.join(", ")}), collapsing the Loewenstein information gap.`,
+                  fix: "Rewrite the thumbnail hook to add visual/verbal tension instead of repeating title words.",
                 }, directives);
               }
             }

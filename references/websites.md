@@ -358,3 +358,12 @@ kbd {
   }
 }
 ```
+
+---
+
+## 9. Empirical Research & Perception Grounding
+
+- **Polarity-Aware APCA (`Lc`) Over Legacy WCAG 2.x on Dark/Mid-Tones:** Target `|Lc| >= 90` preferred (`>= 75` min) for body text, `>= 60` for UI copy, and `>= 45` (`<= 90` halation cap) for display headlines; avoid `-webkit-font-smoothing: antialiased` on `<= 18px` body text outside high-DPI queries ([Smashing Magazine / Andrew Somers](https://www.smashingmagazine.com/2022/09/realities-myths-contrast-color/), [APCA in a Nutshell](https://git.apcacontrast.com/documentation/APCA_in_a_Nutshell.html)).
+- **Oklab/OKLCH Mixing:** Author palettes in Oklab (`L RMS = 0.20` vs. CIELAB `1.70`) and derive state tints with `color-mix(in oklab, ...)` so mixes stay in-gamut without blue-to-purple shifts ([Björn Ottosson — Oklab](https://bottosson.github.io/posts/oklab/), [Gamut Clipping](https://bottosson.github.io/posts/gamutclipping/)).
+- **Fold Attention & Layer-Cake Scanning:** Users spend **57%** of viewing time above the fold and **74%** within the first two screenfuls; front-loaded subheadings induce layer-cake scanning instead of F-pattern skipping ([NN/g Scrolling & Attention](https://www.nngroup.com/articles/scrolling-and-attention/), [NN/g Layer-Cake Pattern](https://www.nngroup.com/articles/layer-cake-pattern-scanning/)).
+- **Measure, Forms & Wrapping:** Keep body prose within **50–70 ch** (`64ch` target, `75ch` hard ceiling) with `line-height >= 1.5`, default to single-column forms with inline validation ([Baymard](https://baymard.com/research-articles/line-length-readability)), apply `text-wrap: balance` only on short `<= 4–6` line headings ([Chrome](https://developer.chrome.com/docs/css-ui/css-text-wrap-balance)), and `text-wrap: pretty` on prose ([WebKit](https://webkit.org/blog/16547/better-typography-with-text-wrap-pretty/)).

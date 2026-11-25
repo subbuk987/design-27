@@ -1,5 +1,5 @@
 /**
- * Design 27 v4.0.0 — Pure-JS WCAG 2.1 Contrast & Suggested-Color Math
+ * Design 27 v4.0.0 — Pure-JS WCAG 2.1 Contrast, APCA 0.98G-4g-W3 Perceptual Contrast & Suggested-Color Math
  */
 
 export function parseHex(hex) {
@@ -26,6 +26,34 @@ export function contrastRatio(c1, c2) {
   const l1 = relLuminance(c1);
   const l2 = relLuminance(c2);
   return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+}
+
+/**
+ * Polarity-aware APCA 0.98G-4g-W3 Lightness Contrast (Lc).
+ * Positive Lc = dark text on light background; negative Lc = light text on dark background.
+ */
+export function computeApcaLc(textRgb, bgRgb) {
+  const toY = ([r, g, b]) => {
+    const y =
+      0.2126729 * Math.pow(r / 255, 2.4) +
+      0.7151522 * Math.pow(g / 255, 2.4) +
+      0.0721750 * Math.pow(b / 255, 2.4);
+    return y < 0.022 ? y + Math.pow(0.022 - y, 1.414) : y;
+  };
+  const yTxt = toY(textRgb);
+  const yBg = toY(bgRgb);
+  if (Math.abs(yBg - yTxt) < 0.0005) return 0;
+
+  let sapc = 0;
+  let out = 0;
+  if (yBg > yTxt) {
+    sapc = (Math.pow(yBg, 0.56) - Math.pow(yTxt, 0.57)) * 1.14;
+    out = sapc < 0.1 ? 0 : (sapc - 0.027) * 100;
+  } else {
+    sapc = (Math.pow(yBg, 0.65) - Math.pow(yTxt, 0.62)) * 1.14;
+    out = sapc > -0.1 ? 0 : (sapc + 0.027) * 100;
+  }
+  return Number(out.toFixed(1));
 }
 
 export function rgbToHex([r, g, b]) {

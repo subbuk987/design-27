@@ -1,5 +1,5 @@
 /**
- * Design 27 v4.0.0 — Book Prose & Balanced-Paren Typst Paragraph Audit
+ * Design 27 v4.0.0 — Book Prose, Quantitative Sentence Burstiness (Desaire/Kobak) & Balanced-Paren Typst Audit
  */
 
 function preserveLines(block) {
@@ -14,23 +14,14 @@ function maskHtmlNonProse(html) {
 
 function maskMarkdownNonProse(md) {
   let out = md;
-  // Mask YAML frontmatter at top of file
   out = out.replace(/^---\r?\n[\s\S]*?\r?\n---(?=\r?\n|$)/, preserveLines);
-  // Mask fenced code blocks
   out = out.replace(/```[\s\S]*?```/g, preserveLines);
-  // Mask HTML comments
   out = out.replace(/<!--[\s\S]*?-->/g, preserveLines);
-  // Mask inline code spans (`...`)
   out = out.replace(/`[^`\r\n]+`/g, (m) => " ".repeat(m.length));
-  // Mask Markdown blockquotes (direct quotes shouldn't trip AI-prose checks)
   out = out.replace(/^[ \t]*>.*$/gm, (m) => " ".repeat(m.length));
   return out;
 }
 
-/**
- * Balanced-parenthesis extractor for Typst `#set par(...)` so nested values like
- * `first-line-indent: (amount: 1.4em, all: false)` parse accurately without truncating.
- */
 function extractBalancedParBlocks(content) {
   const blocks = [];
   const startRe = /#set\s+par\s*\(/gi;
@@ -50,10 +41,69 @@ function extractBalancedParBlocks(content) {
   return blocks;
 }
 
+const ABBREV_RE = /\b(?:e\.g|i\.e|etc|vs|Fig|Eq|Sec|Ch|Dr|Mr|Mrs|Ms|Prof|Sr|Jr|St|Inc|Ltd|Co|No|Vol)\./gi;
+const VERSION_DOT_RE = /\b(v?\d+)\.(\d+(?:\.\d+)*)\b/gi;
+const sentenceSegmenter =
+  typeof Intl !== "undefined" && typeof Intl.Segmenter === "function"
+    ? new Intl.Segmenter("en", { granularity: "sentence" })
+    : null;
+
+function maskAbbreviations(text) {
+  return text
+    .replace(ABBREV_RE, (m) => m.slice(0, -1) + "\u2024")
+    .replace(VERSION_DOT_RE, (m) => m.replace(/\./g, "\u2024"));
+}
+
+function splitSentences(text) {
+  const masked = maskAbbreviations(text);
+  if (sentenceSegmenter) {
+    return [...sentenceSegmenter.segment(masked)].map((s) => s.segment.trim()).filter(Boolean);
+  }
+  return masked
+    .split(/(?<=[.!?])\s+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+/**
+ * Pure sentence-length burstiness analyzer (Desaire et al., 2023):
+ * Computes coefficient of variation (CV = sigma / mu), 15-28w AI-cluster share, and short-strike count.
+ */
+export function computeBurstiness(paragraphs) {
+  const lengths = [];
+  for (const p of paragraphs) {
+    if (p.nonNarrative) continue;
+    const sentences = splitSentences(p.text);
+    for (const s of sentences) {
+      const words = s.split(/\s+/).filter((w) => /[a-z0-9]/i.test(w));
+      if (words.length >= 1) lengths.push(words.length);
+    }
+  }
+  if (lengths.length < 10) {
+    return { sentenceCount: lengths.length, mean: 0, sd: 0, cv: 1, aiBandShare: 0, shortStrikes: 0, metronomic: false };
+  }
+  const mean = lengths.reduce((a, b) => a + b, 0) / lengths.length;
+  const variance = lengths.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / lengths.length;
+  const sd = Math.sqrt(variance);
+  const cv = mean > 0 ? sd / mean : 0;
+  const aiBandCount = lengths.filter((n) => n >= 15 && n <= 28).length;
+  const aiBandShare = aiBandCount / lengths.length;
+  const shortStrikes = lengths.filter((n) => n <= 10).length;
+  const metronomic = cv < 0.35 || (aiBandShare > 0.75 && shortStrikes === 0);
+  return {
+    sentenceCount: lengths.length,
+    mean: Number(mean.toFixed(2)),
+    sd: Number(sd.toFixed(2)),
+    cv: Number(cv.toFixed(3)),
+    aiBandShare: Number(aiBandShare.toFixed(3)),
+    shortStrikes,
+    metronomic,
+  };
+}
+
 export function auditTypstParagraphs({ content, rel, directives, recordFinding, lineNumberAt }) {
   for (const block of extractBalancedParBlocks(content)) {
     const argsStr = block.body;
-    // Matches both `first-line-indent: 1.4em` and Typst 0.13+ `first-line-indent: (amount: 1.4em, all: false)`
     const indentMatch = argsStr.match(/first-line-indent\s*:\s*(?:\([^)]*amount\s*:\s*)?([0-9.]+)\s*(pt|em|mm|cm|in|%)?/i);
     const spacingMatch = argsStr.match(/spacing\s*:\s*([0-9.]+)\s*(pt|em|mm|cm|in|%)?/i);
     const leadingMatch = argsStr.match(/leading\s*:\s*([0-9.]+)\s*(pt|em|mm|cm|in|%)?/i);
@@ -76,7 +126,8 @@ export function auditBookProse({ content, ext, rel, effectiveMedium, directives,
   const proseSource = isHtml ? maskHtmlNonProse(content) : maskMarkdownNonProse(content);
   const proseLines = proseSource.split(/\r?\n/);
 
-  const strictSlopRe = /\b(delve|delves|delving|tapestry|testament|pivotal|realm|vibrant|intricate|multifaceted|overarching|garner|showcase|leverage|embark|spearhead)\b/gi;
+  // Kobak et al. (2025, Science Advances) high-ratio excess style markers + filler verbs
+  const strictSlopRe = /\b(delve|delves|delving|tapestry|testament|pivotal|realm|vibrant|intricate|intricacies|multifaceted|overarching|garner|showcase|showcasing|leverage|embark|spearhead|meticulous|meticulously|unveil|bolster)\b/gi;
   const domainWarnRe = /\b(underscore|underscores|underscoring|landscape|beacon|foster)\b/gi;
   const negParallelRe = /\b(?:it(?:'s| is)\s+not\s+just\b[^.!?\n]{1,120}[—–-]+\s*it(?:'s| is)\b|\bnot\s+(?:just|merely|simply|only)\b[^.!?\n]{1,120},\s*but(?:\s+also)?\b)/i;
   const throatOpenerRe = /^(?:Moreover,|Furthermore,|Additionally,|Crucially,|Interestingly,|In conclusion,|It is worth noting\b|In today's rapidly evolving\b|It(?:'s| is) important to remember\b|When it comes to\b)/i;
@@ -85,13 +136,18 @@ export function auditBookProse({ content, ext, rel, effectiveMedium, directives,
   const strictMatches = [];
   const domainMatches = [];
 
-  // Build normalized paragraphs (preserving starting line numbers) so wrapped Markdown lines don't evade checks
   const paragraphs = [];
   let curPara = null;
   proseLines.forEach((rawLine, idx) => {
     const textLine = isHtml ? rawLine.replace(/<[^>]+>/g, " ").trim() : rawLine.trim();
     const lineNum = idx + 1;
-    if (!textLine || (!isHtml && /^#+\s/.test(textLine))) {
+    const isMdStructural =
+      !isHtml &&
+      (/^#+\s/.test(textLine) ||
+        /^(?:[-*+]\s+|\d+\.\s+)/.test(textLine) ||
+        /^\|/.test(textLine) ||
+        /^(?:[-*_]\s*){3,}$/.test(textLine));
+    if (!textLine) {
       if (curPara) { paragraphs.push(curPara); curPara = null; }
       return;
     }
@@ -104,6 +160,11 @@ export function auditBookProse({ content, ext, rel, effectiveMedium, directives,
     const dHits = textLine.match(domainWarnRe);
     if (dHits) {
       domainMatches.push({ lineNum, words: [...new Set(dHits.map((w) => w.toLowerCase()))] });
+    }
+
+    if (isMdStructural) {
+      if (curPara) { paragraphs.push(curPara); curPara = null; }
+      return;
     }
 
     if (isHtml && /<p\b/i.test(rawLine)) {
@@ -140,6 +201,16 @@ export function auditBookProse({ content, ext, rel, effectiveMedium, directives,
         fix: "Replace excess em-dashes with full stops, colons, or parentheses.",
       }, directives);
     }
+  }
+
+  // Quantitative burstiness check (Desaire et al., 2023) on chapters with >= 10 sentences
+  const burst = computeBurstiness(paragraphs);
+  if (burst.metronomic) {
+    recordFinding({
+      file: rel, line: paragraphs[0]?.startLine || 1, tier: "REFLEX", rule: "low-sentence-burstiness",
+      message: `Metronomic prose cadence across ${burst.sentenceCount} sentences (CV=${burst.cv}, ${Math.round(burst.aiBandShare * 100)}% in 15–28w band, ${burst.shortStrikes} short strikes).`,
+      fix: "Alternate short declarative strikes (5–10 words) with analytical clauses (22–35 words).",
+    }, directives);
   }
 
   if (strictHits > 0) {

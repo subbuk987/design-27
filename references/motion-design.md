@@ -507,3 +507,12 @@ node scripts/d27-frames.mjs sheet master.mp4 --beats 0,1.5,3.0,4.5 --out sheet-m
 # Fail mechanically on frozen >= 3.0s holds or blank black/white runs
 node scripts/d27-frames.mjs audit master.mp4 --max-static 3.0
 ```
+
+---
+
+## 7. Broadcast Standards & Empirical Timing Grounding
+
+- **Keyframe Weight & Curved Arcs:** Naïve auto-splines drift through rest planes; route hero translations along quadratic Bézier arcs with 2–4 frame follow-through stagger ([John Lasseter, SIGGRAPH 1987](https://www.semanticscholar.org/paper/Principles-of-traditional-animation-applied-to-3D-Lasseter/fce3c119ef190fca49c054afb1c0a5e5f9de52fa)).
+- **Broadcast Safe Areas & Loudness:** Enforce **93% Action Safe** (3.5% inset) and **90% Title Safe** (`96×54px` at 1080p, `192×108px` at 4K; [SMPTE ST 2046-1 / EBU R95](https://postproduction.studio/en/tools/safe-areas)), plus [ITU-R BS.1770-4 / EBU R128](https://audio.js.org/modules/loudness/) (`-14 LUFS` web / `-23 LUFS` broadcast, `-1.0 dBTP` ceiling).
+- **Netflix Timed Text Pacing:** Enforce **`833ms` (`5/6s`) min** and **`7.0s` max** cue duration, **`<= 20 CPS`** adult (`<= 17` kids), **`>= 2 frames`** inter-cue gap (chaining `< 0.5s` gaps to 2 frames), and `0.5s` shot-change snaps ([Netflix Timing Guidelines](https://partnerhelp.netflixstudios.com/hc/en-us/articles/360051554394-Timed-Text-Style-Guide-Subtitle-Timing-Guidelines), [Szarkowska & Gerber-Morón, PLOS ONE 2018](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0199331)).
+- **Subpixel Anti-Jitter & Rec.709 `1-1-1`:** Apply `transform: perspective(100px)` during slow Chromium text pans to eliminate integer pixel snapping ([Remotion Subpixel Rendering](https://www.remotion.dev/docs/troubleshooting/subpixel-rendering)), and keep strict NCLC `1-1-1` Rec.709 tags ([CineD](https://www.cined.com/quicktime-gamma-shift-bug-what-is-it-and-how-to-combat-it/)).

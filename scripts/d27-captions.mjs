@@ -107,11 +107,24 @@ flush();
 
 const warnings = [];
 if (validate) {
+  const minGapSec = 2 / fps;
+  const eps = 0.001;
   cues.forEach((c, idx) => {
     const minHold = 0.5 + 0.3 * c.words.length;
+    const minDur = aspect === "9:16" ? (c.words.length <= 3 ? 0.35 : 0.6) : 0.833;
     if (c.cps > 17) warnings.push(`Cue #${c.index} ("${c.text}") exceeds 17 CPS (${c.cps} CPS).`);
     if (c.text.length > maxChars) warnings.push(`Cue #${c.index} exceeds ${maxChars} chars for ${aspect}.`);
+    if (c.durationSec < minDur) warnings.push(`Cue #${c.index} duration ${c.durationSec}s is below ${Math.round(minDur * 1000)}ms minimum for ${aspect}.`);
+    if (c.durationSec > 7.0) warnings.push(`Cue #${c.index} duration ${c.durationSec}s exceeds Netflix 7.0s maximum.`);
     if (c.durationSec < minHold * 0.7) warnings.push(`Cue #${c.index} duration ${c.durationSec}s is below comfortable reading hold (${minHold.toFixed(2)}s).`);
+    if (idx > 0) {
+      const gapSec = Number((c.startSec - cues[idx - 1].endSec).toFixed(4));
+      if (gapSec < -eps) {
+        warnings.push(`Cue #${c.index} overlaps previous cue by ${Math.round(Math.abs(gapSec) * 1000)}ms.`);
+      } else if (gapSec > eps && gapSec < minGapSec - eps) {
+        warnings.push(`Cue #${c.index} has a ${Math.round(gapSec * 1000)}ms gap (< 2 frames at ${fps}fps; causes 1-frame flash).`);
+      }
+    }
     if (idx === cues.length - 1 && c.durationSec < 2.0) warnings.push(`Final cue #${c.index} holds ${c.durationSec}s (< 2.0s closing floor).`);
   });
 }
