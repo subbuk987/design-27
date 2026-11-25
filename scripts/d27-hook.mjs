@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Design 27 v3.0.0 — Zero-Dependency Two-Tier Edit-Time Agent Hook (Zero Network Calls)
+ * Design 27 v4.0.0 — Zero-Dependency Two-Tier Edit-Time Agent Hook (Zero Network Calls)
  * Usage:
  *   echo '{"tool_input":{"file_path":"index.html"}}' | node scripts/d27-hook.mjs --event=post-edit
  *   echo '{}' | node scripts/d27-hook.mjs --event=stop
@@ -11,10 +11,16 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
+const VERSION = "4.0.0";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const checker = path.join(__dirname, "d27-check.mjs");
 const ledgerPath = path.join(os.tmpdir(), "design-27", "session-ledger.json");
-const WATCH_EXTS = new Set([".html", ".htm", ".css", ".scss", ".jsx", ".tsx", ".vue", ".svelte", ".svg", ".js", ".ts"]);
+const WATCH_EXTS = new Set([".html", ".htm", ".css", ".scss", ".jsx", ".tsx", ".vue", ".svelte", ".svg", ".js", ".ts", ".typ"]);
+
+if (process.argv.includes("--help") || process.argv.includes("-h")) {
+  console.log(`Design 27 Hook v${VERSION}\nUsage: node scripts/d27-hook.mjs --event=<post-edit|stop>`);
+  process.exit(0);
+}
 
 const eventArg = process.argv.slice(2).find((a) => a.startsWith("--event="))?.split("=")[1] || "post-edit";
 
@@ -48,7 +54,8 @@ if (eventArg === "post-edit") {
   }
   const abs = path.resolve(filePath);
   const res = spawnSync(process.execPath, [checker, abs, "--tier=fast", "--json"], { encoding: "utf8" });
-  const parsed = res.stdout ? JSON.parse(res.stdout) : { findings: [] };
+  let parsed = { findings: [] };
+  try { parsed = res.stdout ? JSON.parse(res.stdout) : { findings: [] }; } catch { parsed = { findings: [] }; }
   const ledger = loadLedger();
   if (!ledger.files.includes(abs)) ledger.files.push(abs);
   for (const f of parsed.findings || []) {
@@ -62,7 +69,7 @@ if (eventArg === "post-edit") {
     console.log(JSON.stringify({
       hookSpecificOutput: {
         hookEventName: "PostToolUse",
-        additionalContext: `Design 27 fast check found ${parsed.findings.length} issue(s):\n${lines.join("\n")}`,
+        additionalContext: `Design 27 v${VERSION} fast check found ${parsed.findings.length} issue(s):\n${lines.join("\n")}`,
       },
     }));
   }
@@ -77,7 +84,8 @@ if (eventArg === "stop") {
     if (!fs.existsSync(abs)) continue;
     const res = spawnSync(process.execPath, [checker, abs, "--tier=deep", "--json"], { encoding: "utf8" });
     if (!res.stdout) continue;
-    const parsed = JSON.parse(res.stdout);
+    let parsed;
+    try { parsed = JSON.parse(res.stdout); } catch { continue; }
     for (const f of parsed.findings || []) {
       const fp = `${f.file}:${f.line}:${f.rule}`;
       if (!seenSet.has(fp)) freshFindings.push(f);
@@ -90,7 +98,7 @@ if (eventArg === "stop") {
     console.log(JSON.stringify({
       hookSpecificOutput: {
         hookEventName: "Stop",
-        additionalContext: `Design 27 deep session audit found ${freshFindings.length} remaining issue(s):\n${lines.join("\n")}`,
+        additionalContext: `Design 27 v${VERSION} deep session audit found ${freshFindings.length} remaining issue(s):\n${lines.join("\n")}`,
       },
     }));
   }

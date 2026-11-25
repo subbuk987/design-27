@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kova Field — Pocket-sized offline audio recorder for documentary filmmakers</title>
+<meta name="description" content="Kova Field: 32-bit float, 18-hour battery, milled aluminum body. Offline pocket audio recorder. $349.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#12130f; --bg2:#1a1c16; --line:#2e3128; --ink:#f1efe6; --mute:#a3a595;
+  --acc:#ff6a2b; --acc-ink:#1a0a02;
+  --serif:'Fraunces',Georgia,serif; --sans:'Inter',system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font:400 17px/1.6 var(--sans);-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+.eyebrow{font:500 12px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--acc)}
+h1,h2,h3{font-family:var(--serif);font-weight:700;line-height:1.08;letter-spacing:-.01em}
+h2{font-size:clamp(28px,4vw,42px);margin:14px 0 12px}
+.btn{display:inline-flex;align-items:center;gap:10px;background:var(--acc);color:var(--acc-ink);font:600 16px/1 var(--sans);padding:17px 28px;border-radius:999px;text-decoration:none;transition:transform .15s,box-shadow .15s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 10px 30px -8px var(--acc)}
+.btn:focus-visible,a:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+header.nav{position:sticky;top:0;z-index:10;background:rgba(18,19,15,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;justify-content:space-between;align-items:center;height:64px}
+.logo{font:700 20px var(--serif);text-decoration:none;display:flex;align-items:center;gap:10px}
+.logo i{width:10px;height:10px;border-radius:50%;background:var(--acc);box-shadow:0 0 0 4px rgba(255,106,43,.2);animation:rec 1.6s infinite}
+@keyframes rec{50%{opacity:.25}}
+.nav a.small{font:500 14px var(--sans);text-decoration:none;border:1px solid var(--line);padding:9px 18px;border-radius:999px}
+.nav a.small:hover{border-color:var(--acc);color:var(--acc)}
+/* hero */
+.hero{padding:72px 0 88px;overflow:hidden}
+.hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
+.hero h1{font-size:clamp(40px,6.2vw,76px);margin:18px 0 22px}
+.hero h1 em{font-style:italic;color:var(--acc);font-weight:500}
+.hero p.lead{font-size:19px;color:var(--mute);max-width:30em;margin-bottom:34px}
+.cta-row{display:flex;flex-wrap:wrap;align-items:center;gap:18px 24px}
+.price{font:500 14px var(--mono);color:var(--mute)}
+.price b{color:var(--ink);font-size:22px;font-weight:500;margin-right:6px}
+.device{display:flex;justify-content:center}
+.device svg{width:100%;max-width:380px;height:auto;filter:drop-shadow(0 40px 50px rgba(0,0,0,.55))}
+.meter{animation:lvl 1.8s ease-in-out infinite;transform-origin:bottom;transform-box:fill-box}
+.meter:nth-child(2){animation-delay:.2s}.meter:nth-child(3){animation-delay:.45s}.meter:nth-child(4){animation-delay:.1s}.meter:nth-child(5){animation-delay:.6s}.meter:nth-child(6){animation-delay:.3s}
+@keyframes lvl{50%{transform:scaleY(.35)}}
+/* specs */
+section{padding:84px 0}
+.specs{background:var(--bg2);border-block:1px solid var(--line)}
+.specs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:44px}
+.spec{border:1px solid var(--line);border-radius:18px;padding:32px 28px;background:var(--bg)}
+.spec .num{font:700 clamp(44px,5vw,60px)/1 var(--serif);color:var(--acc);display:block;margin-bottom:6px}
+.spec .num small{font-size:.42em;color:var(--ink);font-weight:500;margin-left:4px}
+.spec h3{font-size:22px;margin:10px 0 8px}
+.spec p{color:var(--mute);font-size:15.5px}
+/* compare */
+.table{margin-top:36px;border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.row{display:grid;grid-template-columns:1.1fr 1.3fr 1.3fr}
+.row>div{padding:18px 22px;border-top:1px solid var(--line);font-size:15.5px}
+.row:first-child>div{border-top:0}
+.row.head>div{font:500 12px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--mute);background:var(--bg2)}
+.row.head>div.k{color:var(--acc)}
+.row>div:first-child{color:var(--mute)}
+.row>div.k{background:rgba(255,106,43,.07);font-weight:500}
+.note{font-size:13.5px;color:var(--mute);margin-top:14px}
+/* cta */
+.final{text-align:center;padding:96px 0 104px}
+.final h2{font-size:clamp(32px,5vw,56px);max-width:16em;margin-inline:auto}
+.final p{color:var(--mute);max-width:32em;margin:0 auto 32px}
+footer{border-top:1px solid var(--line);padding:28px 0;color:var(--mute);font-size:14px}
+footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+@media(max-width:860px){
+  .hero{padding:44px 0 56px}.hero .wrap{grid-template-columns:minmax(0,1fr);gap:36px}.device{order:-1}.device svg{max-width:240px}
+  .specs-grid{grid-template-columns:minmax(0,1fr)}
+  section{padding:60px 0}
+  .row{grid-template-columns:1fr}.row>div{padding:12px 20px}.row.head{display:none}
+  .row>div:first-child{background:var(--bg2);font:500 12px var(--mono);letter-spacing:.1em;text-transform:uppercase;border-top:1px solid var(--line)}
+  .row>div:nth-child(2)::before{content:"Phone: ";color:var(--mute)}
+  .row>div.k::before{content:"Kova Field: ";color:var(--acc)}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <a class="logo" href="#top" aria-label="Kova Field home"><i></i>Kova Field</a>
+  <a class="small" href="#preorder">Preorder</a>
+</div></header>
+
+<main id="top">
+<section class="hero"><div class="wrap">
+  <div>
+    <span class="eyebrow">Offline field recorder</span>
+    <h1>Record the room. <em>Never</em> clip the moment.</h1>
+    <p class="lead">Kova Field is a pocket-sized audio recorder built for documentary filmmakers. No app, no signal, no cloud. Press record and capture sound you can fix in post.</p>
+    <div class="cta-row">
+      <a class="btn" href="#preorder">Preorder Kova Field <span aria-hidden="true">→</span></a>
+      <span class="price"><b>$349</b>one-time price</span>
+    </div>
+  </div>
+  <div class="device">
+    <svg viewBox="0 0 320 460" role="img" aria-labelledby="dt">
+      <title id="dt">Illustration of the Kova Field recorder: a slim aluminum body with a level meter and a red record button</title>
+      <defs>
+        <linearGradient id="al" x1="0" x2="1"><stop offset="0" stop-color="#5a5d52"/><stop offset=".25" stop-color="#b9bbae"/><stop offset=".5" stop-color="#8d8f82"/><stop offset=".8" stop-color="#c9cbbd"/><stop offset="1" stop-color="#55584d"/></linearGradient>
+      </defs>
+      <rect x="70" y="20" width="180" height="420" rx="26" fill="url(#al)"/>
+      <rect x="78" y="28" width="164" height="404" rx="20" fill="none" stroke="#fff" stroke-opacity=".18"/>
+      <g fill="#2a2c25"><circle cx="160" cy="62" r="3"/><circle cx="130" cy="62" r="3"/><circle cx="190" cy="62" r="3"/><circle cx="145" cy="78" r="3"/><circle cx="175" cy="78" r="3"/><circle cx="115" cy="78" r="3"/><circle cx="205" cy="78" r="3"/></g>
+      <rect x="96" y="112" width="128" height="120" rx="10" fill="#0d0e0b"/>
+      <g fill="#ff6a2b"><rect class="meter" x="110" y="130" width="12" height="84" rx="2"/><rect class="meter" x="128" y="130" width="12" height="84" rx="2"/><rect class="meter" x="146" y="130" width="12" height="84" rx="2"/><rect class="meter" x="164" y="130" width="12" height="84" rx="2"/><rect class="meter" x="182" y="130" width="12" height="84" rx="2"/><rect class="meter" x="200" y="130" width="12" height="84" rx="2"/></g>
+      <text x="160" y="258" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#2a2c25" letter-spacing="2">32-BIT FLOAT</text>
+      <circle cx="160" cy="330" r="38" fill="#1b1c17"/><circle cx="160" cy="330" r="28" fill="#ff6a2b"/><circle cx="160" cy="330" r="28" fill="none" stroke="#fff" stroke-opacity=".3"/>
+      <text x="160" y="410" text-anchor="middle" font-family="Fraunces,serif" font-weight="700" font-size="20" fill="#2a2c25">KOVA FIELD</text>
+    </svg>
+  </div>
+</div></section>
+
+<section class="specs" id="specs"><div class="wrap">
+  <span class="eyebrow">Hardware</span>
+  <h2>Three things we refused to compromise.</h2>
+  <div class="specs-grid">
+    <article class="spec">
+      <span class="num">32<small>-bit float</small></span>
+      <h3>Unclippable dynamic range</h3>
+      <p>A whisper and a slammed door can sit in the same take. Set no gain, and pull both back into range in post.</p>
+    </article>
+    <article class="spec">
+      <span class="num">18<small>hours</small></span>
+      <h3>A full shoot on one charge</h3>
+      <p>Record through a long day of interviews and ambience without hunting for an outlet or a power bank.</p>
+    </article>
+    <article class="spec">
+      <span class="num">Al<small>milled</small></span>
+      <h3>Milled aluminum body</h3>
+      <p>Cut from solid metal. It is rigid, it feels cold and solid in the hand, and it is small enough for a jacket pocket.</p>
+    </article>
+  </div>
+</div></section>
+
+<section id="compare"><div class="wrap">
+  <span class="eyebrow">Versus your phone</span>
+  <h2>Your phone is a great backup. It is a risky primary.</h2>
+  <div class="table" role="table" aria-label="Kova Field compared with phone recording">
+    <div class="row head" role="row"><div role="columnheader">Feature</div><div role="columnheader">Phone recording</div><div class="k" role="columnheader">Kova Field</div></div>
+    <div class="row" role="row"><div role="cell">Loud peaks</div><div role="cell">Auto gain and limiting can distort or clip</div><div class="k" role="cell">32-bit float: no gain to set, no clipping</div></div>
+    <div class="row" role="row"><div role="cell">Interruptions</div><div role="cell">Calls, alerts and updates compete with the recording</div><div class="k" role="cell">One job: it only records. Fully offline</div></div>
+    <div class="row" role="row"><div role="cell">Runtime</div><div role="cell">Shared with screen, camera, apps and signal</div><div class="k" role="cell">18-hour battery for audio alone</div></div>
+    <div class="row" role="row"><div role="cell">Build</div><div role="cell">Glass and a thin case</div><div class="k" role="cell">Milled aluminum body</div></div>
+  </div>
+  <p class="note">Comparison is general: results vary by phone model, app and settings.</p>
+</div></section>
+
+<section class="final" id="preorder"><div class="wrap">
+  <span class="eyebrow">Preorder</span>
+  <h2>Get the recorder that is always ready.</h2>
+  <p>Reserve Kova Field for $349. Pocket-sized, offline and built to survive the shoot.</p>
+  <a class="btn" href="mailto:preorder@kovafield.example?subject=Preorder%20Kova%20Field">Preorder for $349 <span aria-hidden="true">→</span></a>
+</div></section>
+</main>
+
+<footer><div class="wrap"><span>© Kova Field</span><span>Pocket-sized. Offline. 32-bit float.</span></div></footer>
+</body>
+</html>

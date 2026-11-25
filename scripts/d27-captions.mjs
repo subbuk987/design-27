@@ -1,18 +1,37 @@
 #!/usr/bin/env node
 /**
- * Design 27 v3.0.0 — Zero-Dependency Word-Timestamp Caption Chunker, ASS Burn-In & Reading-Hold Validator
+ * Design 27 v4.0.0 — Zero-Dependency Word-Timestamp Caption Chunker, ASS Burn-In & Reading-Hold Validator
  * Usage: node scripts/d27-captions.mjs <words.json> [--fps 30] [--aspect 9:16|16:9] [--format json|srt|ass] [--validate]
  */
 import fs from "node:fs";
 import path from "node:path";
 
+const VERSION = "4.0.0";
 const args = process.argv.slice(2);
-const getFlag = (f, fallback) => {
-  const i = args.indexOf(f);
-  return i !== -1 && args[i + 1] ? args[i + 1] : fallback;
-};
+const VALUE_FLAGS = new Set(["--fps", "--aspect", "--format", "--out"]);
+const skipIndices = new Set();
+const flagValues = new Map();
+for (let i = 0; i < args.length; i++) {
+  const a = args[i];
+  if (!a.startsWith("-")) continue;
+  const eqIdx = a.indexOf("=");
+  if (eqIdx !== -1) {
+    const base = a.slice(0, eqIdx);
+    if (VALUE_FLAGS.has(base)) flagValues.set(base, a.slice(eqIdx + 1));
+  } else if (VALUE_FLAGS.has(a) && i + 1 < args.length && !args[i + 1].startsWith("-")) {
+    flagValues.set(a, args[i + 1]);
+    skipIndices.add(i + 1);
+    i++;
+  }
+}
+const getFlag = (f, fallback) => (flagValues.has(f) ? flagValues.get(f) : fallback);
 
-const inputArg = args.find((a, i) => !a.startsWith("-") && (i === 0 || !args[i - 1].startsWith("--")));
+if (args.includes("--help") || args.includes("-h")) {
+  console.log(`Design 27 Captions v${VERSION}\nUsage: node scripts/d27-captions.mjs <words.json> [--fps 30] [--aspect 9:16|16:9] [--format json|srt|ass] [--validate]`);
+  process.exit(0);
+}
+
+const inputArg = args.find((a, i) => !a.startsWith("-") && !skipIndices.has(i));
 const fps = Number(getFlag("--fps", "30"));
 const aspect = getFlag("--aspect", "9:16");
 const format = args.includes("--srt") ? "srt" : getFlag("--format", "json").toLowerCase();
@@ -127,7 +146,7 @@ if (format === "srt") {
   }
   console.log([...header, ...events].join("\n"));
 } else {
-  console.log(JSON.stringify({ tool: "d27-captions", version: "3.0.0", fps, aspect, cueCount: cues.length, warnings, cues }, null, 2));
+  console.log(JSON.stringify({ tool: "d27-captions", version: VERSION, fps, aspect, cueCount: cues.length, warnings, cues }, null, 2));
 }
 
 if (validate && warnings.length > 0) process.exit(2);

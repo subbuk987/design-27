@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kova Field: pocket recorder for documentary sound</title>
+<meta name="description" content="Kova Field is an offline pocket audio recorder with 32-bit float, an 18-hour battery and a milled aluminum body. $349.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--alu:#d3d7d9;--panel:#eceeef;--ink:#1a1e23;--mute:#505860;--cobalt:#2230d6;--clip:#c0261c;--line:#aab0b4}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth}
+body{background:var(--alu);color:var(--ink);font:400 1.0625rem/1.55 "Schibsted Grotesk",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1160px;margin:0 auto;padding:0 clamp(20px,4vw,40px)}
+a:focus-visible,input:focus-visible{outline:3px solid var(--cobalt);outline-offset:3px}
+.brand{padding:28px 0 0;font-weight:900;font-size:1.25rem;letter-spacing:-.02em}
+.brand span{font-weight:400;color:var(--mute)}
+/* hero */
+.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(24px,5vw,72px);align-items:center;padding:clamp(40px,7vw,88px) 0 clamp(32px,5vw,56px)}
+h1{font-weight:900;font-size:clamp(2.6rem,6.4vw,5.4rem);line-height:.95;letter-spacing:-.045em;max-width:11ch}
+.lede{margin-top:24px;max-width:46ch;font-size:1.2rem;color:#2c3238}
+.buy{margin-top:32px;display:flex;flex-wrap:wrap;align-items:center;gap:20px}
+.cta{display:inline-block;background:var(--cobalt);color:#fff;text-decoration:none;font-weight:700;font-size:1.125rem;padding:18px 30px;border-radius:6px;transition:background .15s,transform .15s}
+.cta:hover{background:#18239f}.cta:active{transform:translateY(1px)}
+.price{font-size:.95rem;color:var(--mute);line-height:1.35}.price b{display:block;font-size:1.6rem;color:var(--ink);letter-spacing:-.02em}
+.device{width:100%;max-width:300px;justify-self:center;filter:drop-shadow(0 24px 24px rgba(20,26,32,.28))}
+/* scope */
+.scope{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:clamp(18px,3vw,32px)}
+.scope h2{font-size:1.5rem;letter-spacing:-.02em;line-height:1.2;max-width:30ch}
+.scope p.sub{color:var(--mute);margin-top:6px;max-width:60ch}
+.lane{margin-top:20px}
+.lane header{display:flex;justify-content:space-between;gap:12px;font-weight:700;font-size:.95rem;margin-bottom:6px}
+.lane header span{font-weight:500;color:var(--mute)}
+.lane svg{display:block;width:100%;height:auto;background:#fff;border:1px solid var(--line);border-radius:4px}
+.gain{display:flex;align-items:center;gap:16px;margin-top:24px;flex-wrap:wrap}
+.gain label{font-weight:700}
+.gain input{flex:1;min-width:180px;accent-color:var(--cobalt);height:28px}
+.gain output{font:inherit;min-width:6ch;font-weight:700;font-variant-numeric:tabular-nums}
+/* specs */
+section.block{padding:clamp(48px,7vw,88px) 0 0}
+h2.title{font-size:clamp(1.8rem,3.6vw,2.8rem);letter-spacing:-.035em;line-height:1.05;font-weight:900;max-width:18ch}
+.specs{display:grid;grid-template-columns:repeat(3,1fr);margin-top:32px;border-top:2px solid var(--ink)}
+.spec{padding:24px 24px 0 0}
+.spec+.spec{padding-left:24px;border-left:1px solid var(--line)}
+.spec strong{display:block;font-weight:900;font-size:clamp(1.9rem,3.4vw,2.9rem);line-height:1;letter-spacing:-.04em}
+.spec h3{font-size:1.05rem;margin:12px 0 6px}
+.spec p{color:var(--mute);max-width:32ch}
+/* compare */
+.cmp{margin-top:28px;width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line)}
+.cmp th,.cmp td{text-align:left;padding:16px 20px;vertical-align:top;border-bottom:1px solid var(--line)}
+.cmp thead th{font-size:1.05rem;border-bottom:2px solid var(--ink)}
+.cmp thead th:last-child{color:var(--cobalt)}
+.cmp tbody th{font-weight:700;width:24%}
+.cmp td{color:#2c3238;width:38%}.cmp td:last-child{color:var(--ink);font-weight:500}
+.cmp tr:last-child>*{border-bottom:0}
+.note{margin-top:12px;color:var(--mute);font-size:.9rem}
+footer{margin-top:clamp(48px,7vw,88px);padding:28px 0 40px;border-top:1px solid var(--line);color:var(--mute);font-size:.9rem}
+@media(max-width:820px){
+ .hero>*,.scope{min-width:0}
+ .hero{grid-template-columns:1fr}.device{max-width:200px;justify-self:start;order:-1}
+ .specs{grid-template-columns:1fr}.spec,.spec+.spec{padding:20px 0;border-left:0;border-bottom:1px solid var(--line)}
+ .cmp,.cmp tbody,.cmp tr,.cmp th,.cmp td,.cmp tbody th,.cmp td:last-child{display:block;width:100%}
+ .cmp thead{position:absolute;left:-9999px}
+ .cmp tr{border-bottom:2px solid var(--ink);padding:8px 0}
+ .cmp th,.cmp td{border:0;padding:6px 16px}
+ .cmp td::before{content:attr(data-who);display:block;font-size:.8rem;font-weight:700;color:var(--mute)}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+ <div class="brand">Kova <span>Field</span></div>
+
+ <main>
+ <section class="hero">
+  <div>
+   <h1>Loud scenes stay recoverable.</h1>
+   <p class="lede">Kova Field is a pocket recorder for documentary sound. It records in 32-bit float, so a sudden shout or slammed door does not ruin the take. It runs 18 hours and needs no phone, app or signal.</p>
+   <div class="buy">
+    <a class="cta" id="preorder" href="#preorder">Preorder Kova Field</a>
+    <div class="price"><b>$349</b>Pocket-sized. Fully offline.</div>
+   </div>
+  </div>
+  <svg class="device" viewBox="0 0 200 340" role="img" aria-label="Illustration of the Kova Field recorder: a milled aluminum slab with a speaker grille and a record button">
+   <defs>
+    <linearGradient id="al" x1="0" x2="1"><stop offset="0" stop-color="#9ea5aa"/><stop offset=".18" stop-color="#e9ecee"/><stop offset=".5" stop-color="#c3c8cc"/><stop offset=".82" stop-color="#eef0f1"/><stop offset="1" stop-color="#8d949a"/></linearGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f4f5f6"/><stop offset="1" stop-color="#8f969b"/></linearGradient>
+    <pattern id="mill" width="4" height="4" patternUnits="userSpaceOnUse"><path d="M0 2h4" stroke="#1a1e23" stroke-opacity=".07"/></pattern>
+    <pattern id="dots" width="9" height="9" patternUnits="userSpaceOnUse"><circle cx="4.5" cy="4.5" r="1.6" fill="#2b3036"/></pattern>
+   </defs>
+   <rect x="10" y="6" width="180" height="328" rx="26" fill="url(#al)"/>
+   <rect x="10" y="6" width="180" height="328" rx="26" fill="url(#mill)"/>
+   <rect x="10.5" y="6.5" width="179" height="327" rx="25.5" fill="none" stroke="#fff" stroke-opacity=".6"/>
+   <rect x="40" y="38" width="120" height="108" rx="10" fill="url(#dots)" opacity=".85"/>
+   <rect x="40" y="168" width="120" height="30" rx="6" fill="#1a1e23"/>
+   <path d="M48 183h16l6-9 8 16 7-12 5 5h30" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>
+   <circle cx="100" cy="262" r="42" fill="url(#ring)"/>
+   <circle cx="100" cy="262" r="30" fill="#2230d6"/>
+   <circle cx="100" cy="262" r="10" fill="#fff"/>
+  </svg>
+ </section>
+
+ <section class="scope" aria-labelledby="sc-t">
+  <h2 id="sc-t">Raise the input level and watch what each recorder keeps.</h2>
+  <p class="sub">A simulated speech take with a loud burst. The red parts are lost for good on a fixed-range recording.</p>
+  <div class="lane"><header>Phone voice memo <span id="pl">Clipped</span></header>
+   <svg viewBox="0 0 1000 120" role="img" aria-label="Waveform from a phone recording, flattened at the limit"><line x1="0" x2="1000" y1="60" y2="60" stroke="#c6cbce"/><path id="p0" fill="none" stroke="#1a1e23" stroke-width="1.6"/><path id="p1" fill="none" stroke="#c0261c" stroke-width="3"/></svg></div>
+  <div class="lane"><header>Kova Field, 32-bit float <span>Whole waveform kept</span></header>
+   <svg viewBox="0 0 1000 120" role="img" aria-label="Waveform from Kova Field, shape fully intact"><line x1="0" x2="1000" y1="60" y2="60" stroke="#c6cbce"/><path id="k0" fill="none" stroke="#2230d6" stroke-width="1.6"/></svg></div>
+  <div class="gain"><label for="g">Input level</label><input id="g" type="range" min="1" max="8" step=".05" value="1"><output id="go" for="g">1.0x</output></div>
+ </section>
+
+ <section class="block" aria-labelledby="sp-t">
+  <h2 class="title" id="sp-t">Three specs that matter on location</h2>
+  <div class="specs">
+   <div class="spec"><strong>32-bit float</strong><h3>Record without setting gain</h3><p>Quiet whispers and loud bangs fit in one file. You fix the level in the edit.</p></div>
+   <div class="spec"><strong>18 hours</strong><h3>Battery life</h3><p>Record a full shoot day and the drive home without a charger.</p></div>
+   <div class="spec"><strong>Milled aluminum</strong><h3>Body</h3><p>Cut from solid metal. It takes the bumps of a bag, a pocket and a car seat.</p></div>
+  </div>
+ </section>
+
+ <section class="block" aria-labelledby="cm-t">
+  <h2 class="title" id="cm-t">Kova Field against your phone</h2>
+  <table class="cmp">
+   <thead><tr><th><span class="sr">Task</span></th><th>Phone recording</th><th>Kova Field</th></tr></thead>
+   <tbody>
+    <tr><th>Sudden loud sound</th><td data-who="Phone recording">Most apps use a fixed range. Peaks can distort.</td><td data-who="Kova Field">32-bit float keeps the peak. Lower it in post.</td></tr>
+    <tr><th>Battery</th><td data-who="Phone recording">Shared with calls, maps and the screen.</td><td data-who="Kova Field">18 hours, used only for recording.</td></tr>
+    <tr><th>Interruptions</th><td data-who="Phone recording">Calls and alerts can stop or mark a take.</td><td data-who="Kova Field">Offline. Nothing else runs on it.</td></tr>
+    <tr><th>Handling</th><td data-who="Phone recording">Glass and a touchscreen.</td><td data-who="Kova Field">Milled aluminum body, built for a bag or pocket.</td></tr>
+   </tbody>
+  </table>
+  <p class="note">Phone behavior varies by model and app. This compares typical default voice recording.</p>
+ </section>
+ </main>
+
+ <footer>Kova Field. $349 preorder.</footer>
+</div>
+<style>.sr{position:absolute;left:-9999px}</style>
+<script>
+const N=700,g=document.getElementById('g'),go=document.getElementById('go');
+// Fixed fake "speech": syllable bursts plus one loud shout around 62% of the take.
+const env=i=>{const t=i/N;return .16+.2*Math.abs(Math.sin(t*37))+.3*Math.abs(Math.sin(t*11))*Math.abs(Math.sin(t*53))+.5*Math.exp(-((t-.62)**2)/.0016)};
+const s=i=>env(i)*(Math.sin(i*.42)+.35*Math.sin(i*1.07+1));
+function draw(v){
+ let p0='',p1='',k0='';
+ for(let i=0;i<N;i++){
+  const x=i/(N-1)*1000,a=s(i)*v,c=Math.max(-1,Math.min(1,a));
+  p0+=(i?'L':'M')+x.toFixed(1)+' '+(60-c*52).toFixed(1);
+  if(Math.abs(a)>1)p1+=(Math.abs(s(i-1)*v)>1?'L':'M')+x.toFixed(1)+' '+(60-c*52).toFixed(1);
+  k0+=(i?'L':'M')+x.toFixed(1)+' '+(60-a/Math.max(1,v*.95)*52).toFixed(1);
+ }
+document.getElementById('p0').setAttribute('d',p0);
+ document.getElementById('p1').setAttribute('d',p1);
+ document.getElementById('k0').setAttribute('d',k0);
+ document.getElementById('pl').textContent=p1?'Clipped: peaks lost':'Clean at this level';
+ go.textContent=v.toFixed(1)+'x';
+}
+g.addEventListener('input',()=>draw(+g.value));
+draw(1);
+// One load moment: sweep the level up once, then hand control to the user.
+if(!matchMedia('(prefers-reduced-motion: reduce)').matches){
+ let t0=null,stop=0;const T=2600,end=3.2;
+ const step=ts=>{if(stop)return;t0??=ts;const u=Math.min(1,(ts-t0)/T),v=1+(end-1)*(1-(1-u)**3);g.value=v;draw(v);if(u<1)requestAnimationFrame(step)};
+ setTimeout(()=>requestAnimationFrame(step),500);
+ g.addEventListener('pointerdown',()=>{stop=1},{once:true});
+}else{g.value=4;draw(4)}
+</script>
+</body>
+</html>

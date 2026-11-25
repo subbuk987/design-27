@@ -1,5 +1,5 @@
 /**
- * Design 27 — Zero-Dependency SARIF 2.1.0 & GitHub Annotations Formatter
+ * Design 27 v4.0.0 — Zero-Dependency SARIF 2.1.0 & GitHub Annotations Formatter
  */
 import path from "node:path";
 import { pathToFileURL } from "node:url";
@@ -12,7 +12,7 @@ export function toSarifUri(absPath, workspaceRoot = process.cwd()) {
   return pathToFileURL(absPath).href;
 }
 
-export function buildSarif({ version = "3.0.0", rules = [], findings = [], executionSuccessful = true, workspaceRoot }) {
+export function buildSarif({ version = "4.0.0", rules = [], findings = [], executionSuccessful = true, workspaceRoot }) {
   const ruleMap = new Map();
   for (const r of rules) {
     ruleMap.set(r.id, {
@@ -52,6 +52,7 @@ export function buildSarif({ version = "3.0.0", rules = [], findings = [], execu
   });
 
   return {
+    $schema: "https://json.schemastore.org/sarif-2.1.0.json",
     version: "2.1.0",
     runs: [
       {

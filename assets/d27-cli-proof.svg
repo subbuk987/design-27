@@ -1,4 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 320" width="1200" height="320" role="img" aria-label="Design 27 CLI deterministic verification output: EXIT 2 on stock slop vs EXIT 0 on Design 27 build">
+<svg xmlns="http://www.w3.org/2000/svg" data-asset="verified" viewBox="0 0 1200 320" width="1200" height="320" role="img" aria-label="Design 27 v4.0 CLI deterministic verification output: EXIT 2 on stock slop vs EXIT 0 on Design 27 build">
+  <!-- d27-disable: no-overflow-x-hidden, no-transition-all : left panel depicts CLI failure output -->
   <rect width="1200" height="320" rx="10" fill="#0D0F14"/>
   <rect width="1200" height="38" rx="10" fill="#161922"/>
   <rect y="28" width="1200" height="10" fill="#161922"/>
@@ -8,7 +9,7 @@
   <!-- Left: Stock Slop Output -->
   <g transform="translate(24, 58)" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12">
     <text x="0" y="16" fill="#9CA3AF">$ node scripts/d27-check.mjs evals/fixtures/slop-saas.html</text>
-    <text x="0" y="42" font-weight="700" fill="#F87171">Scanned 1 file(s): 5 FLOOR fail(s), 3 REFLEX warning(s)  [EXIT 2]</text>
+    <text x="0" y="42" font-weight="700" fill="#F87171">Scanned 1 file(s): 6 FLOOR fail(s), 5 REFLEX warning(s)  [EXIT 2]</text>
     <text x="0" y="70" fill="#FCA5A5">  [FLOOR]  slop-saas.html:7  (no-overflow-x-hidden)</text>
     <text x="0" y="88" fill="#9CA3AF">           Fix: Replace overflow-x: hidden with overflow-x: clip.</text>
     <text x="0" y="114" fill="#FCA5A5">  [FLOOR]  slop-saas.html:9  (no-transition-all)</text>
@@ -23,15 +24,15 @@
 
   <!-- Right: Design 27 Clean Output -->
   <g transform="translate(652, 58)" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12">
-    <text x="0" y="16" fill="#9CA3AF">$ node scripts/d27-check.mjs evals/fixtures/design27-saas.html</text>
-    <text x="0" y="42" font-weight="700" fill="#34D399">Scanned 1 file(s): 0 FLOOR fail(s), 0 REFLEX warning(s)  [EXIT 0]</text>
+    <text x="0" y="16" fill="#9CA3AF">$ node scripts/d27-check.mjs evals/fixtures/design27-saas.html --render</text>
+    <text x="0" y="42" font-weight="700" fill="#34D399">Scanned 1 file(s) [chrome-cdp]: 0 FLOOR, 0 REFLEX  [EXIT 0]</text>
 
-    <text x="0" y="82" fill="#9CA3AF">$ node scripts/d27-deal.mjs --prompt "Audio field recorder" --no-save</text>
+    <text x="0" y="82" fill="#9CA3AF">$ node scripts/d27-deal.mjs --prompt "Audio field recorder" --medium web</text>
     <text x="0" y="108" fill="#60A5FA">{</text>
-    <text x="0" y="128" fill="#ECEEF2">  "surfaceMode": "persuade",</text>
-    <text x="0" y="148" fill="#ECEEF2">  "primary": { "slug": "luxury-minimal",</text>
-    <text x="0" y="168" fill="#ECEEF2">    "materialRegister": "Editorial Ink / Woodcut" },</text>
-    <text x="0" y="188" fill="#FCD34D">  "bannedCliche": "No 3-column icon-in-a-box SaaS cards"</text>
+    <text x="0" y="128" fill="#ECEEF2">  "schemaVersion": 4, "medium": "web",</text>
+    <text x="0" y="148" fill="#ECEEF2">  "primary": { "slug": "academy-film-leader" },</text>
+    <text x="0" y="168" fill="#ECEEF2">  "macrostructure": { "slug": "interactive-oscilloscope" },</text>
+    <text x="0" y="188" fill="#FCD34D">  "signatureContract": { "requireInteractiveProof": true }</text>
     <text x="0" y="208" fill="#60A5FA">}</text>
   </g>
 </svg>

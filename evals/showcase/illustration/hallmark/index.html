@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pulse, the Pulsebit mascot</title>
+<meta name="description" content="Pulse is the vector mascot for Pulsebit, a terminal CPU benchmark, shown full size beside its 64 pixel silhouette.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+/* Hallmark · shape: Field Specimen · genre: modern-minimal · theme: Cobalt (deal 1/3, seed pulsebit-cli-cpu-benchmark-6670·b89a6216·2026-11-21·r0) · job: try · draw: manual (illustration brief fixes the shape)
+ * hero: Stage, text on the left and the mascot on a dot-grid panel on the right · nav: edge-aligned, a wordmark and one link · footer: one hairline row · imagery: none, the mascot is the product drawn · signature: the mascot beside its own 64px silhouette, built from the same named groups
+ * axes: light/grotesk-sans/cool · posture: restrained · contrast: pass · fold: pass · v2.0.0 */
+/* Hallmark · pre-emit critique: P4 H4 E4 S4 R4 V3 · weakest: V, the shape is fixed by the brief so the dealt variety went into a graphite mono tile and a size ladder */
+/* Hallmark · waive 80 · the SVG carries the label logo in aria-label and is the Pulsebit mascot mark · the brief asks for this drawn mascot, it is the product identity and not decoration */
+:root {
+  color-scheme: light;
+  --space-3xs: 2px; --space-2xs: 4px; --space-xs: 8px; --space-sm: 12px; --space-md: 16px; --space-lg: 24px; --space-xl: 40px; --space-2xl: 64px; --space-3xl: 96px; --space-4xl: 144px;
+  --text-xs: 0.8125rem; --text-sm: 0.875rem; --text-md: 1rem; --text-lg: 1.25rem; --text-xl: 1.5625rem; --text-2xl: 1.953rem; --text-3xl: 2.441rem;
+  --text-display-s: clamp(2.25rem, 4vw + 0.5rem, 3.75rem); --text-display: clamp(2.75rem, 5vw + 1rem, 5.25rem);
+  --text-section: clamp(2rem, 2.5vw + 1rem, 3.5rem); --text-title: clamp(1.25rem, 0.75vw + 0.875rem, 1.625rem); --text-lead: clamp(1.125rem, 0.35vw + 1rem, 1.375rem);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1); --ease-in: cubic-bezier(0.7, 0, 0.84, 0); --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-micro: 120ms; --dur-short: 220ms; --dur-long: 420ms;
+  --color-error: oklch(52% 0.19 27); --color-success: oklch(50% 0.12 150);
+  --container: 1440px; --gutter: 64px; --gap-columns: 32px; --section-gap-s: 120px; --section-gap: 144px; --section-gap-l: 176px;
+  --z-base: 1; --z-raised: 10; --z-dropdown: 100; --z-sticky: 200; --z-sticky-nav: 300; --z-modal: 400; --z-toast: 500; --z-tooltip: 600;
+  --color-paper: oklch(98.6% 0.005 250); --color-paper-2: oklch(96.2% 0.008 252); --color-paper-3: oklch(93% 0.011 252);
+  --color-ink: oklch(21% 0.028 262); --color-ink-2: oklch(36% 0.022 260); --color-muted: oklch(50% 0.018 258);
+  --color-rule: oklch(90% 0.009 252); --color-rule-2: oklch(83% 0.012 252);
+  --color-graphite: oklch(21% 0.024 262); --color-graphite-2: oklch(26.5% 0.026 262); --color-graphite-ink: oklch(93% 0.010 250); --color-graphite-muted: oklch(69% 0.022 256);
+  --color-accent: oklch(52% 0.19 258); --color-accent-2: oklch(76% 0.13 254); --color-accent-wash: oklch(95% 0.028 256); --color-accent-ink: oklch(98.6% 0.005 250); --color-focus: oklch(52% 0.19 258);
+  --color-accent-deep: oklch(43% 0.2 262); --color-accent-edge: oklch(39% 0.16 260);
+  --color-glyph-1: oklch(89% 0.025 254); --color-glyph-2: oklch(81% 0.045 255); --color-glyph-3: oklch(70% 0.085 256); --color-glyph-4: oklch(60% 0.13 257);
+  --color-graphite-glyph-1: oklch(33% 0.03 262); --color-graphite-glyph-2: oklch(41% 0.05 260); --color-graphite-glyph-3: oklch(53% 0.1 258);
+  --color-key-face: oklch(99.4% 0.003 250); --color-key-edge: oklch(80% 0.016 254);
+  --font-display: "Familjen Grotesk", system-ui, sans-serif; --font-body: "IBM Plex Sans", system-ui, sans-serif;
+  --font-outlier: "JetBrains Mono", ui-monospace, monospace;
+  --radius-card: 8px; --radius-input: 6px; --radius-pill: 999px;
+  --cell-w: 8px; --cell-h: 16px; --cut: 8px; --cut-l: 16px;
+  --rule-hair: 1px; --shadow-card: 0 1px 2px oklch(21% 0.028 262 / 0.06);
+  --shadow-key: 0 3px 0 0 var(--color-key-edge), 0 6px 8px -4px oklch(21% 0.028 262 / 0.28), inset 0 1px 0 oklch(100% 0 0 / 0.9);
+  --shadow-key-accent: 0 3px 0 0 var(--color-accent-edge), 0 6px 8px -4px oklch(30% 0.12 260 / 0.45), inset 0 1px 0 oklch(100% 0 0 / 0.22);
+  --shadow-key-press: inset 0 1px 2px oklch(21% 0.028 262 / 0.14);
+  --tracking-display: -0.028em; --display-weight: 600;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html, body { overflow-x: clip; }
+html { scrollbar-color: var(--color-muted) var(--color-paper); scroll-padding-top: var(--space-3xl); }
+body { margin: 0; background: var(--color-paper); color: var(--color-ink); font-family: var(--font-body); font-size: var(--text-md); line-height: 1.55; -webkit-font-smoothing: antialiased; caret-color: var(--color-accent); }
+::selection { background: color-mix(in oklab, var(--color-accent) 22%, transparent); color: var(--color-ink); }
+:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 0.16em; }
+h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: var(--display-weight, 700); font-synthesis: none; letter-spacing: var(--tracking-display); line-height: 1.05; overflow-wrap: break-word; min-width: 0; text-wrap: balance; }
+h1 { max-width: 20ch; font-size: var(--text-display); } h2 { max-width: 30ch; font-size: var(--text-section); } h3 { max-width: 40ch; font-size: var(--text-title); line-height: 1.2; }
+.lead { font-size: var(--text-lead); line-height: 1.45; max-width: 52ch; }
+p { margin: 0; text-wrap: pretty; }
+p:not([class]) { max-width: 65ch; }
+img, video { max-width: 100%; height: auto; display: block; }
+svg { display: block; }
+[hidden] { display: none !important; }
+button, input, select, textarea { font: inherit; }
+.container { width: 100%; max-width: var(--container); margin-inline: auto; padding-inline: var(--gutter); box-sizing: border-box; }
+.num, .figure, td.num { font-variant-numeric: tabular-nums; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+[data-slot] { position: relative; overflow: hidden; background: linear-gradient(160deg, var(--color-paper-2, var(--color-paper)), var(--color-paper-3, var(--color-paper))); }
+[data-slot] > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
+[data-slot]:has(> img) > :not(img):not([data-keep]) { display: none !important; }
+@media (max-width: 60rem) { :root { --gutter: 24px; --section-gap-s: 80px; --section-gap: 96px; --section-gap-l: 120px; } }
+@media (max-width: 40rem) { :root { --gutter: 16px; --section-gap-s: 56px; --section-gap: 72px; --section-gap-l: 96px; --gap-columns: 16px; } }
+@media (prefers-reduced-motion: reduce) { *:not(.keep-motion), *:not(.keep-motion)::before, *:not(.keep-motion)::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
+/* photographs: duotone graphite paper */
+[data-slot]:has(> img) { isolation: isolate; background: var(--color-paper); outline: 1px solid color-mix(in oklab, var(--color-ink) 8%, transparent); outline-offset: -1px; }
+[data-slot] > img { z-index: 0; filter: grayscale(1) contrast(1.08); mix-blend-mode: multiply; }
+[data-slot]:has(> img)::before { content: ""; position: absolute; inset: 0; z-index: 1; background: var(--color-graphite); mix-blend-mode: lighten; pointer-events: none; }
+:root {
+  --mascot-body: var(--color-accent); --mascot-shade: var(--color-accent-deep); --mascot-dot: var(--color-accent-2);
+  --mascot-pins: var(--color-rule-2); --mascot-legs: var(--color-graphite-2); --mascot-tail: var(--color-accent-2);
+  --mascot-face: var(--color-graphite); --mascot-eye: var(--color-paper); --mascot-pupil: var(--color-graphite);
+  --mascot-pulse: var(--color-accent-2); --mascot-shadow: var(--color-paper-3);
+}
+.m-ground { fill: var(--m-shadow, var(--mascot-shadow)); }
+.m-tail { stroke: var(--m-tail, var(--mascot-tail)); fill: none; stroke-width: 16; stroke-linecap: round; stroke-linejoin: round; }
+.m-legs { fill: var(--m-legs, var(--mascot-legs)); }
+.m-pins { fill: var(--m-pins, var(--mascot-pins)); }
+.m-body { fill: var(--m-body, var(--mascot-body)); }
+.m-shade { fill: none; stroke: var(--m-shade, var(--mascot-shade)); stroke-width: 4; }
+.m-dot { fill: var(--m-dot, var(--mascot-dot)); }
+.m-face { fill: var(--m-face, var(--mascot-face)); }
+.m-eye { fill: var(--m-eye, var(--mascot-eye)); }
+.m-pupil { fill: var(--m-pupil, var(--mascot-pupil)); }
+.m-pulse { stroke: var(--m-pulse, var(--mascot-pulse)); fill: none; stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; }
+.mono-solid, .mono-cut { --m-ink: var(--color-ink); }
+.mono-inverse { --m-ink: var(--color-graphite-ink); }
+.mono-solid, .mono-inverse { --m-shadow: none; --m-shade: none; --m-tail: var(--m-ink); --m-legs: var(--m-ink); --m-pins: var(--m-ink); --m-body: var(--m-ink); --m-dot: var(--m-ink); --m-face: var(--m-ink); --m-eye: var(--m-ink); --m-pupil: var(--m-ink); --m-pulse: var(--m-ink); }
+.mono-cut { --m-shadow: none; --m-shade: none; --m-tail: var(--m-ink); --m-legs: var(--m-ink); --m-pins: var(--m-ink); --m-body: var(--m-ink); --m-dot: var(--color-paper); --m-face: var(--color-paper); --m-eye: var(--m-ink); --m-pupil: var(--color-paper); --m-pulse: var(--m-ink); }
+
+.nav { display: flex; align-items: center; justify-content: space-between; padding-block: var(--space-md); }
+.brand { display: inline-flex; align-items: center; gap: var(--space-xs); font-family: var(--font-display); font-weight: 600; font-size: var(--text-lg); letter-spacing: var(--tracking-display); text-decoration: none; }
+.nav a:not(.brand) { font-family: var(--font-display); font-weight: 500; font-size: var(--text-sm); color: var(--color-muted); text-decoration: none; padding: var(--space-xs) 0; }
+.nav a:not(.brand):hover { color: var(--color-ink); text-decoration: underline; text-decoration-color: var(--color-accent); }
+
+.hero { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: var(--gap-columns); align-items: center; padding-block: var(--space-lg) var(--space-2xl); }
+.hero .lead { margin-top: var(--space-lg); color: var(--color-ink-2); }
+.actions { display: flex; flex-wrap: wrap; gap: var(--space-md); margin-top: var(--space-xl); }
+.key { display: inline-flex; align-items: center; min-height: 44px; padding: var(--space-sm) var(--space-lg); border: 1px solid var(--color-key-edge); border-radius: var(--radius-input); background: var(--color-key-face); color: var(--color-ink); font-family: var(--font-display); font-weight: 500; font-size: var(--text-md); text-decoration: none; box-shadow: var(--shadow-key); transition: transform var(--dur-micro) var(--ease-out), box-shadow var(--dur-micro) var(--ease-out); }
+.key:hover { transform: translateY(-1px); }
+.key:active { transform: translateY(2px); box-shadow: var(--shadow-key-press); }
+.key--primary { background: var(--color-accent); border-color: var(--color-accent-edge); color: var(--color-accent-ink); box-shadow: var(--shadow-key-accent); }
+.key--primary:active { box-shadow: var(--shadow-key-press); }
+
+.cut { border: 1px solid var(--color-rule-2); border-radius: var(--cut-l) 4px; background: var(--color-paper-2); box-shadow: var(--shadow-card); }
+@supports (corner-shape: bevel) { .cut { corner-shape: bevel round bevel round; } }
+.stage { position: relative; aspect-ratio: 1; width: min(100%, 540px); margin-inline: auto; display: grid; place-items: center; background-color: var(--color-paper-2); background-image: radial-gradient(var(--color-rule-2) 1px, transparent 1.5px); background-size: var(--cell-w) var(--cell-h); }
+.stage > svg { width: 86%; height: auto; }
+.badge { position: absolute; right: var(--space-md); bottom: var(--space-md); display: grid; justify-items: center; gap: var(--space-2xs); padding: var(--space-sm); background: var(--color-paper); border: 1px solid var(--color-rule-2); border-radius: var(--cut) 3px; }
+@supports (corner-shape: bevel) { .badge { corner-shape: bevel round bevel round; } }
+.badge svg { width: 64px; height: 64px; }
+.cap { font-family: var(--font-display); font-weight: 500; font-size: var(--text-xs); color: var(--color-muted); }
+
+.section { padding-block: var(--section-gap-s); border-top: 1px solid var(--color-rule); }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); gap: var(--gap-columns); margin-top: var(--space-xl); }
+.tile { display: grid; grid-template-rows: 1fr auto; justify-items: center; gap: var(--space-md); padding: var(--space-xl) var(--space-md) var(--space-lg); background: var(--color-paper); }
+.tile--dark { background: var(--color-graphite); border-color: var(--color-graphite-2); color: var(--color-graphite-ink); }
+.tile--dark .cap { color: var(--color-graphite-muted); }
+.tile .art { display: flex; align-items: flex-end; gap: var(--space-md); min-height: 64px; }
+.tile .art svg { width: 64px; height: 64px; }
+.tile .art svg.s32 { width: 32px; height: 32px; }
+.tile .art svg.s16 { width: 16px; height: 16px; }
+
+.groups { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); gap: var(--gap-columns); align-items: start; }
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: var(--space-md) var(--space-sm); border-bottom: 1px solid var(--color-rule); vertical-align: baseline; }
+th { font-family: var(--font-display); font-weight: 500; font-size: var(--text-sm); color: var(--color-muted); border-bottom-color: var(--color-rule-2); }
+td:first-child { font-family: var(--font-outlier); font-size: var(--text-sm); white-space: nowrap; }
+tr.wash td { background: var(--color-accent-wash); }
+.foot { border-top: 1px solid var(--color-rule); padding-block: var(--space-xl); display: flex; flex-wrap: wrap; gap: var(--space-md); justify-content: space-between; align-items: center; color: var(--color-muted); font-size: var(--text-sm); }
+
+@media (max-width: 60rem) {
+  .hero, .groups { grid-template-columns: minmax(0, 1fr); }
+  .groups { gap: var(--space-xl); }
+}
+</style>
+</head>
+<body>
+<header class="container">
+  <nav class="nav" aria-label="Primary">
+    <a class="brand" href="#top"><svg class="mono-solid" viewBox="0 0 400 400" width="28" height="28" aria-hidden="true"><use href="#mascot"/></svg>Pulsebit</a>
+    <a href="#silhouette">Silhouette test</a>
+  </nav>
+</header>
+<main id="top">
+  <section class="container hero" aria-labelledby="h1">
+    <div>
+      <h1 id="h1">Meet Pulse, the Pulsebit mascot</h1>
+      <p class="lead">A sprinting chip, drawn to stay readable at 64 pixels.</p>
+      <div class="actions">
+        <a class="key key--primary" href="#silhouette">See the 64px test</a>
+        <a class="key" href="#groups">Read the groups</a>
+      </div>
+    </div>
+    <div class="stage cut">
+      <svg id="mascot-svg" viewBox="0 0 400 400" role="img" aria-label="Pulsebit mascot logo: a sprinting CPU chip with a heartbeat line for a mouth">
+        <title>Pulse, the Pulsebit mascot</title>
+        <g id="mascot" transform="translate(27 0)">
+          <g id="ground"><ellipse class="m-ground" cx="196" cy="364" rx="104" ry="9"/></g>
+          <g id="tail">
+            <path class="m-tail" d="M104 190H84L70 148L50 232L38 190H16"/>
+            <path class="m-tail" d="M44 112H84M44 270H84"/>
+          </g>
+          <g id="legs">
+            <rect class="m-legs" x="154" y="284" width="22" height="48" rx="4"/>
+            <rect class="m-legs" x="142" y="328" width="50" height="22" rx="11"/>
+            <rect class="m-legs" x="226" y="284" width="22" height="34" rx="4"/>
+            <rect class="m-legs" x="214" y="314" width="50" height="22" rx="11" transform="rotate(-10 239 325)"/>
+          </g>
+          <g id="pins">
+            <g id="pins-top">
+              <rect class="m-pins" x="126" y="60" width="16" height="36" rx="3"/>
+              <rect class="m-pins" x="170" y="60" width="16" height="36" rx="3"/>
+              <rect class="m-pins" x="214" y="60" width="16" height="36" rx="3"/>
+              <rect class="m-pins" x="258" y="60" width="16" height="36" rx="3"/>
+            </g>
+            <g id="pins-right">
+              <rect class="m-pins" x="294" y="122" width="36" height="16" rx="3"/>
+              <rect class="m-pins" x="294" y="182" width="36" height="16" rx="3"/>
+              <rect class="m-pins" x="294" y="242" width="36" height="16" rx="3"/>
+            </g>
+          </g>
+          <g id="body">
+            <rect class="m-body" x="100" y="90" width="200" height="200" rx="38"/>
+            <rect class="m-shade" x="108" y="98" width="184" height="184" rx="31"/>
+            <circle class="m-dot" cx="120" cy="110" r="6"/>
+          </g>
+          <g id="face">
+            <rect class="m-face" x="124" y="126" width="152" height="118" rx="24"/>
+            <g id="eyes">
+              <circle class="m-eye" cx="166" cy="168" r="18"/>
+              <circle class="m-eye" cx="234" cy="168" r="18"/>
+              <circle class="m-pupil" cx="173" cy="170" r="9"/>
+              <circle class="m-pupil" cx="241" cy="170" r="9"/>
+            </g>
+            <g id="mouth">
+              <path class="m-pulse" d="M142 216H168L180 198L196 234L210 206L220 216H258"/>
+            </g>
+          </g>
+        </g>
+      </svg>
+      <div class="badge"><svg class="mono-solid" viewBox="0 0 400 400" role="img" aria-label="Pulse as a 64 pixel silhouette"><use href="#mascot"/></svg><span class="cap">64 px silhouette</span></div>
+    </div>
+  </section>
+
+  <section class="section" id="silhouette" aria-labelledby="h2a">
+    <div class="container">
+      <h2 id="h2a">It still reads at 64 pixels.</h2>
+      <div class="tiles">
+        <figure class="tile cut" style="margin:0"><div class="art"><svg class="mono-solid" viewBox="0 0 400 400" role="img" aria-label="Solid silhouette at 64 pixels"><use href="#mascot"/></svg></div><figcaption class="cap">Solid silhouette</figcaption></figure>
+        <figure class="tile tile--dark cut" style="margin:0"><div class="art"><svg class="mono-inverse" viewBox="0 0 400 400" role="img" aria-label="Inverse silhouette at 64 pixels"><use href="#mascot"/></svg></div><figcaption class="cap">On graphite</figcaption></figure>
+        <figure class="tile cut" style="margin:0"><div class="art"><svg class="mono-cut" viewBox="0 0 400 400" role="img" aria-label="One-ink mark with face cut out at 64 pixels"><use href="#mascot"/></svg></div><figcaption class="cap">One ink, face cut out</figcaption></figure>
+        <figure class="tile cut" style="margin:0"><div class="art"><svg viewBox="0 0 400 400" role="img" aria-label="Full colour at 64 pixels"><use href="#mascot"/></svg></div><figcaption class="cap">Full colour</figcaption></figure>
+        <figure class="tile cut" style="margin:0"><div class="art"><svg class="mono-solid s32" viewBox="0 0 400 400" role="img" aria-label="Silhouette at 32 pixels"><use href="#mascot"/></svg><svg class="mono-solid s16" viewBox="0 0 400 400" role="img" aria-label="Silhouette at 16 pixels"><use href="#mascot"/></svg></div><figcaption class="cap">32 and 16 pixels</figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="groups" aria-labelledby="h2b">
+    <div class="container groups">
+      <h2 id="h2b">Six named groups.</h2>
+      <table>
+        <thead><tr><th scope="col">Group</th><th scope="col">Holds</th></tr></thead>
+        <tbody>
+          <tr><td>#ground</td><td>Contact shadow</td></tr>
+          <tr><td>#tail</td><td>Pulse trace and two speed lines</td></tr>
+          <tr><td>#legs</td><td>Two legs, one raised</td></tr>
+          <tr><td>#pins</td><td>Four on top, three on the right</td></tr>
+          <tr class="wash"><td>#body</td><td>Cobalt die and pin-one dot</td></tr>
+          <tr><td>#face</td><td>Screen, #eyes and heartbeat #mouth</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+<footer class="container foot"><span>Pulsebit, a terminal CPU benchmark.</span><span>One SVG, viewBox 400 by 400.</span></footer>
+</body>
+</html>

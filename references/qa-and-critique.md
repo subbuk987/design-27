@@ -1,24 +1,24 @@
 # Post-Build Art Director Critique & Anti-Slop Quality Audit
 
 Load and run this module at **Stage 4** of every Design 27 task before declaring work complete. Gates operate in **3 strict tiers**:
-- **Tier 1 — The Floor (Unwaivable):** Contrast floors, `:focus-visible`, `prefers-reduced-motion`, zero invented facts/testimonials/metrics, zero `transition: all`, zero edge clipping/overflow, and medium safe zones. Never ship with a Floor failure.
-- **Tier 2 — Reflex Gates (Waivable On-Record Only):** Default AI habits (card soup, purple-slate gradients, badge clutter, emoji icons, hype copy, linear motion). Fix by default — or log an explicit brief-driven waiver in the Sign-Off block.
-- **Tier 3 — Finish Checks (Craft Polish):** Optical alignment, nested radius harmony, micro-typography, and pacing cadence. Answer honestly; fix every quick win before delivery.
+- **Tier 1 — The Floor (Unwaivable):** Contrast floors, `:focus-visible`, `prefers-reduced-motion`, zero invented facts/testimonials/metrics, zero `transition: all`, zero edge clipping/overflow, anti-AI-prose rules, cutout silhouettes for mascots, and medium safe zones. Never ship with a Floor failure.
+- **Tier 2 — Reflex Gates (Waivable On-Record Only):** Default AI habits (charcoal + safety-orange convergence, eyebrow spam above headings, repetitive `.ruled-row` / card soup, `scale(0)` or `ease-in` UI entrances, badge clutter, emoji icons, hype copy). Fix by default — or log an explicit brief-driven waiver in the Sign-Off block.
+- **Tier 3 — Finish Checks (Craft Polish):** Optical alignment, nested radius harmony, micro-typography, sentence burstiness, and pacing cadence. Answer honestly; fix every quick win before delivery.
 
 ### Deterministic Verification & Cold-Review Protocol (Zero Sign-Off Theater)
-1. **Run the Static & Brief-Contract Checker First:** Run `node scripts/d27-check.mjs <target>` (passing `--brief <brief.json>` when `d27-deal.mjs` was used) and fix every `[FLOOR]` failure until exit code `0`. `UNVERIFIED: no runtime` is permitted ONLY when quoting the exact failed runtime error — never as a convenience skip.
-2. **Visual & Cold Evidence:** Never claim a "3-second squint test" passed purely in your head. Inspect a real rendered screenshot (Playwright/browser/PDF render) or, in code-only environments, cite exact `file:line` tokens and computed dimensions. For high-stakes heroes or launches, run Passes 1–7 in a fresh critic pass without self-justifying prose.
+1. **Run the Static, Brief & Render Checker First:** Run `node scripts/d27-check.mjs <target> --medium <medium> --render --json` (passing `--brief .design27/brief.json` when `d27-deal.mjs` was used; `--render` uses Playwright or the zero-dep `chrome-cdp.mjs` fallback). Fix every `[FLOOR]` failure until exit code `0`. `UNVERIFIED: no runtime` is permitted ONLY when quoting the exact failed `--doctor` runtime error — never as a convenience skip.
+2. **Visual & Cold Evidence:** Never claim a "3-second squint test" or "64px silhouette test" passed purely in your head. Inspect real rendered screenshots (`--snapshots .d27/snapshots` or `d27-frames.mjs sheet`) or, in code-only environments, cite exact `file:line` tokens and computed dimensions.
 
 ---
 
-## Pass 1 — Visual Hierarchy & Focal Point (Screenshot or `file:line` Evidence)
+## Pass 1 — Visual Hierarchy, Diegetic Metaphor & Focal Point
 
 Inspect the rendered view at `25%` / mobile scale (or verify exact heading/visual sizing and placement in source):
 
-- [ ] **Unmistakable #1 Focal Anchor:** Exactly ONE primary headline, visual artifact, or hero figure dominates instantly. If two elements fight equally for attention, demote the weaker element by `>= 35%` in scale, contrast, or chromatic saturation.
-- [ ] **Clear 1 → 2 → 3 Eye Path:** The eye travels smoothly from Focal Anchor (#1) → Supporting Context (#2) → Action / Metadata (#3) without bouncing randomly across boxes.
-- [ ] **Intentional Negative Space:** Calm open ground actively frames the subject (`>= 25–45%` breathing room for editorial/posters/websites; crisp micro-gutters for dense cheatsheets). Zero anxious void-filling.
-- [ ] **Aesthetic Fidelity:** The finished piece genuinely embodies the Stage 1 Aesthetic Direction and cultural anchors — never quietly drifted back to generic SaaS styling during implementation.
+- [ ] **Unmistakable #1 Focal Anchor & Assertion Headline:** Exactly ONE primary headline, visual artifact, or hero figure dominates instantly. Headline states a concrete claim or tension rather than a vague topic label. If two elements fight equally, demote the weaker by `>= 35%`.
+- [ ] **Clear 1 → 2 → 3 Eye Path:** The eye travels smoothly from Focal Anchor (#1) → Supporting Context / Interactive Proof (#2) → Action / Metadata (#3) without bouncing randomly across boxes.
+- [ ] **Intentional Negative Space:** Calm open ground actively frames the subject (`>= 25–45%` breathing room for websites/editorial/motion/mascots; crisp micro-gutters for dense dual-safe one-pagers). Zero anxious void-filling.
+- [ ] **Diegetic Fidelity & Pre-Emit `M·I·H·C·R` Lock:** The finished piece embodies the Stage 1 Material World and Diegetic Physical Artifact, with `M >= 4` and `I >= 4` on *Persuade/Experience* builds — never quietly drifting back to charcoal + safety-orange or generic SaaS styling.
 
 ---
 
@@ -26,84 +26,76 @@ Inspect the rendered view at `25%` / mobile scale (or verify exact heading/visua
 
 Verify actual foreground/background luminance pairs — never eyeball low-contrast greys:
 
-- [ ] **Body Copy Contrast:** `>= 4.5:1` (WCAG AA hard floor) for all body copy, labels, and captions (`< 24px` normal / `< 18.66px` bold). Target **`>= 7:1` (WCAG AAA)** for books, editorial articles, and cheatsheets.
+- [ ] **Body Copy Contrast:** `>= 4.5:1` (WCAG AA hard floor) for all body copy, labels, and captions (`< 24px` normal / `< 18.66px` bold). Target **`>= 7:1` (WCAG AAA)** for books, monographs, and dense dual-safe one-pagers.
 - [ ] **Display & UI Component Contrast:** `>= 3.0:1` minimum for oversized display headlines (`>= 24px`), primary icons, active inputs, and focus rings.
-- [ ] **Zero Dark-Mode Halation:** Avoid harsh pure `#FFFFFF` reading copy on pure `#000000` for extended reading; prefer calibrated off-white (`#ECEEF2` / `#F2F0EB`) on deep obsidian/graphite (`#0B0C10` / `#121210`).
-- [ ] **Text-Over-Media Legibility:** Check contrast against the *brightest or noisiest* pixel behind text. Apply a directional scrim (`rgba(0,0,0,0.72–0.85)`), solid editorial panel, or quiet negative-space crop if any letter blurs into the photo.
-- [ ] **Grayscale / Colorblind Resilience:** Convert mentally or via filter to grayscale — hierarchy, charts, status indicators, and CTAs still remain clear without relying exclusively on red/green hue differences.
+- [ ] **Zero Dark-Mode Halation:** Avoid harsh pure `#FFFFFF` reading copy on pure `#000000` for extended reading; prefer calibrated off-white (`#ECEEF2` / `#DCEEE4`) on deep obsidian/CRT/bath grounds (`#0B0E14` / `#0B110E`).
+- [ ] **Text-Over-Media Legibility:** Check contrast against the *brightest or noisiest* pixel behind text. Apply a directional scrim (`rgba(0,0,0,0.72–0.85)`), solid editorial panel, or quiet negative-space crop if any letter blurs into photography or video.
+- [ ] **Grayscale / Colorblind Resilience:** Hierarchy, charts, status indicators, and CTAs remain clear in grayscale without relying exclusively on red/green hue differences.
 - [ ] **60 / 30 / 10 Palette Discipline:** Surface ground dominates, ink reads crisply, and `--accent-focal` remains disciplined (`<= 10%` of visual area) rather than tinting every heading, border, and background alike.
 
 ---
 
-## Pass 3 — Typography Hygiene Audit
+## Pass 3 — Typography & Prose Hygiene Audit
 
-- [ ] **Typeface Cap:** Strictly `<= 2` primary font families + `1` optional monospace utility face.
-- [ ] **Scale Tension:** Headline-to-body ratio meets medium target: `>= 2.5×` desktop websites/editorial (`>= 2.2×` mobile display), `>= 5×` posters, `1.8×–2.5×` dense cheatsheets. *(Thumbnails have no body copy; enforce `16–24%` canvas height per hook line.)*
-- [ ] **Body Measure Control:** Continuous prose stays within **`45–70ch`** (ideal `58–65ch`; `36–48ch` for multi-column magazines). Zero 100ch wall-to-wall lines.
-- [ ] **Zero Headline Orphans & Column Widows:** All display headings and pull quotes wrap cleanly (`text-wrap: balance` or manual line breaks — zero dangling single short words on the final line). Multi-page print/PDF blocks enforce `widows >= 2`, `orphans >= 2`, and `break-after: avoid` on headings.
+- [ ] **Typeface Cap:** Strictly `<= 2` primary font families + `1` optional monospace utility face (explicitly loaded via `@font-face` or web fonts — zero Arial/Times fallbacks).
+- [ ] **Scale Tension:** Headline-to-body ratio meets medium target: `4:1–10:1` at `0.86–0.96` leading on *Experience*, *Thumbnails*, and *Motion*; `>= 2.5×` on *Persuade* websites (`>= 2.2×` mobile); `1.8×–2.5×` on *Operate/Read* and dense one-pagers. *(Thumbnails have no body copy; enforce `16–24%` canvas height per hook line.)*
+- [ ] **Eyebrow Discipline:** Tracked-uppercase eyebrows capped at **`<= 2` structural landmarks** per page — never mechanically stamped above every `<h2>` (`no-eyebrow-spam`).
+- [ ] **Body Measure, Orphans & Widows:** Continuous prose stays within **`45–70ch`** (ideal `58–65ch`; `36–48ch` multi-column). Display headings balance cleanly (`text-wrap: balance` or manual breaks) with zero single-word orphans. Print/PDF books enforce `widows: 3`, `orphans: 3`, and `break-after: avoid` on headings.
 - [ ] **Minimum Legibility Floors Enforced:**
-  - Websites: Body `>= 16px`, utility labels/captions `>= 12px`.
-  - Books / Reports: Print body `9.5–11pt` (screen PDF `10.5–11.5pt`), footnotes/captions `>= 7.5pt`.
-  - Presentations / Pitch Decks: Live keynote body `>= 24px` (`18pt`), read-ahead body `>= 18px` (`13.5–14pt`), footers `>= 14px`.
-  - Cheatsheets: Print `>= 7.5pt`, screen `>= 11px`.
-  - Posters: 1-ft details `>= 10pt`.
+  - Websites & Dashboards: Body `>= 16px`, utility labels/captions `>= 12px`.
+  - Dense Dual-Safe One-Pagers: Print `>= 7.5pt`, screen `>= 11px`.
+  - Books & Editorial: Print body `9.5–11pt` (screen PDF `10.5–11.5pt`), footnotes/captions `>= 7.5pt`.
   - Thumbnails: Display hook `>= 16–24%` of canvas height (`0–4` words max).
-- [ ] **Tabular Numerals & Proper Punctuation:** `font-variant-numeric: tabular-nums` applied to tables, KPIs, prices, timestamps, and folios. True em-dashes (`—`), en-dashes (`–`), curly quotes (`“ ” ‘ ’`), and proper `×` multiplication signs replace ASCII hacks (`--`, `"`, `x`).
+- [ ] **Tabular Numerals & Proper Punctuation:** `font-variant-numeric: tabular-nums` applied to tables, KPIs, prices, timecodes, and folios. True em-dashes (`—`), en-dashes (`–`), curly quotes (`“ ” ‘ ’`), and proper `×` multiplication signs replace ASCII hacks (`--`, `"`, `x`).
 
 ---
 
 ## Pass 4 — Spatial Alignment, Rhythm & Edge-Clipping Check
 
-Inspect desktop (`1440px`), tablet (`768px`), mobile (`390px`), or print trim margins:
+Inspect desktop (`1440px` / `1280px`), mobile (`390px`), or print trim margins:
 
-- [ ] **Zero Edge Clipping, Overflow & CSS Floor Intact:** `overflow-x: clip` (never `overflow-x: hidden` or `100vw`); image grid tracks use `minmax(0, 1fr)`; display heads carry `min-width: 0; overflow-wrap: break-word;`; no horizontal scrollbars on mobile, no clipped descenders inside masked containers, and nested radii follow `max(outer - padding, 4px)`.
-- [ ] **Honest Media Proportions:** Every photograph, video, and diagram uses an explicit `aspect-ratio` + clean crop (`object-fit: cover`, focal-aware `object-position`). Zero stretched, squished, or pixelated assets; zero data charts strangled in narrow sidebars.
-- [ ] **Alternating Section Rhythm:** No two consecutive sections share the exact same grid column split, card pattern, or visual density.
+- [ ] **Zero Edge Clipping, Overflow & CSS Floor Intact:** `overflow-x: clip` (never `overflow-x: hidden` or `100vw`); grid tracks use `minmax(0, 1fr)`; display heads carry `min-width: 0; overflow-wrap: break-word;`; zero horizontal scrollbars on mobile, zero clipped descenders inside masked containers, and nested radii follow `max(outer - padding, 4px)`.
+- [ ] **Honest Media Proportions:** Every photograph, SVG, video, and diagram uses an explicit `aspect-ratio` + clean crop (`object-fit: cover`, focal-aware `object-position`). Zero stretched, squished, or pixelated assets; zero data visuals strangled in narrow sidebars (`>= 65%` desktop width).
+- [ ] **Alternating Macrostructure Rhythm:** No two consecutive sections share the exact same column split, `.ruled-row` list, or card pattern.
 - [ ] **The Deletion Test (Open-Canvas Check):** Inspect every border, card box, background pill, shadow, and divider. If removing a box or shadow makes alignment clearer and calmer, **delete it**.
 - [ ] **Macro vs. Micro Proximity:** Section separation is `>= 3×` internal element spacing; captions sit tighter to their own figure (`6–8px`) than to surrounding paragraphs (`>= 20px`).
 
 ---
 
-## Pass 5 — Motion & Performance Critique (Skip Only for Static Print/Images)
+## Pass 5 — UI Choreography & Video Motion Critique (Skip Only for Static Print/Images)
 
-- [ ] **Zero Robotic Curves & Single Motion Personality:** No `linear`, default browser `ease`, or `transition: all` on UI/video entrances, exits, or layout morphs (linear reserved exclusively for continuous progress bars/tickers/spinners). One cohesive easing/spring family governs the entire piece.
-- [ ] **Inside Duration Budgets:** Micro-interactions `120–200ms`; UI transitions `250–450ms` (exits `~0.7×` enter); hero choreography `500–900ms`; total list stagger capped at `<= 350ms`.
-- [ ] **60fps GPU-Composited Properties Only:** Animations mutate `transform`, `opacity`, or `clip-path` — zero frame-dropping layout thrash (`width`, `height`, `top`, `left`, `margin`, `padding`), zero scroll-jacking, and zero scroll reveals that leave content permanently stuck at `opacity: 0`.
-- [ ] **Reduced Motion Respected:** `@media (prefers-reduced-motion: reduce)` (or `gsap.matchMedia()`) replaces sweeping motion with instant settles or minimal opacity crossfades.
-- [ ] **Video Storyboard, Determinism, Audio & Beat-Boundary Contact Sheet:** Stage 2 Beat Sheet locked; duration probed dynamically with `TransitionSeries` overlap compensation; audio mastered to `-14/-16 LUFS` (`-1 dBTP`, `-12` to `-18 dB` VO ducking) and encoded `yuv420p` (`d27-check.mjs` verifies `.mp4` via `ffprobe`); visuals inside **90% action-safe** and titles inside **80% title-safe** (plus `9:16` social dead zones); zero `Date.now()`, unseeded `Math.random()`, `requestAnimationFrame`, wall-clock CSS transitions, or `repeat: -1`. **Beat-Boundary Contact-Sheet Check:** Inspect **Frame 0** (font/asset readiness — zero FOUT/FOIT) plus **each scene's entrance midpoint, settled hold, and exit transition** (never arbitrary percentage slices).
+- [ ] **Frequency & Intent Gate (UI):** `100×/day` actions & keyboard navigation run `0–100ms` (never animate keystroke focus/selection); hover/press micro-feedback `120–200ms`; popovers/dropdowns/modals stay strictly `< 300ms` (`180–280ms`), scale from **`0.95 → 1`** anchored to trigger `transform-origin` (zero `scale(0)`), and exits run `~25%` faster than entrances.
+- [ ] **Zero Robotic Curves & Single Motion Personality:** Zero `linear`, default `ease`, `ease-in` on UI entrances (`> 220ms`), or `transition: all`. One cohesive easing or critically-damped spring family governs the piece.
+- [ ] **Signature Load Demo & 60fps GPU Floor:** *Persuade/Experience* interactive builds feature one `1.2s–2.4s` domain-specific auto-play-once demo that cancels immediately on `pointerdown`/`keydown`. Only `transform`, `opacity`, or `clip-path` animate; scroll timelines (`animation-timeline: view()`) never strand elements at `opacity: 0`; `prefers-reduced-motion` settles cleanly.
+- [ ] **Video Storyboard, Determinism, Seekable HTML & Audio:** Stage 2 Beat Sheet locked; HTML motion exposes deterministic `window.__d27Seek(t)` / `renderAt(frame)` + minimal scrub bar; 2.5D camera rig uses depth planes rather than flat 2D scenes; PRNG uses seeded `mulberry32` (zero `Math.random`/`Date.now`/`rAF`/`setTimeout`/wall-clock CSS/`repeat: -1`); audio mastered to `-14/-16 LUFS` (`-1 dBTP`, `-12` to `-18 dB` VO ducking) and `yuv420p`; visuals inside **90% action-safe** and titles inside **80% title-safe**; final **20–25% (`>= 1.2s`) lockup hold** with zero late shifts. **Beat-Boundary Contact Sheet:** Inspect **Frame 0** + scene entrances, holds, and exits via `d27-frames.mjs sheet`.
 
 ---
 
-## Pass 6 — Medium-Specific Sign-Off Gates
+## Pass 6 — Medium-Specific Sign-Off Gates (6 Flagship Pillars)
 
 Confirm every row matching your active medium(s):
 
-| Medium | Mandatory Final Checks |
+| Pillar | Mandatory Final Checks |
 | :--- | :--- |
-| **Websites & Landing Pages** | Above-the-fold hero holds focal message + visual + max 1 primary CTA cleanly at `1280×800`, `1440×900`, and `390×844`; mobile tap targets `>= 44×44px`; nav `<= 5` top links; job-first anatomy. |
-| **Web Apps & Dashboards** | Hairline-separated shell rail (`220–248px`) + open horizontal KPI strip (zero bento KPI card soup); primary chart spans `>= 65%` desktop width with muted gridlines & `<= 4` semantic series; tables right-align `tabular-nums`; empty/loading/error/`:focus-visible` states complete. |
-| **Books & Editorial** | Inner binding gutter generous (`>= 18–22mm` for print); facing baselines aligned; running headers suppressed on chapter openers, blank versos & full-bleed plates; hyphenation enabled on justified prose; zero mixed indent + blank-line paragraphs. |
-| **Presentations & Decks** | `16:9` stage (`1920×1080px` / `80px` safe zone); one claim per slide with assertion titles; `<= 45` words live (`<= 65` async); no 3 consecutive identical slide layouts; data charts `>= 65%` width with direct labels; footer suppressed on covers/dividers; native clickable links. |
-| **Cheatsheets** | Masthead `<= 10%` of page height; zero narrative paragraphs; fits cleanly inside A4/Letter dual-safe printable bounds (`188×257mm`) without overflow; print view uses light ink-saving ground. |
-| **Posters** | Passes 10ft / 3ft / 1ft distance test; `<= 3` inks; bleed (`+3mm` / `+5mm`) extends past trim; all non-bleeding details & QR codes sit inside safe zone; 1 intentional grid-break max. |
-| **Thumbnails** | Passes `160px` wide (`12.5%`) squint test; `<= 3` visual elements total; `0–4` words max (never repeats full video title); **YouTube bottom-right timestamp dead zone (`x: 1000–1280, y: 590–720`) completely clear** of text/faces/logos. |
-| **Mascots & Illustration** | Passes solid `#000` silhouette test at `64px`; locked to 3–4 brand-aligned colors (`>= 3:1` body/secondary delta); consistent stroke weight & key-light angle across all assets; animation-ready grouped SVG (`transform-box: view-box`) or locked character prompt template provided. |
+| **1. Websites & Dashboards** *(+ Dual-Safe One-Pagers)* | Above-the-fold hero holds focal message + Diegetic Artifact + max 1 primary CTA cleanly at `1280×800`, `1440×900`, and `390×844`; *Persuade/Experience* pages include **1 genuine Interactive Proof widget**; mobile tap targets `>= 44×44px`; nav `<= 5` top links. Dashboards use hairline shell rail (`220–248px`) + open KPI strip, `>= 65%` primary chart width, right-aligned `tabular-nums`, empty/loading/error/`:focus-visible` states. Dual-safe one-pagers fit `188×257mm` on light ink-saving print ground with `<= 10%` masthead. |
+| **2. UI Animations & Micro-Interactions** | Passes Frequency Test (`0–100ms` high-frequency, `< 300ms` overlays); zero `scale(0)` or `ease-in` entrances; trigger-anchored `transform-origin`; interruptible transitions/springs; View Transitions / scroll-linked reveals degrade cleanly; `1.2s–2.4s` auto-play-once demo yields on input and respects `prefers-reduced-motion`. |
+| **3. Motion Design & Launch Video** | Deterministic timeline (`window.__d27Seek(t)` or Remotion/HyperFrames/Manim frame math); 2.5D camera rig + depth planes; seeded waveforms/particles; `d27-frames.mjs sheet` contact sheet verified at Frame 0 and beat boundaries; `d27-check.mjs` verifies `.mp4` `ffprobe` / `-14..-16 LUFS` / `yuv420p`; final `>= 1.2s` lockup hold intact. |
+| **4. Book Writing & Editorial Publishing** | Book Charter + Chapter Beat Cards locked; every chapter opens with a concrete scene/artifact/measurement; **zero AI prose slop** (*delve, tapestry, testament, pivotal, underscore*, negative parallelisms, throat-clearing openers, `<= 2` em-dashes/para) + strong sentence burstiness; web-books include Tufte sidenotes + TOC rail + `@media print`; print/Typst obeys inner binding gutter `>= 18–22mm`, suppressed running headers on openers/versos, and **zero double-signaled paragraphs** (`text-indent` XOR `margin-bottom`). |
+| **5. Mascot Creation & SVG Rigging** | Anatomy derived from **2-Noun Domain Metaphor Matrix** (zero unprompted fox/cat ears on technical tools); primary `<svg>` contains `>= 4` named `<g id="...">` groups; silhouettes use **`--m-fill`/`--m-cut` CSS-variable cutouts or `<mask>`** (zero blind `filter: brightness(0)`), verified across `400px → 64px → 32px → 16px` on light & dark; interactive showcase provides hover/focus `#group` isolation + restrained `prefers-reduced-motion`-safe idle micro-motion. |
+| **6. YouTube & Social Thumbnails** | Emitted alongside a **complementary Video/Article Title** forming a Curiosity Gap (`< 50%` shared words); `<= 3` visual elements; `0–4` words max inside `#thumbnail-canvas`; **live `160×90px` dark/light feed context preview** passes squint legibility; **YouTube bottom-right timestamp dead zone (`x: 1000–1280, y: 590–720`) completely clear** of text, faces, and logos. |
 
 ---
 
 ## Pass 7 — The Anti-AI-Slop Kill Switch
 
-If ANY of these 9 patterns survived into the artifact, **STOP — revise before delivering**:
+If ANY of these patterns survived into the artifact, **STOP — revise before delivering**:
 
-1. Default purple-blue/pink AI gradient (`#6366f1` → `#a855f7` → `#ec4899`) on uncalibrated dark slate.
-2. Repetitive 3-column icon-in-a-tinted-square card soup.
-3. Unprompted sparkle badges (`✨ AI-Powered`, `New`, `Beta`) or decorative emojis used as UI icons.
-4. Fake macOS red/yellow/green dots framing non-terminal content.
-5. Washed-out medium-grey body copy failing `4.5:1` contrast.
-6. Unmotivated floating glass blobs, confetti, `transition: all`, or linear hover animations.
-7. Default uncalibrated Inter + Tailwind blue layout ignoring the subject's cultural soul.
-8. Hype microcopy (`supercharge`, `seamless`, `unlock`, `magic`, `!!`, `"Welcome back! 👋"`) or single italic gimmick words inside roman display headings.
-9. Invented customer metrics, fabricated testimonials, or unverified logo walls.
+1. **Polite Charcoal + Safety-Orange Convergence** (`#090B10` + `Geist` + `#FF5B1F`) or default purple-blue/pink AI gradient (`#6366f1` → `#a855f7` → `#ec4899`) ignoring the brief's Material World.
+2. **Eyebrow Spam & Structural Repetition:** Tracked uppercase eyebrows stamped mechanically above every `<h2>`, 3-column icon-in-a-square card soup, or identical `.ruled-row` `01/02/03` stacks.
+3. **Static Persuade Pages:** Zero functional interactive proof widget or zero auto-play-once signature load demo on a landing/product showcase.
+4. **AI Prose & Hype Slop:** *delve, tapestry, testament, pivotal, underscore, supercharge, seamless, unlock*, `"It's not just X — it's Y"`, `"Moreover,"`, `"Welcome back! 👋"`, `!` spam, or single italic gimmick words inside roman display headings.
+5. **Broken Mascot / Animation Physics:** Blind `filter: brightness(0)` silhouette blobs, cloned fox-ear templates on technical tools, `scale(0)` or `ease-in` UI entrances, `transition: all`, or linear hover states.
+6. **Fake Proof & Decorative Clutter:** Unprompted `✨ AI-Powered` badges, emoji UI icons, fake macOS window dots, floating glass blobs, washed-out low-contrast grey text, or invented metrics/testimonials/logo walls.
 
 ---
 
@@ -113,10 +105,10 @@ Include this compact 6-line **Art Director Sign-Off** at the end of Stage 4 (bot
 
 ```markdown
 ### Art Director Sign-Off — Design 27
-- **Checker & Evidence:** [d27-check exit 0 · screenshot / file:line verified | UNVERIFIED: no runtime]
-- **Direction & Surface Mode:** [Pass / Revised] — [Surface World · Direction · Mode · Banned Cliché]
-- **Focal Path & Visual Anchor:** [Pass / Revised] — [Focal #1 → #2 → #3 · Signature Moment]
-- **Contrast & Typography Hygiene:** [Pass / Revised] — [Min contrast ratio, measure, scale ratio, orphans checked]
-- **Spatial Rhythm & Medium Gate:** [Pass / Revised] — [CSS/print/broadcast floor + 5-frame/medium gate verified]
+- **Checker & Evidence:** [d27-check exit 0 · render: playwright|chrome-cdp · snapshots/frames inspected | UNVERIFIED: <exact reason>]
+- **D27-Lock & Material World:** [M:x I:x H:x C:x R:x] — [Material World · Macrostructure · Diegetic Artifact · Mode · Banned Cliché]
+- **Focal Anchor & Interactive Proof:** [Pass / Revised] — [Assertion Headline → Interactive Proof / Motion Hook → Action]
+- **Contrast, Type & Prose Hygiene:** [Pass / Revised] — [Min contrast ratio, measure, scale ratio, eyebrow count, AI-prose check]
+- **Spatial Rhythm, Physics & Medium Gate:** [Pass / Revised] — [CSS/print/SVG-cutout/dead-zone/AV floor + medium pillar gate verified]
 - **Material Honesty & Waivers:** [0 Floor fails · 0 invented facts · Waivers: None / Rule + rationale]
 ```

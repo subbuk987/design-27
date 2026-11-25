@@ -3,7 +3,7 @@
  * Supports: d27-disable, d27-disable-next-line, d27-disable-line, d27-allow, and data-d27-allow="..."
  */
 
-const DIRECTIVE_RE = /\b(d27-disable(?:-next-line|-line)?|d27-allow)\s*:\s*([a-z0-9_,\s-]+?)(?:\s*(?:—|--|-|:)\s*([^*/<>]+?))?(?:\s*(?:\*\/|-->|$))/i;
+const DIRECTIVE_RE = /\b(d27-(?:disable-next-line|disable-line|allow-next-line|allow-line|ignore-next-line|ignore-line|disable|allow|ignore))\s*:?\s*([a-z0-9_/-]+(?:(?:\s*,\s*|\s+(?=[a-z0-9_/]))[a-z0-9_/-]+)*)(?:(?:\s+(?:—|--(?!>)|-(?!->))\s*|\s*:\s*)((?:(?!\*\/|-->).)*?))?\s*(?:\*\/|-->|$)/i;
 
 export function parseIgnores(content) {
   const lines = content.split(/\r?\n/);
@@ -15,14 +15,15 @@ export function parseIgnores(content) {
     if (!match) return;
     const kind = match[1].toLowerCase();
     const rules = match[2]
-      .split(",")
+      .split(/[\s,]+/)
       .map((s) => s.trim().toLowerCase())
       .filter(Boolean);
     const reason = (match[3] || "").trim();
 
     let targetLine = null;
-    if (kind === "d27-disable-line") targetLine = lineNum;
-    else if (kind === "d27-disable-next-line") {
+    if (kind.endsWith("-line") && !kind.endsWith("-next-line")) {
+      targetLine = lineNum;
+    } else if (kind.endsWith("-next-line")) {
       let next = lineNum + 1;
       while (next <= lines.length && lines[next - 1].trim() === "") next++;
       targetLine = next;
