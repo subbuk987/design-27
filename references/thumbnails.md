@@ -280,14 +280,13 @@ Always verify HTML thumbnails inside real feed context before shipping. The blue
     <p>Hook: ZERO BLOAT. (2 words · 0% title overlap)</p>
   </header>
 
-  <!-- Primary 1280x720 Export Stage -->
-  <div class="yt-thumb" id="thumbnail-canvas" data-thumbnail>
+  <!-- Primary 1280x720 Export Stage (3 visual elements max: hook + macro bar plate + clean backdrop) -->
+  <div class="yt-thumb" id="thumbnail-canvas" data-thumbnail data-title="Why I Rebuilt Our Build Pipeline in Pure Node (11s to 0.8s)">
     <div class="thumb-layers" id="thumb-master">
       <div class="text-zone">
         <p class="thumb-hook"><span>ZERO</span><span class="accent">BLOAT.</span></p>
       </div>
       <div class="macro-plate" aria-hidden="true">
-        <div class="macro-sub">BUILD</div>
         <div class="macro-bars">
           <div class="bar-old"></div>
           <div class="bar-new"></div>

@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Clean UI Animation Fixture</title>
+  <style>
+    /* D27-Lock: Operate | drafting-vellum | trigger-anchored-popover | mechanical-detent | interactive-toggle | velocity | M:4 I:5 H:4 C:5 R:4 */
+    :root {
+      --surface-canvas: #F5F2EB;
+      --surface-panel: #FFFFFF;
+      --ink-primary: #14171A;
+      --ink-secondary: #485058;
+      --accent-focal: #1D4ED8;
+    }
+    body {
+      margin: 0;
+      padding: 32px;
+      font-family: system-ui, sans-serif;
+      font-size: clamp(1rem, 0.25vw + 0.95rem, 1.125rem);
+      background: var(--surface-canvas);
+      color: var(--ink-primary);
+      overflow-x: clip;
+    }
+    .trigger {
+      padding: 10px 16px;
+      border: 1px solid #C8C2B6;
+      border-radius: 10px;
+      background: var(--surface-panel);
+      color: var(--ink-primary);
+      cursor: pointer;
+      transition: background-color 140ms ease-out, transform 140ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .trigger:active { transform: scale(0.98); }
+    .trigger:focus-visible {
+      outline: 2px solid var(--accent-focal);
+      outline-offset: 2px;
+    }
+    .popover {
+      margin-top: 10px;
+      max-width: 280px;
+      padding: 14px;
+      border-radius: 12px;
+      background: var(--surface-panel);
+      border: 1px solid #D8D2C6;
+      transform-origin: top left;
+      transform: scale(0.95);
+      opacity: 0;
+      transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), opacity 180ms ease-out;
+    }
+    .popover[data-open="true"] {
+      transform: scale(1);
+      opacity: 1;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="trigger" id="btn" type="button" aria-expanded="true">Audio Routing</button>
+  <div class="popover" id="pop" data-open="true">48 kHz · 24-bit PCM · +4 dBu balanced output</div>
+  <script>
+    const btn = document.getElementById("btn");
+    const pop = document.getElementById("pop");
+    btn.addEventListener("click", () => {
+      const next = pop.dataset.open !== "true";
+      pop.dataset.open = String(next);
+      btn.setAttribute("aria-expanded", String(next));
+    });
+  </script>
+</body>
+</html>

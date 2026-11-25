@@ -219,8 +219,8 @@ Use a three-track desktop reading grid (`60–66ch` main prose + wide margin tra
 
     <article class="prose" id="chapterBody">
       <h1 id="incident">Chapter 01: The Metadata Lock</h1>
-      <p>At 14:02 UTC on a quiet Tuesday, checkout latency climbed from 42ms to 4.8s without a single CPU alarm firing.<sup class="sn-num">1</sup></p>
-      <aside class="sidenote"><span class="sn-num">1.</span> Measured at the edge proxy across 18,400 requests; database host CPU remained below 19%.</aside>
+      <p>At 14:02 UTC on a quiet Tuesday, checkout latency climbed from 42ms to 4.8s without a single CPU alarm firing.<a href="#sn-1" aria-describedby="sn-1"><sup class="sn-num">1</sup></a></p>
+      <aside class="sidenote" id="sn-1" role="note" aria-label="Sidenote 1"><span class="sn-num">1.</span> Measured at the edge proxy across 18,400 requests; database host CPU remained below 19%.</aside>
       <p>Engineers checked disk throughput, network saturation, and garbage-collection pauses before noticing one waiting migration behind a seven-minute analytics query.</p>
       <h2 id="queue">Queue Mechanics</h2>
       <p>Postgres grants an <code>ACCESS EXCLUSIVE</code> lock only after every active reader finishes, yet any new reader arriving behind that migration must wait in line.</p>
@@ -238,13 +238,14 @@ Use a three-track desktop reading grid (`60–66ch` main prose + wide margin tra
 
   <script>
     const root = document.documentElement;
-    const saved = localStorage.getItem("d27-book-theme");
+    let saved = null;
+    try { saved = localStorage.getItem("d27-book-theme"); } catch { /* sandboxed iframe */ }
     if (saved) root.setAttribute("data-theme", saved);
     document.querySelectorAll("[data-set-theme]").forEach((btn) => {
       btn.addEventListener("click", () => {
         const t = btn.getAttribute("data-set-theme");
         root.setAttribute("data-theme", t);
-        localStorage.setItem("d27-book-theme", t);
+        try { localStorage.setItem("d27-book-theme", t); } catch { /* sandboxed iframe */ }
       });
     });
     const bar = document.getElementById("readProgress");
@@ -264,7 +265,7 @@ Use a three-track desktop reading grid (`60–66ch` main prose + wide margin tra
 Target WeasyPrint, Prince, or Vivliostyle using **Tschichold `2:3:4:6` facing spread proportions** (`inner : top : outer : bottom`), `recto` chapter starts, vertical chapter sinkage (`25–35%`), suppressed headers/folios on blank versos and chapter openers, and strict widow/orphan protection:
 
 ```css
-/* Trade 6in x 9in (152.4mm x 228.6mm) | Tschichold 2:3:4:6 spread ratio (base unit = 7.5mm -> 15:22.5:30:45mm) */
+/* Trade 6in x 9in (152.4mm x 228.6mm) | Binding-aware inner gutter: 15mm (<=120pp saddle-stitch), 20mm (121-250pp perfect-bound default), 22mm (251-400pp), 25mm (>400pp) */
 @page {
   size: 152.4mm 228.6mm;
   margin-top: 22.5mm;
@@ -274,14 +275,14 @@ Target WeasyPrint, Prince, or Vivliostyle using **Tschichold `2:3:4:6` facing sp
   color: #57534e;
 }
 @page :left {
-  margin-left: 30mm;   /* outer */
-  margin-right: 15mm;  /* inner gutter */
+  margin-left: 28mm;   /* outer */
+  margin-right: 20mm;  /* inner binding gutter (perfect-bound default) */
   @top-left { content: counter(page); font-variant-numeric: tabular-nums lining-nums; }
   @top-right { content: string(book-title); letter-spacing: 0.08em; text-transform: uppercase; font-size: 7.5pt; }
 }
 @page :right {
-  margin-left: 15mm;   /* inner gutter */
-  margin-right: 30mm;  /* outer */
+  margin-left: 20mm;   /* inner binding gutter (perfect-bound default) */
+  margin-right: 28mm;  /* outer */
   @top-left { content: string(chapter-title); font-style: italic; }
   @top-right { content: counter(page); font-variant-numeric: tabular-nums lining-nums; }
 }
@@ -333,7 +334,7 @@ Use this complete, runnable Typst facing-spread master with Tschichold `2:3:4:6`
 #set page(
   paper: "us-trade",
   binding: left,
-  margin: (inside: 15mm, top: 22.5mm, outside: 30mm, bottom: 45mm),
+  margin: (inside: 20mm, top: 22.5mm, outside: 28mm, bottom: 45mm),
   header: context {
     let pg = counter(page).get().first()
     let on-opener = query(heading.where(level: 1)).any(h => h.location().page() == pg)

@@ -2,7 +2,7 @@
 
 **The zero-dependency creative director, motion choreographer & anti-slop linter for coding agents — engineered for websites, UI animations, launch motion, book writing, mascots, and thumbnails.**
 
-Most design skills either give agents vague vibes (*"be bold"*) with zero enforcement, or lock you into heavy external runtimes for one narrow medium. **Design 27 (`v4.0.0`)** pairs a **lean progressive-disclosure router** (`SKILL.md`) and **9 focused craft modules** with a **zero-npm-dependency Node ESM CLI suite** (`d27-cli`, `d27-deal` v4, `d27-check` with SARIF 2.1.0 + `--github` + `--doctor` + WCAG `suggestedColor` + `ebur128`/`ffprobe` + **zero-dep headless Chrome CDP `--render`**, `d27-frames` with HTML `window.__d27Seek` capture, `d27-captions`, and `d27-hook`), a **14-assertion contract suite** (`evals/`), and a **live interactive DOM gallery** ([`docs/index.html`](docs/index.html)).
+Most design skills either give agents vague vibes (*"be bold"*) with zero enforcement, or lock you into heavy external runtimes for one narrow medium. **Design 27 (`v4.0.0`)** pairs a **lean progressive-disclosure router** (`SKILL.md`) and **9 focused craft modules** with a **zero-npm-dependency Node ESM CLI suite** (`d27-cli`, `d27-deal` v4, `d27-check` with SARIF 2.1.0 + `--github` + `--doctor` + WCAG `suggestedColor` + `ebur128`/`ffprobe` + **zero-dep headless Chrome CDP `--render`**, `d27-frames` with HTML `window.__d27Seek` capture, `d27-captions`, and `d27-hook`), a **23-assertion security, 10×-leap & 6-pillar contract suite** (`evals/`), and a **live interactive DOM gallery** ([`docs/index.html`](docs/index.html)).
 
 ## Before & After (Same Prompt, Stock Agent vs. Design 27 `v4.0.0`)
 
@@ -64,6 +64,7 @@ node scripts/d27-cli.mjs check ./mascot.html --medium=mascot --json             
 node scripts/d27-cli.mjs check ./thumb.html --medium=thumbnail --render --json     # <= 5 word hook & 14:28 dead-zone collision check
 node scripts/d27-cli.mjs check ./src --sarif                                       # SARIF 2.1.0 for GitHub Code Scanning
 node scripts/d27-cli.mjs frames sheet motion/index.html --beats 0,1.2,2.5,4.2      # Step window.__d27Seek(t) in headless Chrome
+node scripts/d27-cli.mjs frames verify motion/index.html --beats 0,0.6,1.2,2.4     # Reverse-seek bitwise determinism gate
 node scripts/d27-cli.mjs frames audit master.mp4 --max-static 3.0                  # Beat-boundary QC & sweep_static gate
 node scripts/d27-cli.mjs captions words.json --aspect 9:16 --format ass --validate
 ```
@@ -103,10 +104,11 @@ design-27/
 ├── docs/
 │   ├── index.html                         # Live interactive DOM gallery (Web, Mascot & Thumbnail fixtures)
 │   ├── v4-implementation-plan.md          # Locked v4.0.0 cross-track contracts
+│   ├── v4-neon-review-report.md           # Specialist Neon review audit & remediation log
 │   └── v4-research-and-action-plan.md     # Competitive benchmark autopsy & action plan
 ├── evals/
 │   ├── README.md                          # 6 adversarial slop-trap prompts & pass criteria
-│   ├── run-eval.mjs                       # 14-assertion deterministic contract & scope-hygiene suite
+│   ├── run-eval.mjs                       # 23-assertion deterministic security, 10x-leap, 6-pillar & scope-hygiene suite
 │   ├── fixtures/
 │   │   ├── slop-saas.html                 # Stock AI web baseline (expected exit 2)
 │   │   ├── design27-saas.html             # Design 27 v4.0 web reference + live gain scrubber (exit 0)
@@ -115,19 +117,29 @@ design-27/
 │   │   ├── slop-mascot.html               # Blind brightness(0) + unnamed SVG mascot (expected exit 2)
 │   │   ├── clean-mascot.html              # Cutout-rigged --m-cut + named <g id> mascot (expected exit 0)
 │   │   ├── slop-thumb.html                # 9-word dead-zone-colliding thumbnail (expected exit 2)
-│   │   └── clean-thumb.html               # 3-word curiosity-gap thumbnail + 160x90 feed preview (exit 0)
+│   │   ├── clean-thumb.html               # 3-word curiosity-gap thumbnail + 160x90 feed preview (exit 0)
+│   │   ├── slop-anim.html                 # scale(0) + ease-in + transition:all UI animation slop (expected exit 2)
+│   │   ├── clean-anim.html                # Trigger-anchored scale(0.95->1) + reduced-motion UI animation (exit 0)
+│   │   ├── slop-motion.html               # Math.random/Date.now/wall-clock CSS motion slop (expected exit 2)
+│   │   └── clean-motion.html              # Deterministic window.__d27Seek(t) + seeded PRNG motion scene (exit 0)
 │   └── showcase/                          # Multi-contender isolated benchmark harness & blind gallery
 ├── scripts/
 │   ├── d27-cli.mjs                        # Unified zero-dep CLI dispatcher (check|deal|captions|frames|hook|doctor|eval)
-│   ├── d27-check.mjs                      # Static, prose, mascot, thumbnail, media & zero-dep CDP --render linter
+│   ├── d27-check.mjs                      # Orchestrator for static, brief, DOM & zero-dep CDP --render linting
 │   ├── d27-deal.mjs                       # Deterministic v4 brief dealer (16 OKLCH worlds, macrostructures, D27-Lock)
 │   ├── d27-captions.mjs                   # Word-timestamp caption chunker (JSON/SRT/ASS burn-in + 17 CPS validator)
 │   ├── d27-frames.mjs                     # Beat-boundary contact-sheet extractor, HTML __d27Seek stepper & sweep_static audit
 │   ├── d27-hook.mjs                       # Zero-network two-tier edit-time agent hook (PostToolUse + Stop)
 │   └── lib/
-│       ├── chrome-cdp.mjs                 # Zero-npm-dep, zero-socket Chrome --remote-debugging-pipe CDP driver
-│       ├── ignores.mjs                    # Scoped data-d27-allow / d27-ignore parser & unused-waiver detector
-│       └── reporters.mjs                  # SARIF 2.1.0 & GitHub Actions PR annotation formatters
+│       ├── cache.mjs                      # Symlink-safe private 0o700 XDG per-repo incremental cache
+│       ├── chrome-cdp.mjs                 # Zero-npm-dep, zero-socket Chrome CDP driver, reverse-seek & 16x16 pixel audit
+│       ├── color-math.mjs                 # Pure-JS WCAG 2.1 contrast ratio & suggestedColor solver
+│       ├── ignores.mjs                    # Linear comment-only waiver parser blocking FLOOR wildcards
+│       ├── media-audit.mjs                # ISO BMFF faststart, ffprobe yuv420p/CFR/bt709 & ffmpeg ebur128 audit
+│       ├── pixel-audit.mjs                # Pure 16x16 BFS interior negative-space cutout bitmap analyzer
+│       ├── prose-audit.mjs                # Balanced-paren Typst & book anti-AI-prose audit
+│       ├── reporters.mjs                  # SARIF 2.1.0 (with partialFingerprints) & GitHub Actions formatters
+│       └── rules-catalog.mjs              # Canonical LINE_RULES, EXTRA_RULES & ALL_RULES registry
 └── references/
     ├── direction-matrix.md                # 3-Axis Calibration, Diegetic Metaphor & Assertion Laws, 16 OKLCH Worlds, M·I·H·C·R
     ├── verbs.md                           # 8 steerable studio playbooks (polish, bolder, quieter, distill...)

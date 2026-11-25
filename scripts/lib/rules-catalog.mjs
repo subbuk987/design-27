@@ -1,0 +1,131 @@
+/**
+ * Design 27 v4.0.0 — Canonical Rule Catalog (LINE_RULES, EXTRA_RULES, ALL_RULES)
+ */
+
+export const LINE_RULES = [
+  {
+    id: "no-transition-all", tier: "FLOOR", speed: "fast", medium: "web",
+    regex: /\btransition\s*:\s*all\b|\btransition-all\b/i,
+    message: "Catch-all `transition: all` / `transition-all` animates layout properties and causes jank.",
+    fix: "Name explicit GPU properties: `transition: color 180ms, background-color 180ms, transform 240ms, opacity 240ms;`.",
+  },
+  {
+    id: "no-overflow-x-hidden", tier: "FLOOR", speed: "fast", medium: "web",
+    regex: /\boverflow-x\s*:\s*hidden\b/i,
+    message: "`overflow-x: hidden` breaks `position: sticky` descendants.",
+    fix: "Replace `overflow-x: hidden` with `overflow-x: clip`.",
+  },
+  {
+    id: "no-100vw", tier: "FLOOR", speed: "fast", medium: "web",
+    regex: /\b(?:width|min-width|max-width)\s*:\s*100vw\b|\bw-\[100vw\]/i,
+    message: "`100vw` includes scrollbar width on Windows/Linux and causes horizontal overflow.",
+    fix: "Use `width: 100%` or `max-width: 100%` instead of `100vw`.",
+  },
+  {
+    id: "no-purple-slop-gradient", tier: "REFLEX", speed: "fast", medium: "web",
+    regex: /(#6366f1[^;\n]{0,120}#a855f7|#a855f7[^;\n]{0,120}#ec4899|from-indigo-500[^;\n]{0,80}via-purple-500|from-purple-500[^;\n]{0,80}to-pink-500)/i,
+    message: "Detected default AI purple-indigo-pink gradient slop.",
+    fix: "Replace with a brief-calibrated 60/30/10 palette using semantic `:root` tokens.",
+  },
+  {
+    id: "no-emoji-ui-icon", tier: "REFLEX", speed: "fast", medium: "web",
+    regex: /<(?:h[1-6]|button|span|a|label|li)[^>]*>[^<]*[✨🚀🔥👋🎉💡⚡]/u,
+    message: "Decorative emoji used inside UI heading, button, or label.",
+    fix: "Remove the emoji or replace with a uniform monoline SVG icon (`16-18px`, `1.5px` stroke, `currentColor`).",
+  },
+  {
+    id: "no-hype-copy", tier: "REFLEX", speed: "fast", medium: "all",
+    regex: /\b(supercharge|revolutionize|game-changing|unlock the power|seamless experience)\b|Welcome back,\s*[^<]{1,30}!/i,
+    message: "AI hype buzzword or generic greeting detected in interface copy.",
+    fix: "Rewrite in plain, product-specific language with zero exclamation marks.",
+  },
+  {
+    id: "no-fake-italic-heading", tier: "REFLEX", speed: "fast", medium: "web",
+    regex: /<h[12][^>]*>[^<]*<(?:em|i)\b[^>]*>[^<\s]+<\/(?:em|i)>[^<]*<\/h[12]>/i,
+    message: "Single italic word inside a roman display heading is a known AI fake-editorial cliché.",
+    fix: "Keep display headings cohesive or use one of the 4 legal Tension Archetypes in `references/direction-matrix.md`.",
+  },
+
+  {
+    id: "no-nondeterministic-video", tier: "FLOOR", speed: "fast", medium: "motion", videoOnly: true,
+    regex: /\b(?:Date\.now\s*\(|Math\.random\s*\(|requestAnimationFrame\s*\(|setTimeout\s*\(|setInterval\s*\(|repeat\s*:\s*-1\b)/,
+    message: "Non-deterministic call (`Date.now`, `Math.random`, `rAF`, `setTimeout/Interval`, or `repeat: -1`) breaks seekable renders.",
+    fix: "Derive every animated value purely from timeline `frame` / seeded PRNG and finite durations.",
+  },
+  {
+    id: "no-wallclock-css-in-video", tier: "FLOOR", speed: "fast", medium: "motion", videoOnly: true,
+    regex: /\b(transition\s*:|@keyframes\b)/i,
+    message: "Wall-clock CSS `transition` or `@keyframes` inside a frame-stepped video composition drifts out of sync.",
+    fix: "Drive motion from seekable timeline state (`useCurrentFrame()` in Remotion or paused `gsap.timeline` in HyperFrames).",
+  },
+  {
+    id: "no-gsap-from-seek-drift", tier: "REFLEX", speed: "deep", medium: "motion", videoOnly: true,
+    regex: /\bgsap\.from\s*\(/,
+    message: "`gsap.from()` inside seekable scenes can drift when scrubbing backward.",
+    fix: "Use explicit `gsap.fromTo(target, { ...from }, { ...to })` for deterministic backward/forward seeks.",
+  },
+  {
+    id: "no-imperative-media-clock", tier: "FLOOR", speed: "deep", medium: "motion", videoOnly: true,
+    regex: /\.\s*(?:play|pause)\s*\(\s*\)|\.currentTime\s*=/,
+    message: "Imperative `.play()` / `.pause()` / `.currentTime =` breaks deterministic video frame-stepping.",
+    fix: "Bind media timing declaratively to the composition timeline (`<OffthreadVideo>` or `<video data-start=...>`).",
+  },
+  {
+    id: "no-layout-read-in-tick", tier: "FLOOR", speed: "deep", medium: "motion", videoOnly: true,
+    regex: /onUpdate\s*:\s*.*(?:getBoundingClientRect|offsetWidth|offsetHeight|clientWidth|clientHeight)/,
+    message: "DOM layout measurement inside `onUpdate` causes per-frame layout thrashing.",
+    fix: "Pre-measure dimensions once before the timeline starts and animate GPU transforms only.",
+  },
+  {
+    id: "no-permanent-will-change", tier: "REFLEX", speed: "deep", medium: "web",
+    regex: /\bwill-change\s*:\s*(?:transform|opacity|all)\b/i,
+    message: "Permanent `will-change` on static containers wastes GPU layer memory.",
+    fix: "Remove static `will-change` or apply only during active interaction/animation.",
+  },
+];
+
+export const EXTRA_RULES = [
+  { id: "no-eyebrow-spam", tier: "REFLEX", speed: "fast", medium: "web", message: ">= 4 tracked-uppercase eyebrow/meta tags immediately preceding headings in one HTML file.", fix: "Cap section eyebrows to 1-2 structural landmarks; vary section openings with direct headings, numbers, or artifacts." },
+  { id: "no-scale-zero-entrance", tier: "REFLEX", speed: "fast", medium: "animation", message: "UI entrance/transition uses `scale(0)` instead of `scale(0.95 -> 1)`.", fix: "Animate UI surfaces from `scale(0.95)` to `scale(1)` anchored to the trigger `transform-origin`." },
+  { id: "no-ease-in-ui-entrance", tier: "REFLEX", speed: "fast", medium: "animation", message: "UI entrance/transition > 220ms uses `ease-in` (feels sluggish on arrival).", fix: "Use `cubic-bezier(0.16, 1, 0.3, 1)` or `ease-out` for UI entrances under 300ms; reserve `ease-in` for exits." },
+  { id: "no-freehand-svg-clipart", tier: "REFLEX", speed: "deep", medium: "web", message: "Inline <svg> has > 12 primitives without >= 3 named <g id> groups, `data-mascot`, or `data-asset=\"verified\"`.", fix: "Group mascot parts into named `<g id=\"...\">` layers, simplify diagram geometry, or mark verified assets `data-asset=\"verified\"`." },
+  { id: "no-blind-silhouette-filter", tier: "FLOOR", speed: "fast", medium: "mascot", message: "`filter: brightness(0)` crushes mascot interior features into a featureless blob without `<mask>` or `--m-cut`/`--sil-bg` cutouts.", fix: "Use `--m-fill` / `--m-cut` CSS custom properties or `<mask>` Boolean cutouts so eyes and signature marks invert cleanly." },
+  { id: "require-svg-named-groups", tier: "FLOOR", speed: "deep", medium: "mascot", message: "Primary mascot <svg> must contain >= 4 named `<g id=\"...\">` anatomy groups.", fix: "Structure the primary SVG into >= 4 semantic `<g id=\"...\">` groups (e.g. body, eyes, mouth, accent)." },
+  { id: "no-tiny-body-font", tier: "FLOOR", speed: "fast", medium: "web", message: "Web body copy drops below the 16px legibility floor.", fix: "Set `body { font-size: clamp(1rem, 0.25vw + 0.95rem, 1.125rem); }` (`>= 16px`)." },
+  { id: "thumbnail-word-ceiling", tier: "FLOOR", speed: "fast", medium: "thumbnail", message: "Primary thumbnail stage visible text exceeds the 5-word ceiling (0-4 words recommended).", fix: "Trim thumbnail overlay copy to 0-4 punchy tension words and put specific context in the paired Title." },
+  { id: "thumbnail-title-overlap", tier: "REFLEX", speed: "fast", medium: "thumbnail", message: "Thumbnail hook overlaps >= 50% of paired Title content words (weakens curiosity gap).", fix: "Rewrite the thumbnail hook to add visual/verbal tension instead of repeating the Title." },
+  { id: "thumbnail-deadzone-collision", tier: "FLOOR", speed: "deep", medium: "thumbnail", message: "Thumbnail element overlaps platform UI dead zone.", fix: "Relocate text, logos, and focal subjects clear of platform overlay dead zones." },
+  { id: "no-ai-slop-vocabulary", tier: "FLOOR", speed: "fast", medium: "book", message: "AI prose cliché vocabulary detected (`delve`, `tapestry`, `testament`, `pivotal`, `realm`, `vibrant`, `multifaceted`, `overarching`, `showcase`, `leverage`, `embark`, `spearhead`).", fix: "Replace abstract AI filler words with concrete verbs, measurements, or domain nouns." },
+  { id: "no-negative-parallelism-tic", tier: "REFLEX", speed: "fast", medium: "book", message: "Negative parallelism prose tic (`It's not just X — it's Y` / `not merely X, but Y`) detected.", fix: "State the actual claim directly without the formulaic negation contrast." },
+  { id: "no-throat-clearing-opener", tier: "REFLEX", speed: "fast", medium: "book", message: "Paragraph opens with throat-clearing filler (`Moreover,`, `Furthermore,`, `Additionally,`, `In conclusion,`, `It is worth noting`, `In today's rapidly evolving`).", fix: "Cut the transition crutch and lead directly with the noun, verb, or evidence." },
+  { id: "no-em-dash-overload", tier: "REFLEX", speed: "deep", medium: "book", message: "Paragraph exceeds the 2 em-dash (`—`) ceiling.", fix: "Vary punctuation with periods, colons, or parentheses instead of chaining em-dashes." },
+  { id: "no-double-signaled-paragraphs", tier: "FLOOR", speed: "deep", medium: "book", message: "Book stylesheet combines positive `text-indent` (`first-line-indent`) with positive paragraph `margin-bottom`/`spacing`.", fix: "Pick one paragraph separator: either `text-indent` with `margin-bottom: 0`, OR vertical spacing with `text-indent: 0`." },
+  { id: "require-reduced-motion", tier: "FLOOR", speed: "deep", medium: "web", message: "CSS animation/keyframes declared without a `prefers-reduced-motion: reduce` fallback.", fix: "Add `@media (prefers-reduced-motion: reduce)` neutralizing animations/transitions." },
+  { id: "require-focus-visible", tier: "FLOOR", speed: "deep", medium: "web", message: "Interactive elements styled without an explicit `:focus-visible` indicator.", fix: "Add `:focus-visible { outline: 2px solid var(--accent-focal, currentColor); outline-offset: 2px; }`." },
+  { id: "wcag-contrast-fail", tier: "FLOOR", speed: "fast", medium: "web", message: "Declared semantic ink token fails WCAG 2.1 4.5:1 contrast floor against `--surface-canvas`.", fix: "Adjust `--ink-primary` / `--ink-secondary` to meet >= 4.5:1 (>= 7:1 recommended for primary ink)." },
+  { id: "brief-require-tokens", tier: "FLOOR", speed: "deep", medium: "web", message: "Active brief requires semantic `:root` design tokens.", fix: "Declare `--surface-canvas`, `--ink-primary`, and `--accent-focal` inside `:root`." },
+  { id: "brief-banned-default-used", tier: "FLOOR", speed: "deep", medium: "web", message: "Built CSS uses a banned default font from the active brief.", fix: "Replace the banned default font with the brief's dealt typography." },
+  { id: "brief-banned-cliche", tier: "FLOOR", speed: "deep", medium: "web", message: "Output tripped the dealt banned cliché signature.", fix: "Recalibrate palette and layout to match the dealt Material World." },
+  { id: "require-mp4-faststart", tier: "REFLEX", speed: "fast", medium: "motion", message: "MP4 `moov` atom is not before `mdat`.", fix: "Re-mux with `-movflags +faststart`." },
+  { id: "require-yuv420p", tier: "FLOOR", speed: "fast", medium: "motion", message: "Video pixel format is not `yuv420p`.", fix: "Encode with `-pix_fmt yuv420p`." },
+  { id: "require-cfr", tier: "FLOOR", speed: "fast", medium: "motion", message: "Variable frame rate detected in video stream.", fix: "Force constant frame rate with `-fps_mode cfr`." },
+  { id: "require-full-bt709", tier: "REFLEX", speed: "fast", medium: "motion", message: "Incomplete Rec.709 color tags in video stream.", fix: "Pass `-colorspace bt709 -color_primaries bt709 -color_trc bt709 -color_range tv`." },
+  { id: "require-av-parity", tier: "FLOOR", speed: "fast", medium: "motion", message: "Audio/video duration mismatch exceeds 0.05s ceiling.", fix: "Align audio and video stream durations." },
+  { id: "video-loudness-floor", tier: "FLOOR", speed: "fast", medium: "motion", message: "Integrated loudness is outside target LUFS ±2.0.", fix: "Apply two-pass linear `loudnorm`." },
+  { id: "video-true-peak", tier: "FLOOR", speed: "fast", medium: "motion", message: "Audio true peak exceeds -1.0 dBFS ceiling.", fix: "Set `TP=-1.0` in two-pass linear `loudnorm`." },
+  { id: "first-frame-empty", tier: "FLOOR", speed: "deep", medium: "all", message: "Rendered viewport has no visible text on initial paint.", fix: "Ensure visible content renders on initial paint." },
+  { id: "render-no-overflow-x", tier: "FLOOR", speed: "deep", medium: "web", message: "Rendered horizontal overflow detected.", fix: "Audit grid tracks (`minmax(0, 1fr)`), `overflow-x: clip`, and media widths." },
+  { id: "render-body-font-floor", tier: "FLOOR", speed: "deep", medium: "web", message: "Computed body font-size is below 16px floor.", fix: "Raise base body font-size to >= 16px." },
+  { id: "assert-selector-missing", tier: "FLOOR", speed: "deep", medium: "all", message: "Brief assertion selector matched 0 elements.", fix: "Ensure the required DOM element is rendered." },
+  { id: "assert-above-the-fold", tier: "FLOOR", speed: "deep", medium: "all", message: "Brief assertion element falls below the initial viewport fold.", fix: "Keep hero headline/stage above the fold." },
+  { id: "assert-before", tier: "FLOOR", speed: "deep", medium: "all", message: "Brief assertion visual ordering check failed.", fix: "Ensure primary element appears vertically before secondary element." },
+  { id: "assert-stays-in-frame", tier: "FLOOR", speed: "deep", medium: "all", message: "Brief assertion element overflows viewport horizontal frame.", fix: "Constrain element within viewport width (`max-width: 100%`)." },
+  { id: "runtime-error", tier: "FLOOR", speed: "deep", medium: "all", message: "Uncaught page runtime or asset request error during render audit.", fix: "Fix broken script or missing asset request." },
+  { id: "render-unavailable", tier: "FLOOR", speed: "deep", medium: "all", message: "Requested --render audit could not run (neither Playwright nor headless Chrome CDP available).", fix: "Install Google Chrome/Chromium or Playwright, or run without --render." },
+  { id: "motion-nondeterministic-seek", tier: "FLOOR", speed: "deep", medium: "motion", message: "Forward vs. reverse seek produced different pixels for the same timestamp.", fix: "Eliminate stateful JS physics, CSS transitions, or unseeded PRNG so window.__d27Seek(t) is order-invariant." },
+  { id: "motion-static-seek", tier: "FLOOR", speed: "deep", medium: "motion", message: "All sampled beat timestamps rendered identical frames (dead or no-op __d27Seek hook).", fix: "Ensure window.__d27Seek(t) mutates the rendered composition across beat timestamps." },
+  { id: "mascot-16px-cutout-collapse", tier: "FLOOR", speed: "deep", medium: "mascot", message: "Mascot 16x16 monochrome render collapsed interior cutouts (< 2 interior white pixels) or fell outside 20%–88% ink coverage.", fix: "Enlarge interior --m-cut eyes (>= 36u) and cutout strokes/gaps (>= 25u) inside viewBox 0 0 400 400." },
+  { id: "thumbnail-hook-too-small", tier: "REFLEX", speed: "deep", medium: "thumbnail", message: "Primary thumbnail hook font-size is below 14% of stage height (fails 160x90 feed squint legibility).", fix: "Scale primary thumbnail hook text to >= 16–24% of canvas height." },
+];
+
+export const ALL_RULES = [...LINE_RULES, ...EXTRA_RULES];

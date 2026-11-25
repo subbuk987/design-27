@@ -64,10 +64,10 @@ Drive every fill and stroke inside the hero `<svg>` from semantic CSS custom pro
 2. **SVG `<mask>` Boolean Cutout:** When a silhouette sits over a textured gradient, photograph, or non-solid surface where `--sil-bg` is not a flat hex, place `#eyes` and `#signal` inside `<mask id="cutout-mask">` with `fill="black"` / `stroke="black"` over a `fill="white"` outer silhouette so the underlying background shows straight through.
 
 ### Minimum Cutout Stroke & Gap Math for `16px`
-Inside a `viewBox="0 0 400 400"`, `16px` renders at **`0.04×` scale** (`25 SVG units = 1 CSS pixel`). To keep cutouts readable without anti-aliased collapse at `16px`:
-- Interior eye shapes: `>= 32 units` diameter/width (`>= 1.28px` rendered at `16px`).
-- Cutout strokes (mouth waves, prompt chevrons, dials): `stroke-width >= 11–14` (`>= 0.44–0.56px` at `16px`).
-- Separation gap between outer chassis edge and interior screen/cutouts: `>= 22 units`.
+Inside a `viewBox="0 0 400 400"`, `16px` renders at **`0.04×` scale** (`25 SVG units = 1 CSS pixel`). To keep cutouts razor-sharp on `1×` displays without sub-pixel grey collapse:
+- Interior eye shapes: `>= 36 units` diameter/width (`>= 1.44px` rendered at `16px`).
+- Cutout strokes (mouth waves, prompt chevrons, dials) & gaps between outer chassis and interior cutouts: `>= 25 units` (`>= 1.0px` at `16px`).
+- Interactive `<g id>` groups wired for keyboard anatomy isolation MUST include `tabindex="0"`, `role="button"`/`aria-label` (or paired `<button>` controls), and `:focus-visible` outlines.
 
 ---
 

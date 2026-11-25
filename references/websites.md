@@ -193,6 +193,7 @@ Stamping a tracked uppercase `.eyebrow` / `.meta` label above every `<h2>` is on
 - **Concentric Nested Radii:** Whenever a rounded element sits inside a rounded container, compute **`inner-radius = max(outer-radius - padding, 4px)`** (`calc(max(var(--r-outer) - var(--pad), 4px))`) so corners stay optically concentric instead of pinching.
 - **Job-First Page Anatomy:** Structure sections around what the visitor came to *do* (try, inspect, book, buy, subscribe, read docs) rather than 3-icon cards + 4 stats + fake testimonials + email banner.
 - **Zero `transition: all`:** Name explicit GPU-friendly properties (`transition: color, background-color, border-color, opacity, transform`) and style `:focus-visible` cleanly on every control.
+- **Modern CSS Architecture Floor:** Prefer `@layer reset, tokens, layout, components, utilities;` for cascade hygiene, `@container` for module-level responsive shifts, `color-mix(in oklch, ...)` for derived hover/border states, and native `[popover]` + CSS Anchor Positioning (`position-anchor`) over brittle JS positioning.
 
 ---
 

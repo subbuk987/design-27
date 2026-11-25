@@ -1,15 +1,19 @@
 /**
  * Design 27 v4.0.0 — Zero-NPM-Dependency, Zero-Socket Headless Chrome CDP Client
- * Uses Chrome's native `--remote-debugging-pipe` (stdio fd 3/4) so `--render` and HTML
- * frame capture work on Node 18+ even inside air-gapped / no-loopback agent sandboxes.
+ * Uses Chrome's native `--remote-debugging-pipe` (stdio fd 3/4) with strict zero-network
+ * enforcement (`--host-resolver-rules` + CDP `Fetch.enable`), no `--allow-file-access-from-files`,
+ * fail-closed sandboxing, reverse-seek motion determinism verification, and 16x16 pixel cutout audits.
  */
+import crypto from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { spawn, spawnSync } from "node:child_process";
+import { analyzeCutoutBitmap } from "./pixel-audit.mjs";
 
 const DEFAULT_TIMEOUT_MS = 15000;
+const ALLOWED_EXTRA_FLAG_RE = /^--(?:no-sandbox|window-size=\d+,\d+)$/;
 
 export function findChromeBinary() {
   const candidates = [];
@@ -64,17 +68,19 @@ async function terminateChrome(proc, tmpUserDataDir) {
 }
 
 async function spawnPipeSessionOnce(binaryPath, extraFlags, timeoutMs = DEFAULT_TIMEOUT_MS) {
+  const safeExtraFlags = (extraFlags || []).filter((f) => typeof f === "string" && ALLOWED_EXTRA_FLAG_RE.test(f));
   const tmpUserDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "d27-chrome-"));
   const chromeArgs = [
     "--headless=new",
-    ...extraFlags,
+    ...safeExtraFlags,
     "--remote-debugging-pipe",
     `--user-data-dir=${tmpUserDataDir}`,
     "--no-first-run",
     "--no-default-browser-check",
     "--disable-gpu",
     "--disable-dev-shm-usage",
-    "--allow-file-access-from-files",
+    "--disable-background-networking",
+    "--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1",
     "about:blank",
   ];
 
@@ -204,6 +210,19 @@ async function spawnPipeSessionOnce(binaryPath, extraFlags, timeoutMs = DEFAULT_
     await send("Page.enable", {}, timeoutMs);
     await send("Runtime.enable", {}, timeoutMs);
 
+    try {
+      await send("Fetch.enable", { patterns: [{ urlPattern: "http://*" }, { urlPattern: "https://*" }] }, timeoutMs);
+      on("Fetch.requestPaused", (params) => {
+        const url = params?.request?.url || "";
+        const isLoopback = /^https?:\/\/(?:127\.0\.0\.1|localhost)(?::\d+)?\//i.test(url);
+        if (isLoopback) {
+          send("Fetch.continueRequest", { requestId: params.requestId }, 2000).catch(() => {});
+        } else {
+          send("Fetch.failRequest", { requestId: params.requestId, errorReason: "BlockedByClient" }, 2000).catch(() => {});
+        }
+      });
+    } catch { /* Fetch domain unavailable on older builds; --host-resolver-rules still blocks DNS */ }
+
     return { proc, tmpUserDataDir, send, on, onceEvent };
   } catch (err) {
     await terminateChrome(proc, tmpUserDataDir);
@@ -211,21 +230,13 @@ async function spawnPipeSessionOnce(binaryPath, extraFlags, timeoutMs = DEFAULT_
   }
 }
 
-async function withCdpSession(fn, timeoutMs = DEFAULT_TIMEOUT_MS) {
+async function withCdpSession(fn, timeoutMs = DEFAULT_TIMEOUT_MS, { unsafeNoSandbox = false } = {}) {
   const binary = findChromeBinary();
   if (!binary) {
     throw new Error("Chrome/Chromium binary not found on PATH or standard macOS/Linux paths.");
   }
-  let session;
-  try {
-    session = await spawnPipeSessionOnce(binary, [], timeoutMs);
-  } catch (err) {
-    if (/SIGTRAP|SIGABRT|sandbox|Operation not permitted|closed before/i.test(err.message)) {
-      session = await spawnPipeSessionOnce(binary, ["--no-sandbox"], timeoutMs);
-    } else {
-      throw err;
-    }
-  }
+  const extraFlags = unsafeNoSandbox || process.env.D27_UNSAFE_NO_SANDBOX === "1" ? ["--no-sandbox"] : [];
+  const session = await spawnPipeSessionOnce(binary, extraFlags, timeoutMs);
 
   try {
     return await fn(session);
@@ -234,8 +245,43 @@ async function withCdpSession(fn, timeoutMs = DEFAULT_TIMEOUT_MS) {
   }
 }
 
+/**
+ * Pure hash evaluator for reverse-seek motion determinism (unit-testable in pure Node).
+ */
+export function evaluateDeterminismHashes({ beats, forwardHashes, reverseHashes }) {
+  if (beats.length !== forwardHashes.length || beats.length !== reverseHashes.length) {
+    throw new Error("beats, forwardHashes, and reverseHashes length mismatch");
+  }
+  const mismatches = [];
+  for (let i = 0; i < beats.length; i++) {
+    if (forwardHashes[i] !== reverseHashes[i]) {
+      mismatches.push({
+        beat: beats[i],
+        index: i,
+        forward: forwardHashes[i],
+        reverse: reverseHashes[i],
+      });
+    }
+  }
+  const allIdentical = beats.length >= 2 && new Set(forwardHashes).size === 1;
+  const failures = [];
+  if (mismatches.length > 0) failures.push("motion-nondeterministic-seek");
+  if (allIdentical) failures.push("motion-static-seek");
+  return {
+    beats,
+    forwardHashes,
+    reverseHashes,
+    mismatches,
+    allIdentical,
+    failures,
+    pass: failures.length === 0,
+  };
+}
+
 export function buildDomAuditFnSource() {
-  return function runDesign27DomAudit(assertions, medium) {
+  const cutoutHelperSrc = analyzeCutoutBitmap.toString();
+  return `async function runDesign27DomAudit(assertions, medium) {
+    ${cutoutHelperSrc}
     const overflowAllowedOnRoot = Boolean(
       document.documentElement?.matches?.('[data-d27-allow*="overflow"]') ||
       document.body?.matches?.('[data-d27-allow*="overflow"]'),
@@ -251,9 +297,9 @@ export function buildDomAuditFnSource() {
       if (a.kind === "aboveTheFold") {
         const el = document.querySelector(a.selector);
         if (!el) {
-          assertionFails.push({ rule: "assert-selector-missing", msg: `Selector \`${a.selector}\` matched 0 elements.` });
+          assertionFails.push({ rule: "assert-selector-missing", msg: "Selector \`" + a.selector + "\` matched 0 elements." });
         } else if (el.getBoundingClientRect().bottom > window.innerHeight) {
-          assertionFails.push({ rule: "assert-above-the-fold", msg: `\`${a.selector}\` falls below viewport fold.` });
+          assertionFails.push({ rule: "assert-above-the-fold", msg: "\`" + a.selector + "\` falls below viewport fold." });
         }
       } else if (a.kind === "before") {
         const elA = document.querySelector(a.a);
@@ -262,12 +308,12 @@ export function buildDomAuditFnSource() {
         if (!elA || !elB) {
           assertionFails.push({
             rule: "assert-selector-missing",
-            msg: `Selector \`${!elA ? a.a : a.b}\` matched 0 elements.`,
+            msg: "Selector \`" + (!elA ? a.a : a.b) + "\` matched 0 elements.",
           });
         } else if (elA.getBoundingClientRect().top > elB.getBoundingClientRect().top) {
           assertionFails.push({
             rule: "assert-before",
-            msg: `\`${a.a}\` should appear vertically before \`${a.b}\`.`,
+            msg: "\`" + a.a + "\` should appear vertically before \`" + a.b + "\`.",
           });
         }
       } else if (a.kind === "staysInFrame") {
@@ -278,7 +324,7 @@ export function buildDomAuditFnSource() {
           if (r.width > 0 && r.height > 0 && (r.left < -1 || r.right > window.innerWidth + 1)) {
             assertionFails.push({
               rule: "assert-stays-in-frame",
-              msg: `Element \`${a.selector}\` extends outside viewport horizontal bounds (${Math.round(r.left)}..${Math.round(r.right)} vs ${window.innerWidth}px).`,
+              msg: "Element \`" + a.selector + "\` extends outside viewport horizontal bounds (" + Math.round(r.left) + ".." + Math.round(r.right) + " vs " + window.innerWidth + "px).",
             });
             break;
           }
@@ -287,41 +333,112 @@ export function buildDomAuditFnSource() {
     }
 
     const thumbnailDeadzoneCollisions = [];
+    let thumbnailHookScale = null;
     const stage =
       document.querySelector("#thumbnail-canvas, [data-thumbnail], .yt-thumb") ||
       (medium === "thumbnail" ? document.body : null);
     if (stage) {
       const sr = stage.getBoundingClientRect();
       if (sr.width > 0 && sr.height > 0) {
-        const dzLeft = sr.left + sr.width * 0.78;
-        const dzTop = sr.top + sr.height * 0.82;
-        const dzRight = sr.right;
-        const dzBottom = sr.bottom;
+        const fmt = (stage.getAttribute("data-format") || "").toLowerCase() ||
+          (sr.height > sr.width * 1.3 ? "shorts" : Math.abs(sr.width - sr.height) < sr.width * 0.1 ? "podcast" : "youtube");
+        const deadZones = fmt === "shorts"
+          ? [
+              { left: sr.left + sr.width * 0.82, top: sr.top + sr.height * 0.45, right: sr.right, bottom: sr.bottom },
+              { left: sr.left, top: sr.top + sr.height * 0.80, right: sr.right, bottom: sr.bottom },
+            ]
+          : fmt === "podcast" || fmt === "og"
+            ? []
+            : [{ left: sr.left + sr.width * 0.78, top: sr.top + sr.height * 0.82, right: sr.right, bottom: sr.bottom }];
+
         const candidates = stage.querySelectorAll("*");
         for (const el of candidates) {
-          if (el.closest(".yt-duration, .timestamp, [data-timestamp], .yt-feed-preview, .feed-preview, [data-feed-preview]")) {
+          if (el.closest(".yt-duration, .timestamp, [data-timestamp], .yt-feed-preview, .feed-preview, [data-feed-preview], .deadzone-box")) {
             continue;
           }
           if (el.closest('[data-d27-allow*="safe-zone"], [data-d27-allow*="overlap"]')) {
             continue;
           }
-          const hasDirectText = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim().length > 0);
-          if (!hasDirectText) continue;
           const st = getComputedStyle(el);
           if (st.display === "none" || st.visibility === "hidden" || parseFloat(st.opacity) === 0) continue;
+
+          const tag = el.tagName.toLowerCase();
+          const hasDirectText = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim().length > 0);
+          const isVisualFocal = ["img", "svg", "canvas"].includes(tag) || el.hasAttribute("data-focal");
+          const beforeContent = getComputedStyle(el, "::before").content;
+          const afterContent = getComputedStyle(el, "::after").content;
+          const hasPseudoText =
+            (beforeContent && beforeContent !== "none" && beforeContent !== '""') ||
+            (afterContent && afterContent !== "none" && afterContent !== '""');
+
+          if (!hasDirectText && !isVisualFocal && !hasPseudoText) continue;
           const r = el.getBoundingClientRect();
-          if (r.width > 0 && r.height > 0 && r.right > dzLeft && r.left < dzRight && r.bottom > dzTop && r.top < dzBottom) {
-            thumbnailDeadzoneCollisions.push({
-              tag: el.tagName.toLowerCase(),
-              text: el.textContent.trim().slice(0, 40),
-            });
+          if (r.width <= 0 || r.height <= 0) continue;
+          for (const dz of deadZones) {
+            if (r.right > dz.left && r.left < dz.right && r.bottom > dz.top && r.top < dz.bottom) {
+              thumbnailDeadzoneCollisions.push({
+                tag,
+                text: (el.textContent || el.getAttribute("alt") || el.getAttribute("aria-label") || tag).trim().slice(0, 40),
+              });
+              break;
+            }
+          }
+        }
+
+        if (medium === "thumbnail") {
+          const hooks = [...stage.querySelectorAll("h1, .thumb-hook, [data-hook]")]
+            .filter((el) => el.textContent.trim() && getComputedStyle(el).display !== "none");
+          if (hooks.length > 0) {
+            const maxPx = hooks.reduce((m, el) => Math.max(m, parseFloat(getComputedStyle(el).fontSize) || 0), 0);
+            const ratio = Number((maxPx / sr.height).toFixed(4));
+            thumbnailHookScale = { fontSize: maxPx, stageHeight: sr.height, ratio, minRatio: 0.14 };
           }
         }
       }
     }
 
-    return { overflowX, bodyFontPx, visibleText, assertionFails, thumbnailDeadzoneCollisions };
-  };
+    let mascotCutout = null;
+    if (medium === "mascot") {
+      const svg = document.querySelector("svg[data-mascot], [data-mascot] svg");
+      if (svg) {
+        try {
+          const clone = svg.cloneNode(true);
+          clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+          if (!clone.getAttribute("viewBox")) {
+            const r = svg.getBoundingClientRect();
+            clone.setAttribute("viewBox", "0 0 " + (r.width || 400) + " " + (r.height || 400));
+          }
+          clone.setAttribute("width", "16");
+          clone.setAttribute("height", "16");
+          const styleEl = document.createElementNS("http://www.w3.org/2000/svg", "style");
+          styleEl.textContent = ":root,svg,*{--m-fill:#000!important;--m-shade:#000!important;--m-screen:#000!important;--m-cut:#fff!important;--m-hi:transparent!important;--m-glint:transparent!important;--m-shadow:transparent!important;}";
+          clone.prepend(styleEl);
+
+          const src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(new XMLSerializer().serializeToString(clone));
+          const img = await new Promise((res, rej) => {
+            const timer = setTimeout(() => rej(new Error("svg-decode-timeout")), 1500);
+            const im = new Image();
+            im.onload = () => { clearTimeout(timer); res(im); };
+            im.onerror = (e) => { clearTimeout(timer); rej(e); };
+            im.src = src;
+          });
+
+          const canvas = document.createElement("canvas");
+          canvas.width = 16;
+          canvas.height = 16;
+          const ctx = canvas.getContext("2d", { willReadFrequently: true });
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, 16, 16);
+          ctx.drawImage(img, 0, 0, 16, 16);
+          mascotCutout = analyzeCutoutBitmap(ctx.getImageData(0, 0, 16, 16).data, 16, 16);
+        } catch {
+          mascotCutout = null;
+        }
+      }
+    }
+
+    return { overflowX, bodyFontPx, visibleText, assertionFails, thumbnailDeadzoneCollisions, thumbnailHookScale, mascotCutout };
+  }`;
 }
 
 export async function auditHtmlWithCdp({
@@ -331,9 +448,10 @@ export async function auditHtmlWithCdp({
   medium = "web",
   snapshotsDir = null,
   timeoutMs = DEFAULT_TIMEOUT_MS,
+  unsafeNoSandbox = false,
 }) {
   if (snapshotsDir) fs.mkdirSync(path.resolve(snapshotsDir), { recursive: true });
-  const evalFnSrc = buildDomAuditFnSource().toString();
+  const evalFnSrc = buildDomAuditFnSource();
 
   return withCdpSession(async ({ send, on, onceEvent }) => {
     const results = [];
@@ -361,7 +479,11 @@ export async function auditHtmlWithCdp({
             throw new Error(`Navigation failed for ${fileUrl}: ${navRes.errorText}`);
           }
           await loadPromise;
-          await sleep(150);
+          await send("Runtime.evaluate", {
+            expression: "(async () => { if (document.fonts && document.fonts.ready) await document.fonts.ready; await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); return true; })()",
+            returnByValue: true,
+            awaitPromise: true,
+          }, timeoutMs);
 
           let snapshotPath = null;
           if (snapshotsDir) {
@@ -392,6 +514,8 @@ export async function auditHtmlWithCdp({
               visibleText: false,
               assertionFails: [],
               thumbnailDeadzoneCollisions: [],
+              thumbnailHookScale: null,
+              mascotCutout: null,
             },
             snapshotPath,
           });
@@ -401,7 +525,7 @@ export async function auditHtmlWithCdp({
       }
     }
     return results;
-  }, timeoutMs);
+  }, timeoutMs, { unsafeNoSandbox });
 }
 
 export async function captureHtmlFramesWithCdp({
@@ -411,6 +535,7 @@ export async function captureHtmlFramesWithCdp({
   height = 720,
   outDir,
   timeoutMs = DEFAULT_TIMEOUT_MS,
+  unsafeNoSandbox = false,
 }) {
   const resolvedOut = path.resolve(outDir);
   fs.mkdirSync(resolvedOut, { recursive: true });
@@ -431,17 +556,30 @@ export async function captureHtmlFramesWithCdp({
       throw new Error(`Navigation failed for ${fileUrl}: ${navRes.errorText}`);
     }
     await loadPromise;
-    await sleep(150);
+
+    const hookCheck = await send("Runtime.evaluate", {
+      expression: "(async () => { if (document.fonts && document.fonts.ready) await document.fonts.ready; return typeof window.__d27Seek === 'function' || Boolean(window.__timelines); })()",
+      returnByValue: true,
+      awaitPromise: true,
+    }, timeoutMs);
+    if (!hookCheck?.result?.value) {
+      throw new Error("HTML motion file does not expose window.__d27Seek(sec) or window.__timelines.");
+    }
 
     const frames = [];
     for (let i = 0; i < timestamps.length; i++) {
       const t = Number(timestamps[i]);
-      const seekExpr = `(() => {
+      if (!Number.isFinite(t) || t < 0) {
+        throw new Error(`Invalid beat timestamp: ${timestamps[i]}`);
+      }
+      const seekExpr = `(async () => {
+        const t = ${JSON.stringify(t)};
         if (typeof window.__d27Seek === 'function') {
-          window.__d27Seek(${t});
+          await window.__d27Seek(t);
         } else if (window.__timelines) {
-          Object.values(window.__timelines).forEach(tl => tl && tl.seek && tl.seek(${t}));
+          Object.values(window.__timelines).forEach(tl => tl && tl.seek && tl.seek(t));
         }
+        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
         return true;
       })()`;
 
@@ -450,7 +588,6 @@ export async function captureHtmlFramesWithCdp({
         returnByValue: true,
         awaitPromise: true,
       }, timeoutMs);
-      await sleep(60);
 
       const shot = await send("Page.captureScreenshot", { format: "png" }, timeoutMs);
       const fileName = `frame-${String(i).padStart(3, "0")}.png`;
@@ -460,5 +597,80 @@ export async function captureHtmlFramesWithCdp({
     }
 
     return { outDir: resolvedOut, frames };
-  }, timeoutMs);
+  }, timeoutMs, { unsafeNoSandbox });
+}
+
+export async function verifyHtmlDeterminismWithCdp({
+  htmlFile,
+  timestamps = [0, 1.2],
+  width = 1280,
+  height = 720,
+  timeoutMs = DEFAULT_TIMEOUT_MS,
+  unsafeNoSandbox = false,
+}) {
+  const beats = [...timestamps].map(Number).sort((a, b) => a - b);
+  if (beats.length === 0 || beats.some((n) => !Number.isFinite(n) || n < 0)) {
+    throw new Error("timestamps must be non-negative finite numbers.");
+  }
+  const fileUrl = pathToFileURL(path.resolve(htmlFile)).href;
+
+  return withCdpSession(async ({ send, onceEvent }) => {
+    await send("Emulation.setDeviceMetricsOverride", {
+      width,
+      height,
+      deviceScaleFactor: 1,
+      mobile: false,
+    }, timeoutMs);
+
+    const loadPromise = onceEvent("Page.loadEventFired", timeoutMs);
+    loadPromise.catch(() => {});
+    const navRes = await send("Page.navigate", { url: fileUrl }, timeoutMs);
+    if (navRes?.errorText) {
+      throw new Error(`Navigation failed for ${fileUrl}: ${navRes.errorText}`);
+    }
+    await loadPromise;
+
+    const hookCheck = await send("Runtime.evaluate", {
+      expression: "(async () => { if (document.fonts && document.fonts.ready) await document.fonts.ready; return typeof window.__d27Seek === 'function' || Boolean(window.__timelines); })()",
+      returnByValue: true,
+      awaitPromise: true,
+    }, timeoutMs);
+    if (!hookCheck?.result?.value) {
+      throw new Error("HTML motion file does not expose window.__d27Seek(sec) or window.__timelines.");
+    }
+
+    const seekAndHash = async (t) => {
+      const seekExpr = `(async () => {
+        const t = ${JSON.stringify(t)};
+        if (typeof window.__d27Seek === 'function') {
+          await window.__d27Seek(t);
+        } else if (window.__timelines) {
+          Object.values(window.__timelines).forEach(tl => tl && tl.seek && tl.seek(t));
+        }
+        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+        return true;
+      })()`;
+      await send("Runtime.evaluate", { expression: seekExpr, returnByValue: true, awaitPromise: true }, timeoutMs);
+      const { data } = await send("Page.captureScreenshot", { format: "png", fromSurface: true }, timeoutMs);
+      return crypto.createHash("sha256").update(data, "base64").digest("hex");
+    };
+
+    const forwardHashes = new Array(beats.length);
+    for (let i = 0; i < beats.length; i++) {
+      forwardHashes[i] = await seekAndHash(beats[i]);
+    }
+
+    // Break final-beat adjacency before descending reverse pass
+    if (beats.length >= 2) await seekAndHash(beats[0]);
+
+    const reverseHashes = new Array(beats.length);
+    for (let i = beats.length - 1; i >= 0; i--) {
+      reverseHashes[i] = await seekAndHash(beats[i]);
+    }
+
+    return {
+      engine: "chrome-cdp",
+      ...evaluateDeterminismHashes({ beats, forwardHashes, reverseHashes }),
+    };
+  }, timeoutMs, { unsafeNoSandbox });
 }

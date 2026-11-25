@@ -33,6 +33,7 @@
       <rect x="18" y="70" width="6" height="8" rx="1" fill="#000000"/>
       <rect x="88" y="54" width="6" height="8" rx="1" fill="#000000"/>
       <rect x="88" y="70" width="6" height="8" rx="1" fill="#000000"/>
+      <!-- d27-disable-next-line: no-blind-silhouette-filter — illustrative before label -->
       <text x="108" y="58" font-family="ui-monospace, monospace" font-size="10" fill="#FCA5A5">filter: brightness(0)</text>
       <text x="108" y="74" font-family="system-ui, sans-serif" font-size="11" fill="#CBD5E1">Crushes eyes &amp; mouth</text>
       <text x="108" y="90" font-family="system-ui, sans-serif" font-size="11" fill="#CBD5E1">into a blind black blob.</text>

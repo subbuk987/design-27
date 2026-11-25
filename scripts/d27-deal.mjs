@@ -9,6 +9,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import crypto from "node:crypto";
+import { parseHex, contrastRatio } from "./lib/color-math.mjs";
 
 const VERSION = "4.0.0";
 const VALID_MEDIUMS = new Set(["web", "animation", "motion", "book", "mascot", "thumbnail"]);
@@ -262,7 +263,7 @@ const DIRECTIONS = [
       accentInk: "#FFFFFF",
     },
     oklchNote: "Cool newsprint oklch(93% 0.006 105); press burgundy #7F1D1D",
-    fonts: { display: "Playfair Display", accent: "Instrument Serif", body: "Inter", mono: "IBM Plex Mono" },
+    fonts: { display: "Playfair Display", accent: "Instrument Serif", body: "IBM Plex Sans", mono: "IBM Plex Mono" },
     materialRegister: "Multi-Column Broadsheet & Documentary Plates",
     motionPhysics: "Brisk 200-280ms",
     compatibleSurfaces: ["persuade", "read", "operate"],
@@ -439,8 +440,10 @@ if (!VALID_SURFACES.has(surfaceMode)) {
   process.exit(3);
 }
 
-const defaultCacheDir = path.join(os.tmpdir(), "design-27");
-const historyFile = path.resolve(getFlag("--history") || path.join(defaultCacheDir, "history.json"));
+const repoHash = crypto.createHash("sha256").update(process.cwd()).digest("hex").slice(0, 12);
+const xdgBase = process.env.XDG_CACHE_HOME || path.join(os.homedir(), ".cache");
+const defaultCacheDir = path.join(xdgBase, "design-27");
+const historyFile = path.resolve(getFlag("--history") || path.join(defaultCacheDir, `history-${repoHash}.json`));
 
 let history = [];
 if (fs.existsSync(historyFile)) {
@@ -506,6 +509,19 @@ const assertionsByMedium = {
   ],
 };
 
+const primaryBg = parseHex(primary.tokens.surfaceCanvas);
+const primaryInk = parseHex(primary.tokens.inkPrimary);
+const secondaryInk = parseHex(primary.tokens.inkSecondary);
+const verifiedContrast = {
+  primaryRatio: primaryBg && primaryInk ? Number(contrastRatio(primaryInk, primaryBg).toFixed(2)) : 0,
+  secondaryRatio: primaryBg && secondaryInk ? Number(contrastRatio(secondaryInk, primaryBg).toFixed(2)) : 0,
+  floorMet: Boolean(
+    primaryBg && primaryInk && secondaryInk &&
+    contrastRatio(primaryInk, primaryBg) >= (surfaceMode === "read" ? 7.0 : 4.5) &&
+    contrastRatio(secondaryInk, primaryBg) >= 4.5
+  ),
+};
+
 const contract = {
   tool: "d27-deal",
   schemaVersion: 4,
@@ -516,6 +532,7 @@ const contract = {
   primary,
   alternate,
   macrostructure,
+  verifiedContrast,
   signatureContract,
   bannedCliche,
   bannedDefaults: {

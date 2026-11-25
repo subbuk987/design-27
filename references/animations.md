@@ -134,15 +134,30 @@ function runOnceDemo(slider, onUpdate, { from = 1.0, peak = 5.2, settle = 3.4, d
 
 ## 5. Interruptible Physics, View Transitions & Scroll Timelines
 
-### 1. Copy-Ready Zero-Dep JS Spring Helper (`stepSpring`, ~25 Lines)
-CSS transitions can feel rigid during interactive dragging, dial scrubbing, or mid-flight reversals. Use `stepSpring` inside a `requestAnimationFrame` driver that preserves velocity across interruptions and settles cleanly:
+### 1. Copy-Ready Zero-Dep RK4 Spring Helper (`stepSpring`) & CSS `linear()` Presets
+For simple non-interruptible spring transitions (`< 280ms`), prefer zero-JS CSS `linear()` easing (`--spring-crisp: linear(0, 0.36 12%, 0.78 28%, 0.96 48%, 1.01 70%, 1);`). During interactive dragging, dial scrubbing, or mid-flight reversals, use **true 4th-order Runge-Kutta (RK4)** integration with `dt` clamping so high-stiffness springs never diverge or stall:
 
 ```js
-// Zero-dep interruptible damped spring (~25 lines) for interactive sliders, dials, and drawers
-export function stepSpring(state, target, dt, { stiffness = 360, damping = 30, mass = 0.9 } = {}) {
-  const force = -stiffness * (state.x - target) - damping * state.v;
-  state.v += (force / mass) * Math.min(dt, 0.032);
-  state.x += state.v * Math.min(dt, 0.032);
+// Zero-dep interruptible RK4 damped spring for interactive sliders, dials, and drawers
+export function stepSpring(state, target, rawDt, { stiffness = 360, damping = 30, mass = 0.9 } = {}) {
+  const dt = Math.min(Math.max(rawDt, 0), 0.032);
+  const accel = (x, v) => (-stiffness * (x - target) - damping * v) / mass;
+
+  const k1x = state.v;
+  const k1v = accel(state.x, state.v);
+
+  const k2x = state.v + 0.5 * k1v * dt;
+  const k2v = accel(state.x + 0.5 * k1x * dt, k2x);
+
+  const k3x = state.v + 0.5 * k2v * dt;
+  const k3v = accel(state.x + 0.5 * k2x * dt, k3x);
+
+  const k4x = state.v + k3v * dt;
+  const k4v = accel(state.x + k3x * dt, k4x);
+
+  state.x += (dt / 6) * (k1x + 2 * k2x + 2 * k3x + k4x);
+  state.v += (dt / 6) * (k1v + 2 * k2v + 2 * k3v + k4v);
+
   const done = Math.abs(state.x - target) < 0.001 && Math.abs(state.v) < 0.001;
   if (done) { state.x = target; state.v = 0; }
   return done;

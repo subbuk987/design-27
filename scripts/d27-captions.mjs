@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Design 27 v4.0.0 — Zero-Dependency Word-Timestamp Caption Chunker, ASS Burn-In & Reading-Hold Validator
- * Usage: node scripts/d27-captions.mjs <words.json> [--fps 30] [--aspect 9:16|16:9] [--format json|srt|ass] [--validate]
+ * Usage: node scripts/d27-captions.mjs <words.json> [--fps 30] [--aspect 9:16|16:9] [--format json|srt|ass] [--out file] [--validate]
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -27,7 +27,7 @@ for (let i = 0; i < args.length; i++) {
 const getFlag = (f, fallback) => (flagValues.has(f) ? flagValues.get(f) : fallback);
 
 if (args.includes("--help") || args.includes("-h")) {
-  console.log(`Design 27 Captions v${VERSION}\nUsage: node scripts/d27-captions.mjs <words.json> [--fps 30] [--aspect 9:16|16:9] [--format json|srt|ass] [--validate]`);
+  console.log(`Design 27 Captions v${VERSION}\nUsage: node scripts/d27-captions.mjs <words.json> [--fps 30] [--aspect 9:16|16:9] [--format json|srt|ass] [--out file] [--validate]`);
   process.exit(0);
 }
 
@@ -35,15 +35,41 @@ const inputArg = args.find((a, i) => !a.startsWith("-") && !skipIndices.has(i));
 const fps = Number(getFlag("--fps", "30"));
 const aspect = getFlag("--aspect", "9:16");
 const format = args.includes("--srt") ? "srt" : getFlag("--format", "json").toLowerCase();
+const outArg = getFlag("--out", null);
 const validate = args.includes("--validate");
 
+if (!Number.isFinite(fps) || fps <= 0) {
+  console.error(`Invalid --fps value: ${getFlag("--fps", "30")} (must be a positive number).`);
+  process.exit(3);
+}
+
 if (!inputArg || !fs.existsSync(path.resolve(inputArg))) {
-  console.error("Usage: node scripts/d27-captions.mjs <words.json> [--fps 30] [--aspect 9:16|16:9] [--format json|srt|ass] [--validate]");
+  console.error("Usage: node scripts/d27-captions.mjs <words.json> [--fps 30] [--aspect 9:16|16:9] [--format json|srt|ass] [--out file] [--validate]");
   process.exit(1);
 }
 
-const raw = JSON.parse(fs.readFileSync(path.resolve(inputArg), "utf8"));
-const words = Array.isArray(raw) ? raw : raw.words || [];
+let raw;
+try {
+  raw = JSON.parse(fs.readFileSync(path.resolve(inputArg), "utf8"));
+} catch (err) {
+  console.error(`Invalid JSON in ${inputArg}: ${err.message}`);
+  process.exit(1);
+}
+
+const rawWords = Array.isArray(raw) ? raw : raw.words || [];
+const words = [];
+for (let i = 0; i < rawWords.length; i++) {
+  const w = rawWords[i];
+  if (!w || typeof w.word !== "string" || !Number.isFinite(Number(w.start)) || !Number.isFinite(Number(w.end))) {
+    console.error(`Invalid word entry at index ${i}: expected { word: string, start: number, end: number }.`);
+    process.exit(1);
+  }
+  const start = Math.max(0, Number(w.start));
+  const end = Math.max(start + 0.01, Number(w.end));
+  words.push({ word: w.word.trim(), start, end });
+}
+words.sort((a, b) => a.start - b.start);
+
 const maxWords = aspect === "9:16" ? 3 : 8;
 const maxChars = aspect === "9:16" ? 22 : 42;
 
@@ -54,7 +80,7 @@ const flush = () => {
   if (!bucket.length) return;
   const startSec = bucket[0].start;
   const endSec = bucket[bucket.length - 1].end;
-  const text = bucket.map((w) => w.word.trim()).join(" ");
+  const text = bucket.map((w) => w.word).join(" ");
   const duration = Math.max(0.01, endSec - startSec);
   cues.push({
     index: cues.length + 1,
@@ -71,7 +97,7 @@ const flush = () => {
 };
 
 for (const w of words) {
-  const candidate = [...bucket, w].map((x) => x.word.trim()).join(" ");
+  const candidate = [...bucket, w].map((x) => x.word).join(" ");
   if (bucket.length >= maxWords || (bucket.length > 0 && candidate.length > maxChars)) {
     flush();
   }
@@ -108,8 +134,12 @@ const fmtAss = (sec) => {
   return `${h}:${m}:${s}.${r}`;
 };
 
+const escapeAss = (str) =>
+  str.replace(/\\/g, "\\\\").replace(/\{/g, "\\{").replace(/\}/g, "\\}");
+
+let output = "";
 if (format === "srt") {
-  console.log(cues.map((c) => `${c.index}\n${fmtSrt(c.startSec)} --> ${fmtSrt(c.endSec)}\n${c.text}\n`).join("\n"));
+  output = cues.map((c) => `${c.index}\n${fmtSrt(c.startSec)} --> ${fmtSrt(c.endSec)}\n${c.text}\n`).join("\n");
 } else if (format === "ass") {
   const isVert = aspect === "9:16";
   const resX = isVert ? 1080 : 1920;
@@ -138,15 +168,26 @@ if (format === "srt") {
   for (const c of cues) {
     for (let wi = 0; wi < c.words.length; wi++) {
       const w = c.words[wi];
+      const nextWord = c.words[wi + 1];
+      // Bridge intra-cue gaps up to 0.5s so the caption never flickers off between words
+      const bridgedEnd = nextWord ? Math.max(w.end, Math.min(nextWord.start, w.end + 0.5)) : w.end;
       const styled = c.words
-        .map((x, idx) => (idx === wi ? `{\\c&H0045B8FF&}${x.word.trim()}{\\c&H00F7F7F5&}` : x.word.trim()))
+        .map((x, idx) => (idx === wi ? `{\\c&H0045B8FF&}${escapeAss(x.word)}{\\c&H00F7F7F5&}` : escapeAss(x.word)))
         .join(" ");
-      events.push(`Dialogue: 0,${fmtAss(w.start)},${fmtAss(w.end)},Default,,0,0,0,,${styled}`);
+      events.push(`Dialogue: 0,${fmtAss(w.start)},${fmtAss(bridgedEnd)},Default,,0,0,0,,${styled}`);
     }
   }
-  console.log([...header, ...events].join("\n"));
+  output = [...header, ...events].join("\n");
 } else {
-  console.log(JSON.stringify({ tool: "d27-captions", version: VERSION, fps, aspect, cueCount: cues.length, warnings, cues }, null, 2));
+  output = JSON.stringify({ tool: "d27-captions", version: VERSION, fps, aspect, cueCount: cues.length, warnings, cues }, null, 2);
+}
+
+if (outArg) {
+  const resolvedOut = path.resolve(outArg);
+  fs.mkdirSync(path.dirname(resolvedOut), { recursive: true });
+  fs.writeFileSync(resolvedOut, `${output}\n`, "utf8");
+} else {
+  console.log(output);
 }
 
 if (validate && warnings.length > 0) process.exit(2);

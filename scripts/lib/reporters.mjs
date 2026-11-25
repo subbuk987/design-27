@@ -1,6 +1,7 @@
 /**
  * Design 27 v4.0.0 — Zero-Dependency SARIF 2.1.0 & GitHub Annotations Formatter
  */
+import crypto from "node:crypto";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -35,19 +36,26 @@ export function buildSarif({ version = "4.0.0", rules = [], findings = [], execu
 
   const results = findings.map((f) => {
     const absFile = path.isAbsolute(f.file) ? f.file : path.resolve(process.cwd(), f.file);
+    const uri = toSarifUri(absFile, workspaceRoot);
     const location = {
       physicalLocation: {
-        artifactLocation: { uri: toSarifUri(absFile, workspaceRoot) },
+        artifactLocation: { uri },
       },
     };
     if (f.line && f.line > 0) {
       location.physicalLocation.region = { startLine: f.line };
     }
+    const fingerprint = crypto
+      .createHash("sha256")
+      .update(`${f.rule}:${uri}:${f.line || 1}:${f.message || ""}`)
+      .digest("hex")
+      .slice(0, 16);
     return {
       ruleId: f.rule,
       level: f.tier === "FLOOR" ? "error" : "warning",
       message: { text: f.fix ? `${f.message} Fix: ${f.fix}` : f.message },
       locations: [location],
+      partialFingerprints: { primaryLocationLineHash: fingerprint },
     };
   });
 
